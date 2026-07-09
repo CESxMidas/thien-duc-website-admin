@@ -1,10 +1,12 @@
 // Service xác thực Admin/CMS — nối API thật của backend NestJS:
-//   POST /auth/login   { email, password }        -> { accessToken, refreshToken }
-//   POST /auth/logout   { refreshToken }           -> { loggedOut: true }
-//   POST /auth/refresh  { refreshToken }           -> { accessToken, refreshToken }
+//   POST /auth/login    { email, password }  -> { accessToken, refreshToken }
+//   POST /auth/logout   { refreshToken }     -> { loggedOut: true }
+//   POST /auth/refresh  { refreshToken }     -> { accessToken, refreshToken }
+//   GET  /auth/me                            -> { id, name, email, role }
 //
-// Login chỉ trả token (không có object user, chưa có endpoint /auth/me), nên
-// thông tin user hiển thị được suy ra từ payload JWT (sub, email, role).
+// Login chỉ trả token, nên tên hiển thị lấy từ /auth/me. Payload JWT (sub,
+// email, role) dùng để dựng user tạm ngay lập tức — tránh chờ mạng khi tải
+// trang — và làm phương án dự phòng nếu /auth/me lỗi.
 
 import type { AuthUser, Role } from "@/types";
 import { decodeJwt, isTokenExpired, type JwtPayload } from "@/lib/jwt";
@@ -31,8 +33,8 @@ function normalizeRole(role: string): Role {
     : "EDITOR";
 }
 
-/** Suy AuthUser từ payload JWT. Tên hiển thị tạm lấy phần trước @ của email
- * (backend chưa trả tên qua login / chưa có /auth/me). */
+/** Suy AuthUser từ payload JWT. Tên hiển thị tạm lấy phần trước @ của email —
+ * chỉ dùng khi chưa/không lấy được hồ sơ thật từ /auth/me. */
 function buildUser(payload: JwtPayload): AuthUser {
   const localPart = payload.email.split("@")[0] ?? payload.email;
   return {
@@ -41,6 +43,28 @@ function buildUser(payload: JwtPayload): AuthUser {
     name: localPart,
     role: normalizeRole(payload.role),
   };
+}
+
+interface MeResponse {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+}
+
+/** Hồ sơ tài khoản đang đăng nhập (nguồn duy nhất cho tên hiển thị thật). */
+export async function fetchMe(): Promise<AuthUser> {
+  const me = await apiFetch<MeResponse>("/auth/me");
+  return { ...me, role: normalizeRole(me.role) };
+}
+
+/** Lấy hồ sơ thật; lỗi mạng/endpoint → lùi về thông tin suy từ JWT. */
+async function fetchMeOrFallback(payload: JwtPayload): Promise<AuthUser> {
+  try {
+    return await fetchMe();
+  } catch {
+    return buildUser(payload);
+  }
 }
 
 /**
@@ -65,7 +89,7 @@ export async function login(
   }
 
   setTokens(tokens.accessToken, tokens.refreshToken, remember);
-  return buildUser(payload);
+  return fetchMeOrFallback(payload);
 }
 
 /** Đăng xuất: thu hồi refresh token ở backend (best-effort) rồi xóa token cục bộ. */
@@ -123,5 +147,5 @@ export async function restoreSession(): Promise<AuthUser | null> {
     clearTokens();
     return null;
   }
-  return buildUser(payload);
+  return fetchMeOrFallback(payload);
 }

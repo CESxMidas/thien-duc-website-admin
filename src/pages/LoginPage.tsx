@@ -77,8 +77,14 @@ export function LoginPage() {
         <div className="mx-auto w-full max-w-md">
           {/* Logo */}
           <div className="mb-8 flex items-center gap-3">
-            <span className="grid size-11 place-items-center rounded-xl bg-gold text-lg font-bold text-ink">
-              TĐ
+            <span className="grid size-12 shrink-0 place-items-center rounded-lg border border-black/10 bg-white p-1.5 shadow-sm">
+              <img
+                src="/images/brand/logo-thien-duc.png"
+                alt="Logo Thiên Đức"
+                width={48}
+                height={48}
+                className="size-full object-contain"
+              />
             </span>
             <div className="leading-tight">
               <p className="text-base font-semibold text-ink">Thiên Đức</p>

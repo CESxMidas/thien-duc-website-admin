@@ -26,19 +26,9 @@ export function getLoginErrorMessage(status?: number): string {
   }
 }
 
-/**
- * Rút status từ lỗi bất kỳ ném ra trong lúc đăng nhập.
- * Lưu ý: backend khóa tài khoản trả 401 (không phải 423) kèm message riêng —
- * bắt theo message để hiển thị đúng "tài khoản bị khóa".
- */
+/** Rút status từ lỗi bất kỳ ném ra trong lúc đăng nhập rồi map sang message. */
 export function resolveLoginError(error: unknown): string {
   if (error instanceof ApiRequestError) {
-    if (
-      error.status === 401 &&
-      /khóa|khoa|lock/i.test(error.message)
-    ) {
-      return getLoginErrorMessage(423);
-    }
     return getLoginErrorMessage(error.status);
   }
   return getLoginErrorMessage();

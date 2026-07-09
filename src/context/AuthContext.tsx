@@ -33,17 +33,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 
   useEffect(() => {
-    if (!isLoading) return;
     let active = true;
-    authService.restoreSession().then((restored) => {
-      if (!active) return;
-      setUser(restored);
-      setIsLoading(false);
-    });
+
+    if (isLoading) {
+      // Access token hết hạn: đổi refresh token rồi mới biết có phiên hay không.
+      authService.restoreSession().then((restored) => {
+        if (!active) return;
+        setUser(restored);
+        setIsLoading(false);
+      });
+    } else if (user) {
+      // Khôi phục đồng bộ từ JWT nên tên đang là tạm — lấy hồ sơ thật ở nền.
+      // Lỗi thì bỏ qua: giữ thông tin suy từ token, 401 đã có apiFetch lo.
+      authService
+        .fetchMe()
+        .then((profile) => {
+          if (active) setUser(profile);
+        })
+        .catch(() => {});
+    }
+
     return () => {
       active = false;
     };
-    // Chạy đúng một lần lúc mount (giá trị isLoading ban đầu quyết định).
+    // Chạy đúng một lần lúc mount (giá trị ban đầu quyết định nhánh nào chạy).
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
