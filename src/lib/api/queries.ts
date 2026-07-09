@@ -4,7 +4,7 @@
 // đổi thân queryFn thành `apiFetch<T>('/duong-dan')` — giữ nguyên queryKey và
 // mọi component đang dùng hook.
 
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   mockBanners,
   mockLeads,
@@ -12,8 +12,8 @@ import {
   mockNews,
   mockPages,
   mockProjects,
-  mockUsers,
 } from "@/data/mock";
+import * as usersApi from "./users";
 // import { apiFetch } from "./client"; // bật khi nối API thật
 
 /** Giả lập độ trễ mạng để thấy trạng thái loading của khung. */
@@ -74,9 +74,44 @@ export function useMedia() {
   });
 }
 
+/* -------------------------------------------------------------------------
+   Tài khoản — đã nối API thật (/users). Các hook còn lại vẫn là mock.
+   ------------------------------------------------------------------------- */
+
 export function useUsers() {
   return useQuery({
     queryKey: queryKeys.users,
-    queryFn: () => mockAsync(mockUsers),
+    queryFn: usersApi.listUsers,
   });
+}
+
+/** Làm mới danh sách sau mỗi thao tác ghi. */
+function useUsersMutation<TArgs, TResult>(
+  fn: (args: TArgs) => Promise<TResult>,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: fn,
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: queryKeys.users }),
+  });
+}
+
+export function useCreateUser() {
+  return useUsersMutation(usersApi.createUser);
+}
+
+export function useUpdateUser() {
+  return useUsersMutation(
+    ({ id, ...input }: usersApi.UpdateUserInput & { id: string }) =>
+      usersApi.updateUser(id, input),
+  );
+}
+
+export function useDeactivateUser() {
+  return useUsersMutation(usersApi.deactivateUser);
+}
+
+export function useReactivateUser() {
+  return useUsersMutation(usersApi.reactivateUser);
 }

@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { NavLink } from "react-router-dom";
 import { X } from "lucide-react";
 import { navItems } from "./nav";
@@ -15,6 +16,16 @@ export function Sidebar({
     (item) => !item.roles || (user && item.roles.includes(user.role)),
   );
 
+  // Esc đóng drawer mobile — lối thoát bằng bàn phím cho lớp phủ toàn màn hình.
+  useEffect(() => {
+    if (!open) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [open, onClose]);
+
   return (
     <>
       {/* Lớp phủ mobile */}
@@ -26,9 +37,12 @@ export function Sidebar({
         />
       )}
 
+      {/* Khi đóng trên mobile phải `invisible`, không chỉ trượt ra ngoài màn
+          hình: phần tử chỉ bị dịch chuyển vẫn nhận được tiêu điểm bàn phím,
+          khiến người dùng tab vào menu vô hình. Trên lg luôn hiện. */}
       <aside
-        className={`fixed inset-y-0 left-0 z-40 flex w-64 flex-col bg-ink text-white transition-transform lg:static lg:translate-x-0 ${
-          open ? "translate-x-0" : "-translate-x-full"
+        className={`fixed inset-y-0 left-0 z-40 flex w-64 flex-col bg-ink text-white transition-transform lg:visible lg:static lg:translate-x-0 ${
+          open ? "visible translate-x-0" : "invisible -translate-x-full"
         }`}
       >
         <div className="flex h-16 items-center justify-between px-5">
@@ -71,9 +85,8 @@ export function Sidebar({
           ))}
         </nav>
 
-        <p className="px-5 py-4 text-xs text-white/40">
-          Bản dựng khung UI · v0.1
-        </p>
+        {/* white/40 chỉ đạt ~3.9:1 trên nền #191919 — nâng lên /60 cho đủ 4.5:1. */}
+        <p className="px-5 py-4 text-xs text-white/60">Thiên Đức CMS · v0.1</p>
       </aside>
     </>
   );

@@ -106,8 +106,12 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* Focus-visible toàn cục — a11y (khớp quy ước mục 7 handoff spec) */
+/* Focus-visible toàn cục — a11y (khớp quy ước mục 7 handoff spec).
+   Dùng nâu đồng thay vàng: vàng #fdcd04 trên nền trắng chỉ đạt 1.5:1, dưới
+   ngưỡng 3:1 mà WCAG 2.4.11 đòi cho viền focus. Nâu đồng #B06613 đạt 4.42:1
+   trên nền trắng và 3.32:1 trên nền đen #191919 (sidebar) — hợp lệ cả hai,
+   nên một màu là đủ. */
 :focus-visible {
-  outline: 2px solid var(--color-gold);
+  outline: 2px solid var(--color-brand);
   outline-offset: 2px;
 }

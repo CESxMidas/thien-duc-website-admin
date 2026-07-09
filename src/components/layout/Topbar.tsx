@@ -18,7 +18,7 @@ export function Topbar({ onMenu }: { onMenu: () => void }) {
       </button>
 
       <div className="hidden text-sm text-slate lg:block">
-        Xin chào, quản trị viên Thiên Đức 👋
+        Xin chào, <span className="font-medium text-ink">{user?.name}</span>
       </div>
 
       <div className="relative ml-auto">
