@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { DataTable, type Column } from "@/components/ui/DataTable";
 import { UserFormDialog } from "@/components/users/UserFormDialog";
+import { UserDetailDialog } from "@/components/users/UserDetailDialog";
 import { DeactivateUserDialog } from "@/components/users/DeactivateUserDialog";
 import { useAuth } from "@/context/AuthContext";
 import { useReactivateUser, useUsers } from "@/lib/api/queries";
@@ -19,6 +20,7 @@ export function UsersPage() {
   const { user: currentUser } = useAuth();
   const reactivate = useReactivateUser();
   const [toDeactivate, setToDeactivate] = useState<AdminUser | null>(null);
+  const [detailId, setDetailId] = useState<string | null>(null);
 
   // Chỉ Super Admin mới được thêm/sửa/khóa (backend cũng chặn). Admin thường
   // vẫn xem được danh sách.
@@ -74,7 +76,12 @@ export function UsersPage() {
         if (!canManage) return null;
         const isSelf = u.id === currentUser?.id;
         return (
-          <div className="flex justify-end gap-1">
+          // stopPropagation: hàng đã bấm được để mở chi tiết — các nút thao
+          // tác không được kích hoạt luôn cả modal.
+          <div
+            className="flex justify-end gap-1"
+            onClick={(e) => e.stopPropagation()}
+          >
             <UserFormDialog
               user={u}
               trigger={
@@ -135,6 +142,13 @@ export function UsersPage() {
         rows={users}
         loading={isLoading}
         emptyText="Chưa có tài khoản nào."
+        onRowClick={(u) => setDetailId(u.id)}
+      />
+
+      <UserDetailDialog
+        userId={detailId}
+        open={detailId !== null}
+        onOpenChange={(open) => !open && setDetailId(null)}
       />
 
       <DeactivateUserDialog

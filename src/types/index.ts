@@ -88,4 +88,12 @@ export interface AdminUser {
   email: string;
   role: Role;
   isActive: boolean;
+  createdAt: string;
+}
+
+/** GET /users/:id — chi tiết một tài khoản (modal xem thông tin). */
+export interface AdminUserDetail extends AdminUser {
+  updatedAt: string;
+  /** Hạn khóa tạm do đăng nhập sai nhiều lần; null = không bị khóa tạm. */
+  lockedUntil: string | null;
 }

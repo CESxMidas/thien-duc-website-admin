@@ -85,6 +85,15 @@ export function useUsers() {
   });
 }
 
+/** Chi tiết một tài khoản — chỉ gọi khi có id (modal đang mở). */
+export function useUser(id: string | null) {
+  return useQuery({
+    queryKey: [...queryKeys.users, id],
+    queryFn: () => usersApi.getUser(id!),
+    enabled: id !== null,
+  });
+}
+
 /** Làm mới danh sách sau mỗi thao tác ghi. */
 function useUsersMutation<TArgs, TResult>(
   fn: (args: TArgs) => Promise<TResult>,

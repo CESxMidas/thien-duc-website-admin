@@ -8,7 +8,7 @@
 // Admin cuối cùng) và trả 400 kèm message tiếng Việt — UI chỉ việc hiện toast.
 
 import { apiFetch } from "./client";
-import type { AdminUser, Role } from "@/types";
+import type { AdminUser, AdminUserDetail, Role } from "@/types";
 
 export interface CreateUserInput {
   name: string;
@@ -28,6 +28,11 @@ export interface UpdateUserInput {
 
 export function listUsers(): Promise<AdminUser[]> {
   return apiFetch<AdminUser[]>("/users");
+}
+
+/** Chi tiết một tài khoản — thêm updatedAt, lockedUntil so với danh sách. */
+export function getUser(id: string): Promise<AdminUserDetail> {
+  return apiFetch<AdminUserDetail>(`/users/${id}`);
 }
 
 export function createUser(input: CreateUserInput): Promise<AdminUser> {

@@ -23,15 +23,15 @@ export function MediaPage() {
           ? Array.from({ length: 8 }).map((_, i) => (
               <div
                 key={i}
-                className="aspect-3/2 animate-pulse rounded-xl bg-gray-200"
+                className="aspect-3/2 animate-pulse rounded-xl bg-cream"
               />
             ))
           : media.map((asset) => (
               <figure
                 key={asset.id}
-                className="overflow-hidden rounded-xl border border-gray-200 bg-white"
+                className="overflow-hidden rounded-xl border border-line bg-white"
               >
-                <div className="grid aspect-3/2 place-items-center bg-gray-100 text-gray-400">
+                <div className="grid aspect-3/2 place-items-center bg-cream text-slate/60">
                   <ImageIcon className="size-8" />
                 </div>
                 <figcaption className="px-3 py-2">

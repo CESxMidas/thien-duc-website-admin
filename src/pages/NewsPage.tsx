@@ -1,8 +1,10 @@
+import { useState } from "react";
 import { Plus } from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { DataTable, type Column } from "@/components/ui/DataTable";
+import { DetailDialog } from "@/components/ui/DetailDialog";
 import { useNews } from "@/lib/api/queries";
 import {
   contentStatusLabel,
@@ -49,19 +51,52 @@ const columns: Column<NewsPost>[] = [
 
 export function NewsPage() {
   const { data: news = [], isLoading } = useNews();
+  const [detail, setDetail] = useState<NewsPost | null>(null);
 
   return (
     <div>
       <PageHeader
         title="Tin tức"
-        description="Chuyên mục và bài viết, luồng nháp → gửi duyệt → xuất bản (ED-04)."
+        description="Chuyên mục và bài viết, luồng nháp → gửi duyệt → xuất bản (ED-04). Bấm vào một hàng để xem chi tiết."
         actions={
           <Button>
             <Plus className="size-4" /> Viết tin
           </Button>
         }
       />
-      <DataTable columns={columns} rows={news} loading={isLoading} />
+      <DataTable
+        columns={columns}
+        rows={news}
+        loading={isLoading}
+        onRowClick={setDetail}
+      />
+
+      <DetailDialog
+        open={detail !== null}
+        onOpenChange={(open) => !open && setDetail(null)}
+        title={detail?.title}
+        description="Chi tiết bài viết."
+        fields={
+          detail
+            ? [
+                { label: "Đường dẫn", value: `/${detail.slug}` },
+                { label: "Chuyên mục", value: detail.category },
+                {
+                  label: "Trạng thái",
+                  value: (
+                    <Badge variant={contentStatusTone[detail.status]}>
+                      {contentStatusLabel[detail.status]}
+                    </Badge>
+                  ),
+                },
+                {
+                  label: "Cập nhật gần nhất",
+                  value: formatDateTime(detail.updatedAt),
+                },
+              ]
+            : []
+        }
+      />
     </div>
   );
 }

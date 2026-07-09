@@ -170,6 +170,7 @@ export const mockUsers: AdminUser[] = [
     email: "admin@thienduc.vn",
     role: "SUPER_ADMIN",
     isActive: true,
+    createdAt: "2026-01-05T03:00:00Z",
   },
   {
     id: "u2",
@@ -177,6 +178,7 @@ export const mockUsers: AdminUser[] = [
     email: "editor1@thienduc.vn",
     role: "EDITOR",
     isActive: true,
+    createdAt: "2026-02-12T07:30:00Z",
   },
   {
     id: "u3",
@@ -184,5 +186,6 @@ export const mockUsers: AdminUser[] = [
     email: "content@thienduc.vn",
     role: "ADMIN",
     isActive: false,
+    createdAt: "2026-03-20T09:15:00Z",
   },
 ];

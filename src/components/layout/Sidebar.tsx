@@ -41,18 +41,22 @@ export function Sidebar({
           hình: phần tử chỉ bị dịch chuyển vẫn nhận được tiêu điểm bàn phím,
           khiến người dùng tab vào menu vô hình. Trên lg luôn hiện. */}
       <aside
-        className={`fixed inset-y-0 left-0 z-40 flex w-64 flex-col bg-ink text-white transition-transform lg:visible lg:static lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-40 flex w-64 flex-col bg-espresso text-white transition-transform lg:visible lg:static lg:translate-x-0 ${
           open ? "visible translate-x-0" : "invisible -translate-x-full"
         }`}
       >
-        <div className="flex h-16 items-center justify-between px-5">
-          <div className="flex items-center gap-2">
-            <span className="grid size-9 place-items-center rounded-lg bg-gold font-bold text-ink">
+        <div className="flex h-16 items-center justify-between border-b border-white/10 px-5">
+          <div className="flex items-center gap-2.5">
+            <span className="grid size-9 place-items-center rounded-lg bg-gold font-display font-bold text-ink">
               TĐ
             </span>
             <div className="leading-tight">
-              <p className="text-sm font-semibold">Thiên Đức</p>
-              <p className="text-xs text-white/50">Trang quản trị</p>
+              <p className="font-display text-sm font-semibold tracking-wide">
+                Thiên Đức
+              </p>
+              <p className="text-[11px] tracking-[0.14em] text-gold/80 uppercase">
+                Trang quản trị
+              </p>
             </div>
           </div>
           <button
@@ -72,10 +76,12 @@ export function Sidebar({
               end={to === "/"}
               onClick={onClose}
               className={({ isActive }) =>
-                `flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors ${
+                `relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors ${
                   isActive
-                    ? "bg-brand text-white"
-                    : "text-white/70 hover:bg-white/10 hover:text-white"
+                    ? // Chữ ký thị giác: thanh vàng dọc bên trái mục đang chọn
+                      // + nền đồng trầm — thay vì khối màu đặc chung chung.
+                      "bg-brand/25 font-medium text-white before:absolute before:inset-y-1.5 before:left-0 before:w-0.75 before:rounded-full before:bg-gold"
+                    : "text-white/70 hover:bg-white/8 hover:text-white"
                 }`
               }
             >
@@ -85,8 +91,10 @@ export function Sidebar({
           ))}
         </nav>
 
-        {/* white/40 chỉ đạt ~3.9:1 trên nền #191919 — nâng lên /60 cho đủ 4.5:1. */}
-        <p className="px-5 py-4 text-xs text-white/60">Thiên Đức CMS · v0.1</p>
+        {/* white/40 chỉ đạt ~3.9:1 trên nền tối — giữ /60 cho đủ 4.5:1. */}
+        <p className="border-t border-white/10 px-5 py-4 text-xs text-white/60">
+          Thiên Đức CMS · v0.1
+        </p>
       </aside>
     </>
   );

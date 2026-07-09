@@ -1,5 +1,7 @@
+import { useState } from "react";
 import { Plus } from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { DetailDialog } from "@/components/ui/DetailDialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { DataTable, type Column } from "@/components/ui/DataTable";
@@ -43,6 +45,7 @@ const columns: Column<StaticPage>[] = [
 
 export function PagesPage() {
   const { data: pages = [], isLoading } = usePages();
+  const [detail, setDetail] = useState<StaticPage | null>(null);
 
   return (
     <div>
@@ -55,7 +58,38 @@ export function PagesPage() {
           </Button>
         }
       />
-      <DataTable columns={columns} rows={pages} loading={isLoading} />
+      <DataTable
+        columns={columns}
+        rows={pages}
+        loading={isLoading}
+        onRowClick={setDetail}
+      />
+
+      <DetailDialog
+        open={detail !== null}
+        onOpenChange={(open) => !open && setDetail(null)}
+        title={detail?.title}
+        description="Chi tiết trang nội dung."
+        fields={
+          detail
+            ? [
+                { label: "Đường dẫn", value: `/${detail.slug}` },
+                {
+                  label: "Trạng thái",
+                  value: (
+                    <Badge variant={contentStatusTone[detail.status]}>
+                      {contentStatusLabel[detail.status]}
+                    </Badge>
+                  ),
+                },
+                {
+                  label: "Cập nhật gần nhất",
+                  value: formatDateTime(detail.updatedAt),
+                },
+              ]
+            : []
+        }
+      />
     </div>
   );
 }

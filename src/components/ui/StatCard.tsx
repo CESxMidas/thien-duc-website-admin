@@ -26,15 +26,18 @@ export function StatCard({
   return (
     <Link
       to={to}
-      className="group rounded-xl border border-gray-200 bg-white p-5 transition-shadow hover:shadow-md"
+      className="group rounded-xl border border-line bg-white p-5 transition-all hover:-translate-y-0.5 hover:border-brand-soft hover:shadow-md hover:shadow-brand/5"
     >
       <div className="flex items-start justify-between">
         <div>
           <p className="text-sm text-slate">{label}</p>
-          <p className="mt-2 text-3xl font-semibold text-ink">{value}</p>
+          {/* Số liệu dùng font display + tabular-nums để cột số thẳng hàng. */}
+          <p className="mt-2 font-display text-3xl font-bold tracking-tight text-ink tabular-nums">
+            {value}
+          </p>
         </div>
         <span
-          className={`grid size-11 place-items-center rounded-lg ${accentBg[accent]}`}
+          className={`grid size-11 place-items-center rounded-lg transition-transform group-hover:scale-105 ${accentBg[accent]}`}
         >
           <Icon className="size-5" />
         </span>

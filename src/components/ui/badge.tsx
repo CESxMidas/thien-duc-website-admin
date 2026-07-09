@@ -12,7 +12,7 @@ const badgeVariants = cva(
         default: "border-transparent bg-brand text-white",
         secondary: "border-transparent bg-secondary text-secondary-foreground",
         destructive: "border-transparent bg-destructive text-white",
-        outline: "text-ink border-gray-300",
+        outline: "text-ink border-line-strong",
         // Sắc thái trạng thái nội dung / lead (giữ hệ màu cũ)
         gray: "border-gray-200 bg-gray-100 text-gray-600",
         amber: "border-amber-200 bg-amber-50 text-amber-700",

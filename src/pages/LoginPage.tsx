@@ -147,7 +147,7 @@ export function LoginPage() {
               <label className="flex items-center gap-2 text-sm text-slate">
                 <input
                   type="checkbox"
-                  className="size-4 rounded border-gray-300 accent-brand"
+                  className="size-4 rounded border-line-strong accent-brand"
                   checked={remember}
                   onChange={(e) => setRemember(e.target.checked)}
                 />

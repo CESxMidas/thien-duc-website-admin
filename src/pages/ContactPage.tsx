@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { DetailDialog } from "@/components/ui/DetailDialog";
 import { Badge } from "@/components/ui/badge";
 import { DataTable, type Column } from "@/components/ui/DataTable";
 import { useLeads } from "@/lib/api/queries";
@@ -60,6 +61,7 @@ const columns: Column<Lead>[] = [
 
 export function ContactPage() {
   const [filter, setFilter] = useState<LeadStatus | "ALL">("ALL");
+  const [detail, setDetail] = useState<Lead | null>(null);
   const { data: leads = [], isLoading } = useLeads();
   const rows =
     filter === "ALL" ? leads : leads.filter((l) => l.status === filter);
@@ -85,7 +87,7 @@ export function ContactPage() {
               className={`rounded-full border px-3 py-1 text-sm transition-colors ${
                 active
                   ? "border-brand bg-brand text-white"
-                  : "border-gray-300 bg-white text-slate hover:border-brand hover:text-brand"
+                  : "border-line-strong bg-white text-slate hover:border-brand hover:text-brand"
               }`}
             >
               {f.label} ({count})
@@ -99,6 +101,40 @@ export function ContactPage() {
         rows={rows}
         loading={isLoading}
         emptyText="Không có liên hệ nào ở trạng thái này."
+        onRowClick={setDetail}
+      />
+
+      <DetailDialog
+        open={detail !== null}
+        onOpenChange={(open) => !open && setDetail(null)}
+        title={detail?.name}
+        description="Chi tiết liên hệ từ form website."
+        fields={
+          detail
+            ? [
+                { label: "Điện thoại", value: detail.phone },
+                {
+                  label: "Email",
+                  value: detail.email ?? (
+                    <span className="text-slate">Không cung cấp</span>
+                  ),
+                },
+                {
+                  label: "Trạng thái",
+                  value: (
+                    <Badge variant={leadStatusTone[detail.status]}>
+                      {leadStatusLabel[detail.status]}
+                    </Badge>
+                  ),
+                },
+                {
+                  label: "Thời gian gửi",
+                  value: formatDateTime(detail.createdAt),
+                },
+                { label: "Nội dung", value: detail.message, block: true },
+              ]
+            : []
+        }
       />
     </div>
   );

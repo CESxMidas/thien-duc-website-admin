@@ -101,7 +101,7 @@ export function DashboardPage() {
             </Link>
           </CardHeader>
           <CardContent className="px-0">
-            <ul className="divide-y divide-gray-100">
+            <ul className="divide-y divide-line/70">
               {recentLeads.map((lead) => (
                 <li key={lead.id} className="flex items-center gap-3 px-5 py-3">
                   <div className="min-w-0 flex-1">
@@ -134,7 +134,7 @@ export function DashboardPage() {
             <span className="text-sm text-slate">{pendingList.length} mục</span>
           </CardHeader>
           <CardContent className="px-0">
-            <ul className="divide-y divide-gray-100">
+            <ul className="divide-y divide-line/70">
               {pendingList.length === 0 ? (
                 <li className="px-5 py-6 text-center text-sm text-slate">
                   Không có nội dung chờ duyệt.
@@ -145,7 +145,7 @@ export function DashboardPage() {
                     key={item.id}
                     className="flex items-center gap-3 px-5 py-3"
                   >
-                    <span className="rounded bg-gray-100 px-2 py-0.5 text-xs text-slate">
+                    <span className="rounded bg-cream px-2 py-0.5 text-xs text-slate">
                       {item.kind}
                     </span>
                     <p className="min-w-0 flex-1 truncate text-sm text-ink">
