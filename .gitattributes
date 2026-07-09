@@ -1,0 +1,12 @@
+# Chuẩn hoá xuống dòng: repo luôn lưu LF, tự xử lý theo OS khi checkout.
+* text=auto eol=lf
+
+# File nhị phân — không đụng tới xuống dòng.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.woff binary
+*.woff2 binary
