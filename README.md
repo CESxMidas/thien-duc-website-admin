@@ -76,3 +76,24 @@ Khớp frontend (giữ nguyên): nâu đồng `#B06613`, nâu đậm `#7f4b0d`, 
 đen `#191919`, xám chữ `#59646a`, nền kem `#fff8ea` — khai báo `@theme` trong
 `src/index.css`. Lưu ý: token `--color-gold` (vàng) và `--color-slate` (xám chữ)
 được đặt tên riêng để không đè lên token ngữ nghĩa `accent`/`muted` của shadcn/ui.
+
+Cùng bộ token này cũng đã khai báo ở `globals.css` của frontend public — hai bên
+dùng chung tên (`text-brand`, `bg-gold`, `text-slate`…), không gõ mã hex trong
+component.
+
+**Viền focus** dùng nâu đồng chứ không dùng vàng: vàng trên nền trắng chỉ đạt
+1.5:1, dưới ngưỡng 3:1 của WCAG 2.4.11. Nâu đồng đạt 4.42:1 trên trắng và
+3.32:1 trên nền đen `#191919`, hợp lệ trên cả nền sáng lẫn tối.
+
+## Font
+
+Inter tự host qua `@fontsource-variable/inter` (import trong `src/main.tsx`),
+không gọi Google Fonts. Family đăng ký tên **`Inter Variable`** — `--font-sans`
+phải liệt kê đúng tên đó, nếu không trình duyệt lặng lẽ rơi về `system-ui`.
+
+## Chế độ tối
+
+Chưa có. Handoff spec không yêu cầu, không nơi nào gắn class `.dark`, markup
+không dùng biến thể `dark:`. Muốn thêm: khai báo lại `@custom-variant dark`,
+bộ token tối, một nút chuyển, và cho `body` đọc `var(--background)` thay vì
+`var(--color-canvas)`.

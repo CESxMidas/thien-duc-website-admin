@@ -2,6 +2,9 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "sonner";
+// Inter tự host (không gọi Google Fonts): --font-sans trong index.css khai báo
+// "Inter" nên phải nạp thật, nếu không trình duyệt lặng lẽ rơi về system-ui.
+import "@fontsource-variable/inter/index.css";
 import "./index.css";
 import App from "./App.tsx";
 

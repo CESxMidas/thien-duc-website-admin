@@ -1,8 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-@custom-variant dark (&:is(.dark *));
-
 /* ==========================================================================
    Bảng màu thương hiệu Thiên Đức (khớp frontend — UI-UX-HANDOFF-SPEC.md)
    nâu đồng #B06613 · nâu đậm #7f4b0d · vàng #fdcd04 · đen #191919
@@ -16,9 +14,13 @@
   --color-ink: #191919;
   --color-slate: #59646a;
   --color-cream: #fff8ea;
+  /* Nền xám sau các thẻ nội dung của trang quản trị. */
+  --color-canvas: #f4f5f7;
 
-  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
-    Roboto, Arial, sans-serif;
+  /* "Inter Variable" là tên family do @fontsource-variable/inter đăng ký
+     (import trong main.tsx). Giữ "Inter" phía sau cho máy đã cài sẵn Inter. */
+  --font-sans: "Inter Variable", "Inter", ui-sans-serif, system-ui,
+    -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
 }
 
 /* ---- Token thiết kế của shadcn/ui (ánh xạ sang biến CSS bên dưới) -------- */
@@ -71,26 +73,11 @@
   --ring: oklch(0.708 0 0);
 }
 
-.dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.65 0.13 55);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-}
+/* Không có chế độ tối: handoff spec không yêu cầu, không nơi nào gắn class
+   `.dark`, và markup không dùng biến thể `dark:`. Khối token tối trước đây là
+   code chết — bỏ đi thay vì để lại ảo tưởng rằng tính năng đã có. Khi nào cần
+   thật, thêm lại `@custom-variant dark` cùng nút chuyển và cho `body` đọc
+   `var(--background)`. */
 
 html,
 body,
@@ -100,7 +87,7 @@ body,
 
 body {
   margin: 0;
-  background: #f4f5f7;
+  background: var(--color-canvas);
   color: var(--color-ink);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
