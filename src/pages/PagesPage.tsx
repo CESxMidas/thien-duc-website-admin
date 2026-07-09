@@ -19,7 +19,7 @@ const columns: Column<StaticPage>[] = [
     header: "Trang",
     render: (p) => (
       <div>
-        <p className="font-medium text-ink">{p.title}</p>
+        <p className="font-medium text-ink">{p.title.vi}</p>
         <p className="text-xs text-slate">/{p.slug}</p>
       </div>
     ),
@@ -51,7 +51,7 @@ export function PagesPage() {
     <div>
       <PageHeader
         title="Trang nội dung"
-        description="Nội dung trang tĩnh: giới thiệu, chính sách nhân sự, đào tạo (ED-07)."
+        description="Nội dung trang tĩnh: giới thiệu, chính sách nhân sự, đào tạo."
         actions={
           <Button>
             <Plus className="size-4" /> Tạo trang
@@ -68,7 +68,7 @@ export function PagesPage() {
       <DetailDialog
         open={detail !== null}
         onOpenChange={(open) => !open && setDetail(null)}
-        title={detail?.title}
+        title={detail?.title.vi}
         description="Chi tiết trang nội dung."
         fields={
           detail

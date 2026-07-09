@@ -1,6 +1,7 @@
 import { useState } from "react";
+import { StickyNote } from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { DetailDialog } from "@/components/ui/DetailDialog";
+import { LeadDetailDialog } from "@/components/contact/LeadDetailDialog";
 import { Badge } from "@/components/ui/badge";
 import { DataTable, type Column } from "@/components/ui/DataTable";
 import { useLeads } from "@/lib/api/queries";
@@ -37,7 +38,14 @@ const columns: Column<Lead>[] = [
     header: "Nội dung",
     hideOnMobile: true,
     render: (l) => (
-      <span className="line-clamp-2 max-w-xs text-slate">{l.message}</span>
+      <div className="max-w-xs">
+        <span className="line-clamp-2 text-slate">{l.message}</span>
+        {l.internalNote ? (
+          <span className="mt-1 flex items-center gap-1 text-xs text-brand">
+            <StickyNote className="size-3" aria-hidden="true" /> Có ghi chú nội bộ
+          </span>
+        ) : null}
+      </div>
     ),
   },
   {
@@ -70,7 +78,7 @@ export function ContactPage() {
     <div>
       <PageHeader
         title="Liên hệ (Lead)"
-        description="Quản lý form liên hệ: Mới → Đang xử lý → Hoàn thành (KB-08). Thời gian hiển thị theo giờ VN."
+        description="Bấm vào một hàng để xem chi tiết, đổi trạng thái và ghi chú nội bộ (KB-08). Thời gian hiển thị theo giờ VN."
       />
 
       <div className="mb-4 flex flex-wrap gap-2">
@@ -104,38 +112,7 @@ export function ContactPage() {
         onRowClick={setDetail}
       />
 
-      <DetailDialog
-        open={detail !== null}
-        onOpenChange={(open) => !open && setDetail(null)}
-        title={detail?.name}
-        description="Chi tiết liên hệ từ form website."
-        fields={
-          detail
-            ? [
-                { label: "Điện thoại", value: detail.phone },
-                {
-                  label: "Email",
-                  value: detail.email ?? (
-                    <span className="text-slate">Không cung cấp</span>
-                  ),
-                },
-                {
-                  label: "Trạng thái",
-                  value: (
-                    <Badge variant={leadStatusTone[detail.status]}>
-                      {leadStatusLabel[detail.status]}
-                    </Badge>
-                  ),
-                },
-                {
-                  label: "Thời gian gửi",
-                  value: formatDateTime(detail.createdAt),
-                },
-                { label: "Nội dung", value: detail.message, block: true },
-              ]
-            : []
-        }
-      />
+      <LeadDetailDialog lead={detail} onClose={() => setDetail(null)} />
     </div>
   );
 }

@@ -1,5 +1,11 @@
 import { Link } from "react-router-dom";
-import { Inbox, ClipboardCheck, Building2, Newspaper, Plus } from "lucide-react";
+import {
+  Inbox,
+  ClipboardCheck,
+  Building2,
+  Newspaper,
+  Plus,
+} from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { StatCard } from "@/components/ui/StatCard";
 import { Badge } from "@/components/ui/badge";
@@ -25,20 +31,21 @@ export function DashboardPage() {
     projects.filter((p) => p.contentStatus === "PENDING").length;
 
   const recentLeads = leads.slice(0, 4);
+  // Tiêu đề tin và dự án đều là field song ngữ — lấy bản tiếng Việt để render.
   const pendingList = [
     ...news
       .filter((n) => n.status === "PENDING")
-      .map((n) => ({ id: n.id, title: n.title, kind: "Tin tức" })),
+      .map((n) => ({ id: n.id, title: n.title.vi, kind: "Tin tức" })),
     ...projects
       .filter((p) => p.contentStatus === "PENDING")
-      .map((p) => ({ id: p.id, title: p.title, kind: "Dự án" })),
+      .map((p) => ({ id: p.id, title: p.title.vi, kind: "Dự án" })),
   ];
 
   return (
     <div>
       <PageHeader
         title="Tổng quan"
-        description="Số liệu nhanh và lối tắt thao tác. Dữ liệu đang là mẫu (chưa nối API)."
+        description="Số liệu nhanh và lối tắt thao tác."
       />
 
       {/* Số liệu nhanh (ED-02) */}

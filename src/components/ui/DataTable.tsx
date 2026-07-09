@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import {
   Table,
   TableBody,
@@ -13,6 +13,14 @@ export interface Column<T> {
   header: string;
   /** Ẩn cột trên màn hình hẹp. */
   hideOnMobile?: boolean;
+  /**
+   * Lớp thêm cho ô của cột. Ô mặc định `whitespace-nowrap`; cột chứa văn bản
+   * dài (địa chỉ dự án) phải tự mở `whitespace-normal` kèm giới hạn bề rộng,
+   * nếu không bảng bị đẩy rộng ra và sinh thanh cuộn ngang.
+   */
+  cellClassName?: string;
+  /** Lớp thêm cho ô tiêu đề — dùng khi cần canh phải cho khớp nội dung ô. */
+  headerClassName?: string;
   render: (row: T) => ReactNode;
 }
 
@@ -31,8 +39,11 @@ export function DataTable<T extends { id: string }>({
   onRowClick?: (row: T) => void;
 }) {
   return (
+    // Không đặt `min-w-*` cho bảng: sàn bề rộng cứng khiến bảng luôn tràn ở
+    // màn hình hẹp. Bảng co theo khung, cột dài tự xuống dòng; `overflow-x-auto`
+    // của <Table> chỉ còn là lưới an toàn cho màn hình rất nhỏ.
     <div className="overflow-hidden rounded-xl border border-line bg-white">
-      <Table className="min-w-160">
+      <Table>
         <TableHeader>
           <TableRow className="border-line bg-cream/60 hover:bg-cream/60">
             {columns.map((col) => (
@@ -40,7 +51,7 @@ export function DataTable<T extends { id: string }>({
                 key={col.key}
                 className={`text-[11px] font-semibold tracking-widest text-slate uppercase ${
                   col.hideOnMobile ? "hidden md:table-cell" : ""
-                }`}
+                } ${col.headerClassName ?? ""}`}
               >
                 {col.header}
               </TableHead>
@@ -71,10 +82,13 @@ export function DataTable<T extends { id: string }>({
               </TableCell>
             </TableRow>
           ) : (
-            rows.map((row) => (
+            rows.map((row, index) => (
               <TableRow
                 key={row.id}
-                className={`border-line ${
+                // Vào so le theo thứ tự hàng; giới hạn ở hàng thứ 8 để bảng dài
+                // không bắt người dùng ngồi đợi hàng cuối xuất hiện.
+                style={{ "--row-index": Math.min(index, 7) } as CSSProperties}
+                className={`row-in border-line transition-colors duration-150 ${
                   onRowClick ? "cursor-pointer hover:bg-cream/50" : ""
                 }`}
                 onClick={onRowClick ? () => onRowClick(row) : undefined}
@@ -84,7 +98,7 @@ export function DataTable<T extends { id: string }>({
                     key={col.key}
                     className={`text-ink ${
                       col.hideOnMobile ? "hidden md:table-cell" : ""
-                    }`}
+                    } ${col.cellClassName ?? ""}`}
                   >
                     {col.render(row)}
                   </TableCell>

@@ -3,6 +3,7 @@ import { NavLink } from "react-router-dom";
 import { X } from "lucide-react";
 import { navItems } from "./nav";
 import { useAuth } from "@/context/AuthContext";
+import { usePresence } from "@/lib/use-presence";
 
 export function Sidebar({
   open,
@@ -12,6 +13,7 @@ export function Sidebar({
   onClose: () => void;
 }) {
   const { user } = useAuth();
+  const overlay = usePresence(open);
   const items = navItems.filter(
     (item) => !item.roles || (user && item.roles.includes(user.role)),
   );
@@ -28,10 +30,13 @@ export function Sidebar({
 
   return (
     <>
-      {/* Lớp phủ mobile */}
-      {open && (
+      {/* Lớp phủ mobile — mờ dần vào rồi mờ dần ra cùng nhịp với drawer. Giữ
+          trong DOM tới hết animation thoát (usePresence), nếu không nó biến mất
+          tức thì trong khi drawer vẫn đang trượt. */}
+      {overlay.mounted && (
         <div
-          className="fixed inset-0 z-30 bg-black/40 lg:hidden"
+          data-state={overlay.state}
+          className="data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:fade-in data-[state=closed]:fade-out fixed inset-0 z-30 bg-black/40 duration-200 ease-enter data-[state=closed]:duration-150 lg:hidden"
           onClick={onClose}
           aria-hidden
         />
@@ -39,10 +44,17 @@ export function Sidebar({
 
       {/* Khi đóng trên mobile phải `invisible`, không chỉ trượt ra ngoài màn
           hình: phần tử chỉ bị dịch chuyển vẫn nhận được tiêu điểm bàn phím,
-          khiến người dùng tab vào menu vô hình. Trên lg luôn hiện. */}
+          khiến người dùng tab vào menu vô hình. Trên lg luôn hiện.
+
+          `visibility` nằm trong danh sách thuộc tính chuyển tiếp: nếu không,
+          drawer bị ẩn ngay lập tức và cú trượt lúc đóng không bao giờ thấy
+          được. visibility không nội suy — trình duyệt giữ `visible` tới hết
+          transition rồi mới ẩn, đúng thứ ta cần. */}
       <aside
-        className={`fixed inset-y-0 left-0 z-40 flex w-64 flex-col bg-espresso text-white transition-transform lg:visible lg:static lg:translate-x-0 ${
-          open ? "visible translate-x-0" : "invisible -translate-x-full"
+        className={`fixed inset-y-0 left-0 z-40 flex w-64 flex-col bg-espresso text-white transition-[transform,visibility] lg:visible lg:static lg:translate-x-0 lg:transition-none ${
+          open
+            ? "visible translate-x-0 duration-200 ease-enter"
+            : "invisible -translate-x-full duration-150 ease-exit"
         }`}
       >
         <div className="flex h-16 items-center justify-between border-b border-white/10 px-5">
@@ -68,25 +80,35 @@ export function Sidebar({
           </button>
         </div>
 
-        <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
+        <nav className="scrollbar-on-dark flex-1 space-y-1 overflow-y-auto px-3 py-4">
           {items.map(({ to, label, icon: Icon }) => (
             <NavLink
               key={to}
               to={to}
               end={to === "/"}
               onClick={onClose}
+              // Chữ ký thị giác: thanh vàng dọc bên trái mục đang chọn + nền
+              // đồng trầm — thay vì khối màu đặc chung chung. Thanh vàng luôn
+              // tồn tại trong DOM và chỉ đổi `scaleY`, nên nó *mọc* ra từ tâm
+              // khi chuyển mục; nếu dựng/hủy phần tử thì nó bật ra tức thì.
               className={({ isActive }) =>
-                `relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors ${
+                `group relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors duration-150 before:absolute before:inset-y-1.5 before:left-0 before:w-0.75 before:rounded-full before:bg-gold before:transition-transform before:duration-200 before:ease-enter ${
                   isActive
-                    ? // Chữ ký thị giác: thanh vàng dọc bên trái mục đang chọn
-                      // + nền đồng trầm — thay vì khối màu đặc chung chung.
-                      "bg-brand/25 font-medium text-white before:absolute before:inset-y-1.5 before:left-0 before:w-0.75 before:rounded-full before:bg-gold"
-                    : "text-white/70 hover:bg-white/8 hover:text-white"
+                    ? "bg-brand/25 font-medium text-white before:scale-y-100"
+                    : "text-white/70 before:scale-y-0 hover:bg-white/8 hover:text-white"
                 }`
               }
             >
-              <Icon className="size-4.5 shrink-0" />
-              {label}
+              {({ isActive }) => (
+                <>
+                  <Icon
+                    className={`size-4.5 shrink-0 transition-colors duration-150 ${
+                      isActive ? "text-gold" : "text-white/60 group-hover:text-white"
+                    }`}
+                  />
+                  {label}
+                </>
+              )}
             </NavLink>
           ))}
         </nav>

@@ -1,29 +1,21 @@
 // Các hook lấy dữ liệu bằng TanStack Query (mục 2.5 — "Lấy dữ liệu: TanStack Query").
 //
-// Hiện tại queryFn trả về mock data (dựng khung). Khi nối backend thật chỉ cần
-// đổi thân queryFn thành `apiFetch<T>('/duong-dan')` — giữ nguyên queryKey và
-// mọi component đang dùng hook.
+// Toàn bộ hook đã nối API thật — không còn mock data trong Admin CMS.
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-  mockBanners,
-  mockLeads,
-  mockMedia,
-  mockNews,
-  mockPages,
-  mockProjects,
-} from "@/data/mock";
+import * as bannersApi from "./banners";
+import * as contactApi from "./contact";
+import * as mediaApi from "./media";
+import * as newsApi from "./news";
+import * as pagesApi from "./pages";
+import * as projectsApi from "./projects";
 import * as usersApi from "./users";
-// import { apiFetch } from "./client"; // bật khi nối API thật
-
-/** Giả lập độ trễ mạng để thấy trạng thái loading của khung. */
-function mockAsync<T>(data: T, ms = 350): Promise<T> {
-  return new Promise((resolve) => setTimeout(() => resolve(data), ms));
-}
+import type { ContentStatus } from "@/types";
 
 export const queryKeys = {
   projects: ["projects"] as const,
   news: ["news"] as const,
+  newsCategories: ["news", "categories"] as const,
   pages: ["pages"] as const,
   banners: ["banners"] as const,
   leads: ["leads"] as const,
@@ -31,51 +23,337 @@ export const queryKeys = {
   users: ["users"] as const,
 };
 
-export function useProjects() {
-  return useQuery({
-    queryKey: queryKeys.projects,
-    queryFn: () => mockAsync(mockProjects),
-    // queryFn: () => apiFetch<Project[]>("/projects"),
-  });
-}
-
-export function useNews() {
-  return useQuery({
-    queryKey: queryKeys.news,
-    queryFn: () => mockAsync(mockNews),
-  });
-}
-
-export function usePages() {
-  return useQuery({
-    queryKey: queryKeys.pages,
-    queryFn: () => mockAsync(mockPages),
-  });
-}
-
-export function useBanners() {
-  return useQuery({
-    queryKey: queryKeys.banners,
-    queryFn: () => mockAsync(mockBanners),
-  });
-}
+/* -------------------------------------------------------------------------
+   Liên hệ (lead) — /contact
+   ------------------------------------------------------------------------- */
 
 export function useLeads() {
-  return useQuery({
-    queryKey: queryKeys.leads,
-    queryFn: () => mockAsync(mockLeads),
-  });
+  return useQuery({ queryKey: queryKeys.leads, queryFn: contactApi.listLeads });
 }
 
-export function useMedia() {
-  return useQuery({
-    queryKey: queryKeys.media,
-    queryFn: () => mockAsync(mockMedia),
+export function useUpdateLead() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: contactApi.UpdateLeadInput }) =>
+      contactApi.updateLead(id, data),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: queryKeys.leads }),
   });
 }
 
 /* -------------------------------------------------------------------------
-   Tài khoản — đã nối API thật (/users). Các hook còn lại vẫn là mock.
+   Tin tức — /news
+   ------------------------------------------------------------------------- */
+
+export function useNews() {
+  return useQuery({ queryKey: queryKeys.news, queryFn: newsApi.listNews });
+}
+
+export function useNewsCategories() {
+  return useQuery({
+    queryKey: queryKeys.newsCategories,
+    queryFn: newsApi.listNewsCategories,
+  });
+}
+
+/**
+ * `queryKeys.news` là tiền tố của `queryKeys.newsCategories`, nên một lần
+ * invalidate làm mới cả bài viết lẫn chuyên mục — `_count.posts` của chuyên mục
+ * đổi mỗi khi thêm/xóa bài.
+ */
+function useNewsMutation<TArgs, TResult>(fn: (args: TArgs) => Promise<TResult>) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: fn,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.news }),
+  });
+}
+
+export function useCreateNews() {
+  return useNewsMutation(newsApi.createNews);
+}
+
+export function useUpdateNews() {
+  return useNewsMutation(
+    ({ slug, data }: { slug: string; data: newsApi.UpdateNewsPostInput }) =>
+      newsApi.updateNews(slug, data),
+  );
+}
+
+export function useUpdateNewsStatus() {
+  return useNewsMutation(
+    ({ slug, status }: { slug: string; status: ContentStatus }) =>
+      newsApi.updateNewsStatus(slug, status),
+  );
+}
+
+export function useDeleteNews() {
+  return useNewsMutation(newsApi.deleteNews);
+}
+
+export function useCreateNewsCategory() {
+  return useNewsMutation(newsApi.createNewsCategory);
+}
+
+export function useUpdateNewsCategory() {
+  return useNewsMutation(
+    ({ slug, data }: { slug: string; data: newsApi.UpdateNewsCategoryInput }) =>
+      newsApi.updateNewsCategory(slug, data),
+  );
+}
+
+export function useDeleteNewsCategory() {
+  return useNewsMutation(newsApi.deleteNewsCategory);
+}
+
+/* -------------------------------------------------------------------------
+   Trang nội dung — /pages
+   ------------------------------------------------------------------------- */
+
+export function usePages() {
+  return useQuery({ queryKey: queryKeys.pages, queryFn: pagesApi.listPages });
+}
+
+function usePagesMutation<TArgs, TResult>(
+  fn: (args: TArgs) => Promise<TResult>,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: fn,
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: queryKeys.pages }),
+  });
+}
+
+export function useCreatePage() {
+  return usePagesMutation(pagesApi.createPage);
+}
+
+export function useUpdatePage() {
+  return usePagesMutation(
+    ({ slug, data }: { slug: string; data: pagesApi.UpdatePageInput }) =>
+      pagesApi.updatePage(slug, data),
+  );
+}
+
+export function useUpdatePageStatus() {
+  return usePagesMutation(
+    ({ slug, status }: { slug: string; status: ContentStatus }) =>
+      pagesApi.updatePageStatus(slug, status),
+  );
+}
+
+export function useDeletePage() {
+  return usePagesMutation(pagesApi.deletePage);
+}
+
+/* -------------------------------------------------------------------------
+   Banner — /banners
+   ------------------------------------------------------------------------- */
+
+export function useBanners() {
+  return useQuery({
+    queryKey: queryKeys.banners,
+    queryFn: bannersApi.listBanners,
+  });
+}
+
+function useBannersMutation<TArgs, TResult>(
+  fn: (args: TArgs) => Promise<TResult>,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: fn,
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: queryKeys.banners }),
+  });
+}
+
+export function useCreateBanner() {
+  return useBannersMutation(bannersApi.createBanner);
+}
+
+export function useUpdateBanner() {
+  return useBannersMutation(
+    ({ id, data }: { id: string; data: bannersApi.UpdateBannerInput }) =>
+      bannersApi.updateBanner(id, data),
+  );
+}
+
+export function useReorderBanners() {
+  return useBannersMutation(bannersApi.reorderBanners);
+}
+
+export function useDeleteBanner() {
+  return useBannersMutation(bannersApi.deleteBanner);
+}
+
+/* -------------------------------------------------------------------------
+   Thư viện ảnh — /media
+   ------------------------------------------------------------------------- */
+
+export function useMedia(folder?: string) {
+  return useQuery({
+    queryKey: [...queryKeys.media, folder ?? "all"],
+    queryFn: () => mediaApi.listMedia(folder),
+  });
+}
+
+function useMediaMutation<TArgs, TResult>(
+  fn: (args: TArgs) => Promise<TResult>,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: fn,
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: queryKeys.media }),
+  });
+}
+
+export function useUploadMedia() {
+  return useMediaMutation(({ file, folder }: { file: File; folder: string }) =>
+    mediaApi.uploadMedia(file, folder),
+  );
+}
+
+export function useDeleteMedia() {
+  return useMediaMutation(mediaApi.deleteMedia);
+}
+
+/* -------------------------------------------------------------------------
+   Dự án — đã nối API thật (/projects).
+   ------------------------------------------------------------------------- */
+
+/** Danh sách cho CMS: /projects/admin trả cả bản nháp và bài chờ duyệt. */
+export function useProjects() {
+  return useQuery({
+    queryKey: queryKeys.projects,
+    queryFn: projectsApi.listProjects,
+  });
+}
+
+/** Chi tiết một dự án (kèm hạng mục + ảnh) — chỉ gọi khi modal đang mở. */
+export function useProject(slug: string | null) {
+  return useQuery({
+    queryKey: [...queryKeys.projects, slug],
+    queryFn: () => projectsApi.getProject(slug!),
+    enabled: slug !== null,
+  });
+}
+
+/**
+ * Mọi thao tác ghi (dự án, hạng mục, ảnh) đều làm mới cả danh sách lẫn chi tiết:
+ * `queryKeys.projects` là tiền tố của key chi tiết nên một lần invalidate là đủ.
+ */
+function useProjectsMutation<TArgs, TResult>(
+  fn: (args: TArgs) => Promise<TResult>,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: fn,
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: queryKeys.projects }),
+  });
+}
+
+export function useCreateProject() {
+  return useProjectsMutation(projectsApi.createProject);
+}
+
+// `data` tách riêng khỏi `slug` định danh: payload cũng có thể chứa `slug` mới.
+export function useUpdateProject() {
+  return useProjectsMutation(
+    ({ slug, data }: { slug: string; data: projectsApi.UpdateProjectInput }) =>
+      projectsApi.updateProject(slug, data),
+  );
+}
+
+export function useUpdateProjectStatus() {
+  return useProjectsMutation(
+    ({ slug, status }: { slug: string; status: ContentStatus }) =>
+      projectsApi.updateProjectStatus(slug, status),
+  );
+}
+
+export function useDeleteProject() {
+  return useProjectsMutation(projectsApi.deleteProject);
+}
+
+export function useCreateProjectItem() {
+  return useProjectsMutation(
+    ({
+      slug,
+      data,
+    }: {
+      slug: string;
+      data: projectsApi.CreateProjectItemInput;
+    }) => projectsApi.createProjectItem(slug, data),
+  );
+}
+
+export function useUpdateProjectItem() {
+  return useProjectsMutation(
+    ({
+      slug,
+      itemSlug,
+      data,
+    }: {
+      slug: string;
+      itemSlug: string;
+      data: projectsApi.UpdateProjectItemInput;
+    }) => projectsApi.updateProjectItem(slug, itemSlug, data),
+  );
+}
+
+export function useDeleteProjectItem() {
+  return useProjectsMutation(
+    ({ slug, itemSlug }: { slug: string; itemSlug: string }) =>
+      projectsApi.deleteProjectItem(slug, itemSlug),
+  );
+}
+
+export function useAddGalleryImage() {
+  return useProjectsMutation(
+    ({
+      slug,
+      data,
+    }: {
+      slug: string;
+      data: projectsApi.CreateGalleryImageInput;
+    }) => projectsApi.addGalleryImage(slug, data),
+  );
+}
+
+export function useUpdateGalleryImage() {
+  return useProjectsMutation(
+    ({
+      slug,
+      imageId,
+      data,
+    }: {
+      slug: string;
+      imageId: string;
+      data: projectsApi.UpdateGalleryImageInput;
+    }) => projectsApi.updateGalleryImage(slug, imageId, data),
+  );
+}
+
+export function useDeleteGalleryImage() {
+  return useProjectsMutation(
+    ({ slug, imageId }: { slug: string; imageId: string }) =>
+      projectsApi.deleteGalleryImage(slug, imageId),
+  );
+}
+
+export function useReorderGallery() {
+  return useProjectsMutation(
+    ({ slug, imageIds }: { slug: string; imageIds: string[] }) =>
+      projectsApi.reorderGallery(slug, imageIds),
+  );
+}
+
+/* -------------------------------------------------------------------------
+   Tài khoản — đã nối API thật (/users).
    ------------------------------------------------------------------------- */
 
 export function useUsers() {

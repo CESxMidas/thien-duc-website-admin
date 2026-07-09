@@ -22,10 +22,9 @@ export const contentStatusTone: Record<ContentStatus, BadgeTone> = {
 };
 
 export const projectStatusLabel: Record<ProjectStatus, string> = {
-  DA_BAN_GIAO: "Đã bàn giao",
+  CHUAN_BI_KHOI_CONG: "Chuẩn bị khởi công",
   DANG_THI_CONG: "Đang thi công",
-  SAP_MO_BAN: "Sắp mở bán",
-  DANG_MO_BAN: "Đang mở bán",
+  DA_BAN_GIAO: "Đã bàn giao",
 };
 
 export const leadStatusLabel: Record<LeadStatus, string> = {

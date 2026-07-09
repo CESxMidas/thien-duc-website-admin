@@ -169,7 +169,11 @@ async function requestWithRefresh<T>(
 ): Promise<T> {
   const token = getAccessToken();
   const headers = new Headers(options.headers);
-  headers.set("Content-Type", "application/json");
+  // Với FormData (upload ảnh) phải để trình duyệt tự đặt Content-Type kèm
+  // `boundary` — ép sẵn application/json thì backend không parse được file.
+  if (!(options.body instanceof FormData)) {
+    headers.set("Content-Type", "application/json");
+  }
   if (token) headers.set("Authorization", `Bearer ${token}`);
 
   let res: Response;
