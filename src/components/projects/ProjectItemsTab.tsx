@@ -9,10 +9,10 @@ import { toast } from "sonner";
 import { Loader2, Pencil, Plus, Trash2, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { BilingualField } from "@/components/ui/BilingualField";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -27,6 +27,12 @@ import {
   useUpdateProjectItem,
 } from "@/lib/api/queries";
 import { resolveApiError } from "@/lib/api-error-message";
+import {
+  emptyBilingual,
+  toBilingualPayload,
+  toBilingualValue,
+  type BilingualValue,
+} from "@/lib/bilingual";
 import { projectStatusLabel } from "@/lib/labels";
 import type { ProjectDetail, ProjectItem, ProjectStatus } from "@/types";
 
@@ -37,16 +43,16 @@ const statusOptions = Object.keys(projectStatusLabel) as ProjectStatus[];
 
 interface ItemFormState {
   slug: string;
-  title: string;
-  summary: string;
+  title: BilingualValue;
+  summary: BilingualValue;
   status: string;
   image: string;
 }
 
 const EMPTY_FORM: ItemFormState = {
   slug: "",
-  title: "",
-  summary: "",
+  title: emptyBilingual,
+  summary: emptyBilingual,
   status: INHERIT_STATUS,
   image: "",
 };
@@ -54,8 +60,8 @@ const EMPTY_FORM: ItemFormState = {
 function toFormState(item: ProjectItem): ItemFormState {
   return {
     slug: item.slug,
-    title: item.title.vi,
-    summary: item.summary?.vi ?? "",
+    title: toBilingualValue(item.title),
+    summary: toBilingualValue(item.summary),
     status: item.status ?? INHERIT_STATUS,
     image: item.image ?? "",
   };
@@ -100,7 +106,7 @@ export function ProjectItemsTab({ project }: { project: ProjectDetail }) {
 
   async function onSave(event: React.FormEvent) {
     event.preventDefault();
-    if (form.title.trim().length < 3) {
+    if (form.title.vi.trim().length < 3) {
       setError("Tên hạng mục tối thiểu 3 ký tự.");
       return;
     }
@@ -110,10 +116,13 @@ export function ProjectItemsTab({ project }: { project: ProjectDetail }) {
     }
     setError(null);
 
+    // `PATCH` ghi đè nguyên field JSON, nên phải gửi lại **cả hai** ngôn ngữ —
+    // trước đây chỉ gửi `{ vi }` nên mỗi lần sửa là bản dịch tiếng Anh biến mất.
+    const summary = toBilingualPayload(form.summary);
     const payload = {
       slug: form.slug,
-      title: { vi: form.title.trim() },
-      ...(form.summary.trim() && { summary: { vi: form.summary.trim() } }),
+      title: toBilingualPayload(form.title),
+      ...(summary.vi && { summary }),
       ...(form.status !== INHERIT_STATUS && {
         status: form.status as ProjectStatus,
       }),
@@ -130,7 +139,7 @@ export function ProjectItemsTab({ project }: { project: ProjectDetail }) {
         toast.success("Đã lưu hạng mục.");
       } else {
         await createItem.mutateAsync({ slug: project.slug, data: payload });
-        toast.success(`Đã thêm hạng mục "${form.title.trim()}".`);
+        toast.success(`Đã thêm hạng mục "${form.title.vi.trim()}".`);
       }
       closeForm();
     } catch (err) {
@@ -185,11 +194,14 @@ export function ProjectItemsTab({ project }: { project: ProjectDetail }) {
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="space-y-1.5">
               <Label htmlFor="item-title">Tên hạng mục</Label>
-              <Input
+              <BilingualField
                 id="item-title"
                 value={form.title}
-                onChange={(e) => setForm({ ...form, title: e.target.value })}
-                placeholder="Chung cư Fancy Tower"
+                onChange={(title) => setForm({ ...form, title })}
+                placeholder={{
+                  vi: "Chung cư Fancy Tower",
+                  en: "Fancy Tower apartments",
+                }}
               />
             </div>
             <div className="space-y-1.5">
@@ -205,11 +217,12 @@ export function ProjectItemsTab({ project }: { project: ProjectDetail }) {
 
           <div className="space-y-1.5">
             <Label htmlFor="item-summary">Mô tả ngắn</Label>
-            <Textarea
+            <BilingualField
               id="item-summary"
+              multiline
               rows={2}
               value={form.summary}
-              onChange={(e) => setForm({ ...form, summary: e.target.value })}
+              onChange={(summary) => setForm({ ...form, summary })}
             />
           </div>
 

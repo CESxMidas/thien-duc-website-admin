@@ -7,7 +7,6 @@ import { Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
   DialogContent,
@@ -38,21 +37,34 @@ import {
   useNewsCategories,
   useUpdateNews,
 } from "@/lib/api/queries";
+import { BilingualField } from "@/components/ui/BilingualField";
 import { resolveApiError } from "@/lib/api-error-message";
+import {
+  toBilingualPayload,
+  toBilingualValue,
+  type BilingualValue,
+} from "@/lib/bilingual";
 import type { NewsPost } from "@/types";
 
 /** Giá trị Select không nhận chuỗi rỗng, nên "không chuyên mục" cần một token. */
 const NO_CATEGORY = "none";
 
+/** Bản dịch tiếng Anh không bắt buộc ở form — xem `BilingualField`. */
+const bilingual = (minVi: number, message: string) =>
+  z.object({
+    vi: z.string().trim().min(minVi, message),
+    en: z.string().trim(),
+  });
+
 const newsSchema = z.object({
-  title: z.string().trim().min(3, "Tiêu đề tối thiểu 3 ký tự."),
+  title: bilingual(3, "Tiêu đề tối thiểu 3 ký tự."),
   slug: z
     .string()
     .trim()
     .min(3, "Slug tối thiểu 3 ký tự.")
     .regex(/^[a-z0-9-]+$/, "Chỉ gồm chữ thường, số và dấu gạch ngang."),
-  summary: z.string().trim().min(10, "Tóm tắt tối thiểu 10 ký tự."),
-  content: z.string().trim(),
+  summary: bilingual(10, "Tóm tắt tối thiểu 10 ký tự."),
+  content: z.object({ vi: z.string(), en: z.string() }),
   categoryId: z.string(),
   author: z.string().trim(),
   image: z.string().trim(),
@@ -68,24 +80,45 @@ interface NewsFormDialogProps {
 }
 
 /** Mảng đoạn văn ↔ textarea: mỗi đoạn cách nhau một dòng trống. */
-function paragraphsToText(post?: NewsPost): string {
-  return (post?.content ?? []).map((item) => item.vi).join("\n\n");
-}
-
-function textToParagraphs(text: string) {
+function splitParagraphs(text: string): string[] {
   return text
     .split(/\n\s*\n/)
     .map((paragraph) => paragraph.trim())
-    .filter(Boolean)
-    .map((paragraph) => ({ vi: paragraph }));
+    .filter(Boolean);
+}
+
+function paragraphsToText(post: NewsPost | undefined, lang: "vi" | "en") {
+  return (post?.content ?? [])
+    .map((item) => item[lang] ?? "")
+    .join("\n\n")
+    .trim();
+}
+
+/**
+ * Ghép đoạn VI với đoạn EN **theo vị trí**: đoạn 1 tiếng Việt đi với đoạn 1
+ * tiếng Anh. Nếu hai bên lệch số đoạn, phần thiếu để trống thay vì bị cắt mất —
+ * mất chữ âm thầm còn tệ hơn một đoạn trống nhìn thấy được.
+ */
+function toParagraphPayload(content: BilingualValue) {
+  const vi = splitParagraphs(content.vi);
+  const en = splitParagraphs(content.en);
+  const length = Math.max(vi.length, en.length);
+
+  return Array.from({ length }, (_, index) => ({
+    vi: vi[index] ?? "",
+    ...(en[index] && { en: en[index] }),
+  }));
 }
 
 function toFormValues(post?: NewsPost): NewsFormValues {
   return {
-    title: post?.title.vi ?? "",
+    title: toBilingualValue(post?.title),
     slug: post?.slug ?? "",
-    summary: post?.summary.vi ?? "",
-    content: paragraphsToText(post),
+    summary: toBilingualValue(post?.summary),
+    content: {
+      vi: paragraphsToText(post, "vi"),
+      en: paragraphsToText(post, "en"),
+    },
     categoryId: post?.categoryId ?? NO_CATEGORY,
     author: post?.author ?? "",
     image: post?.image ?? "",
@@ -111,15 +144,11 @@ export function NewsFormDialog({ trigger, post }: NewsFormDialogProps) {
   }, [open, post, form]);
 
   async function onSubmit(values: NewsFormValues) {
-    // Form chỉ nhập tiếng Việt — giữ nguyên bản dịch tiếng Anh đã có (nếu có).
     const payload = {
       slug: values.slug,
-      title: { vi: values.title, ...(post?.title.en && { en: post.title.en }) },
-      summary: {
-        vi: values.summary,
-        ...(post?.summary.en && { en: post.summary.en }),
-      },
-      content: textToParagraphs(values.content),
+      title: toBilingualPayload(values.title),
+      summary: toBilingualPayload(values.summary),
+      content: toParagraphPayload(values.content),
       // Chuỗi rỗng = không nhập; backend nhận `undefined` thay vì "".
       categoryId:
         values.categoryId === NO_CATEGORY ? undefined : values.categoryId,
@@ -134,7 +163,7 @@ export function NewsFormDialog({ trigger, post }: NewsFormDialogProps) {
         toast.success("Đã lưu thay đổi.");
       } else {
         await createNews.mutateAsync(payload);
-        toast.success(`Đã tạo bài "${values.title}".`);
+        toast.success(`Đã tạo bài "${values.title.vi}".`);
       }
       setOpen(false);
     } catch (error) {
@@ -177,7 +206,14 @@ export function NewsFormDialog({ trigger, post }: NewsFormDialogProps) {
                 <FormItem>
                   <FormLabel>Tiêu đề</FormLabel>
                   <FormControl>
-                    <Input placeholder="Lễ khởi công Fancy Tower" {...field} />
+                    <BilingualField
+                      value={field.value}
+                      onChange={field.onChange}
+                      placeholder={{
+                        vi: "Lễ khởi công Fancy Tower",
+                        en: "Fancy Tower groundbreaking ceremony",
+                      }}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -208,7 +244,12 @@ export function NewsFormDialog({ trigger, post }: NewsFormDialogProps) {
                 <FormItem>
                   <FormLabel>Tóm tắt</FormLabel>
                   <FormControl>
-                    <Textarea rows={2} {...field} />
+                    <BilingualField
+                      multiline
+                      rows={2}
+                      value={field.value}
+                      onChange={field.onChange}
+                    />
                   </FormControl>
                   <FormDescription>
                     Hiển thị ở thẻ tin ngoài trang danh sách.
@@ -225,10 +266,16 @@ export function NewsFormDialog({ trigger, post }: NewsFormDialogProps) {
                 <FormItem>
                   <FormLabel>Nội dung</FormLabel>
                   <FormControl>
-                    <Textarea rows={8} {...field} />
+                    <BilingualField
+                      multiline
+                      rows={8}
+                      value={field.value}
+                      onChange={field.onChange}
+                    />
                   </FormControl>
                   <FormDescription>
-                    Cách nhau một dòng trống để tách đoạn.
+                    Cách nhau một dòng trống để tách đoạn. Bản tiếng Anh nên giữ
+                    đúng số đoạn như tiếng Việt — hai bản ghép theo thứ tự đoạn.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>

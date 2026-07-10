@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { ArrowDown, ArrowUp, ImageOff, Loader2, Plus } from "lucide-react";
+import { ArrowDown, ArrowUp, ImageOff, Loader2, Pencil, Plus } from "lucide-react";
 import { toast } from "sonner";
 
+import { BannerFormDialog } from "@/components/banners/BannerFormDialog";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -150,6 +151,22 @@ export function BannersPage() {
         </span>
       ),
     },
+    {
+      key: "actions",
+      header: "",
+      render: (banner) => (
+        <div onClick={(event) => event.stopPropagation()}>
+          <BannerFormDialog
+            banner={banner}
+            trigger={
+              <Button variant="ghost" size="sm" aria-label="Sửa banner">
+                <Pencil className="size-4" />
+              </Button>
+            }
+          />
+        </div>
+      ),
+    },
   ];
 
   return (
@@ -158,9 +175,13 @@ export function BannersPage() {
         title="Banner trang chủ"
         description="Thứ tự trong bảng là thứ tự chạy trên trang chủ."
         actions={
-          <Button disabled>
-            <Plus className="size-4" /> Thêm banner
-          </Button>
+          <BannerFormDialog
+            trigger={
+              <Button>
+                <Plus className="size-4" /> Thêm banner
+              </Button>
+            }
+          />
         }
       />
 
@@ -171,8 +192,8 @@ export function BannersPage() {
             Chưa có banner nào
           </h2>
           <p className="mt-2 max-w-md text-sm text-slate">
-            Trang chủ đang dùng banner mặc định trong mã nguồn. Thêm banner ở
-            đây để Editor tự đổi được.
+            Khối banner trên trang chủ đang bị ẩn. Thêm ít nhất một banner để nó
+            hiển thị trở lại.
           </p>
         </div>
       ) : (

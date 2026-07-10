@@ -7,7 +7,6 @@ import { Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
   DialogContent,
@@ -33,20 +32,33 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { BilingualField } from "@/components/ui/BilingualField";
 import { useCreateProject, useUpdateProject } from "@/lib/api/queries";
 import { resolveApiError } from "@/lib/api-error-message";
+import { toBilingualPayload, toBilingualValue } from "@/lib/bilingual";
 import { projectStatusLabel } from "@/lib/labels";
 import type { Project, ProjectStatus } from "@/types";
 
+/**
+ * Bản dịch tiếng Anh **không bắt buộc ở form**: biên tập viên thường nhập tiếng
+ * Việt trước rồi bổ sung sau. Song ngữ là điều kiện go-live (câu 19) nên chỗ
+ * thiếu được đánh dấu bằng chấm vàng trong `BilingualField`, không chặn lưu.
+ */
+const bilingual = (minVi: number, message: string) =>
+  z.object({
+    vi: z.string().trim().min(minVi, message),
+    en: z.string().trim(),
+  });
+
 // Schema kiểm tra dữ liệu bằng Zod (mục 2.5 — "Form: React Hook Form + Zod").
 const projectSchema = z.object({
-  title: z.string().trim().min(3, "Tên dự án tối thiểu 3 ký tự."),
+  title: bilingual(3, "Tên dự án tối thiểu 3 ký tự."),
   slug: z
     .string()
     .trim()
     .min(3, "Slug tối thiểu 3 ký tự.")
     .regex(/^[a-z0-9-]+$/, "Chỉ gồm chữ thường, số và dấu gạch ngang."),
-  summary: z.string().trim().min(10, "Mô tả ngắn tối thiểu 10 ký tự."),
+  summary: bilingual(10, "Mô tả ngắn tối thiểu 10 ký tự."),
   location: z.string().trim(),
   category: z.string().trim(),
   status: z.enum(["DA_BAN_GIAO", "DANG_THI_CONG", "CHUAN_BI_KHOI_CONG"]),
@@ -64,9 +76,9 @@ interface ProjectFormDialogProps {
 
 function toFormValues(project?: Project): ProjectFormValues {
   return {
-    title: project?.title.vi ?? "",
+    title: toBilingualValue(project?.title),
     slug: project?.slug ?? "",
-    summary: project?.summary.vi ?? "",
+    summary: toBilingualValue(project?.summary),
     location: project?.location ?? "",
     category: project?.category ?? "",
     status: project?.status ?? "CHUAN_BI_KHOI_CONG",
@@ -90,14 +102,10 @@ export function ProjectFormDialog({ trigger, project }: ProjectFormDialogProps) 
   }, [open, project, form]);
 
   async function onSubmit(values: ProjectFormValues) {
-    // Form chỉ nhập tiếng Việt — giữ nguyên bản dịch tiếng Anh đã có (nếu có).
     const payload = {
       slug: values.slug,
-      title: { vi: values.title, ...(project?.title.en && { en: project.title.en }) },
-      summary: {
-        vi: values.summary,
-        ...(project?.summary.en && { en: project.summary.en }),
-      },
+      title: toBilingualPayload(values.title),
+      summary: toBilingualPayload(values.summary),
       status: values.status,
       // Chuỗi rỗng = không nhập; backend nhận `undefined` thay vì "".
       location: values.location || undefined,
@@ -110,7 +118,7 @@ export function ProjectFormDialog({ trigger, project }: ProjectFormDialogProps) 
         toast.success("Đã lưu thay đổi.");
       } else {
         await createProject.mutateAsync(payload);
-        toast.success(`Đã tạo dự án "${values.title}".`);
+        toast.success(`Đã tạo dự án "${values.title.vi}".`);
       }
       setOpen(false);
     } catch (error) {
@@ -153,7 +161,14 @@ export function ProjectFormDialog({ trigger, project }: ProjectFormDialogProps) 
                 <FormItem>
                   <FormLabel>Tên dự án</FormLabel>
                   <FormControl>
-                    <Input placeholder="Khu đô thị Hưng Phú" {...field} />
+                    <BilingualField
+                      value={field.value}
+                      onChange={field.onChange}
+                      placeholder={{
+                        vi: "Khu đô thị Hưng Phú",
+                        en: "Hung Phu Urban Area",
+                      }}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -186,10 +201,15 @@ export function ProjectFormDialog({ trigger, project }: ProjectFormDialogProps) 
                 <FormItem>
                   <FormLabel>Mô tả ngắn</FormLabel>
                   <FormControl>
-                    <Textarea
+                    <BilingualField
+                      multiline
                       rows={3}
-                      placeholder="Một hai câu giới thiệu dự án, hiện ở thẻ danh sách ngoài trang chủ."
-                      {...field}
+                      value={field.value}
+                      onChange={field.onChange}
+                      placeholder={{
+                        vi: "Một hai câu giới thiệu dự án, hiện ở thẻ danh sách ngoài trang chủ.",
+                        en: "One or two sentences shown on the project card.",
+                      }}
                     />
                   </FormControl>
                   <FormMessage />
