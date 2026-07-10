@@ -12,9 +12,11 @@ Trang quản trị nội dung website Thiên Đức. Công nghệ đúng theo **
 
 > Trạng thái: **đăng nhập đã nối API thật** (`/auth/login`, `/auth/refresh`,
 > `/auth/logout` của backend NestJS) — có bảo vệ route, phân quyền, tự làm mới
-> token khi access token hết hạn và khôi phục phiên khi tải lại trang. Các trang
-> dữ liệu (dự án, tin tức…) vẫn là **mock**; nối nốt ở Sprint 1–3
-> (xem `thien-duc-website-docs/KE-HOACH-CODING.md`).
+> token khi access token hết hạn và khôi phục phiên khi tải lại trang.
+> **Toàn bộ trang dữ liệu (Dự án, Tin tức, Trang nội dung, Banner, Liên hệ, Thư
+> viện ảnh, Tài khoản, Tổng quan) đã nối API thật — không còn mock data.**
+> Tiến độ chi tiết: `thien-duc-website-docs/KE-HOACH-CODING.md`.
+> Quy ước code dùng chung cho FE/BE/Admin: `../AGENTS.md`.
 
 ## Chạy local
 
@@ -42,33 +44,43 @@ và trỏ đúng `VITE_API_URL`).
 src/
 ├─ components/
 │  ├─ layout/      Sidebar, Topbar, AdminLayout, nav config
-│  ├─ ui/          shadcn/ui: button, badge, card, input, label, textarea,
-│  │               table, dialog, select, form  + DataTable/PageHeader/StatCard
-│  ├─ projects/    ProjectFormDialog (React Hook Form + Zod)
+│  ├─ ui/          shadcn/ui: button, badge, card, input, label, textarea, table,
+│  │               dialog, select, form, tabs + DataTable / PageHeader / StatCard
+│  │               / DetailDialog (modal chi tiết) / ConfirmDialog
+│  ├─ projects/    ProjectFormDialog, ProjectDetailDialog (3 tab), GalleryTab, ItemsTab
+│  ├─ news/        NewsFormDialog
+│  ├─ contact/     LeadDetailDialog (đổi trạng thái + ghi chú nội bộ)
+│  ├─ users/       UserFormDialog, UserDetailDialog, DeactivateUserDialog
+│  ├─ PasswordInput.tsx
 │  └─ ProtectedRoute.tsx
-├─ context/        AuthContext (đăng nhập giả lập)
-├─ data/mock.ts    Dữ liệu mẫu (thay bằng API khi nối backend)
+├─ context/        AuthContext (JWT thật, ghi nhớ đăng nhập)
 ├─ lib/
-│  ├─ api/client.ts   apiFetch() + xử lý token, response chuẩn {success,data}
-│  ├─ api/queries.ts  Hook TanStack Query (useProjects, useNews, useLeads…)
+│  ├─ api/client.ts   apiFetch() + tự refresh token, envelope {success,data}
+│  ├─ api/queries.ts  Hook TanStack Query — đã nối API thật toàn bộ
+│  ├─ api/*.ts        auth, projects, news, pages, banners, contact, media, users
+│  ├─ api-error-message.ts / auth-error-message.ts   Dịch lỗi backend sang toast
+│  ├─ asset-url.ts    Chuẩn hóa URL ảnh Cloudinary
+│  ├─ jwt.ts          Decode payload access token
+│  ├─ use-presence.ts Hiệu ứng mount/unmount cho dialog
 │  ├─ utils.ts        cn() cho shadcn/ui
 │  └─ labels.ts       Nhãn tiếng Việt cho enum + formatDateTime (giờ VN)
 ├─ pages/          Login, Dashboard, Projects, News, Pages, Banners,
-│                  Contact (lead), Media, Users, NotFound
+│                  Contact (lead), Media, Users, Forbidden, NotFound
 ├─ types/          Kiểu khớp backend Prisma
 ├─ index.css       @theme thương hiệu + token shadcn/ui
 └─ App.tsx         Router
 ```
 
-## Nối API thật (bước tiếp theo)
+## Quy ước khi thêm màn hình mới
 
-1. Đặt `VITE_API_URL` trỏ tới backend (mặc định `http://localhost:3001/api`).
-2. ~~Đăng nhập~~ **Đã xong**: `AuthContext` + `lib/api/auth.ts` gọi `/auth/login`,
-   `/auth/refresh`, `/auth/logout`; `apiFetch` tự làm mới token khi gặp 401.
-3. Trong `src/lib/api/queries.ts`, đổi thân `queryFn` từ `mockAsync(...)` sang
-   `apiFetch('/projects')`, `/news`, `/contact`… (giữ nguyên `queryKey` + component).
-4. Form ghi dữ liệu: dùng `useMutation` gọi `apiFetch(..., { method: 'POST' })`
-   rồi `queryClient.invalidateQueries` (xem mẫu trong `ProjectFormDialog`).
+1. Viết hàm gọi API ở `src/lib/api/<module>.ts` — luôn qua `apiFetch`, không
+   `fetch` trần (mất tự động refresh token).
+2. Bọc bằng hook TanStack Query ở `src/lib/api/queries.ts`; ghi dữ liệu dùng
+   `useMutation` + `queryClient.invalidateQueries` (mẫu: `ProjectFormDialog`).
+3. Form: React Hook Form + Zod resolver. Lỗi hiện bằng `sonner` toast, dịch qua
+   `resolveApiError`.
+4. Modal chi tiết dùng `DetailDialog`; xác nhận hành động nguy hiểm dùng
+   `ConfirmDialog`.
 
 ## Màu thương hiệu
 

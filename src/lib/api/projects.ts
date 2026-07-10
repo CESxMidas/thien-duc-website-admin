@@ -74,8 +74,9 @@ export function listProjects(): Promise<Project[]> {
   return apiFetch<Project[]>("/projects/admin");
 }
 
+/** Route `admin` — route công khai `/projects/:slug` chỉ trả dự án đã xuất bản. */
 export function getProject(slug: string): Promise<ProjectDetail> {
-  return apiFetch<ProjectDetail>(`/projects/${slug}`);
+  return apiFetch<ProjectDetail>(`/projects/admin/${slug}`);
 }
 
 export function createProject(input: CreateProjectInput): Promise<Project> {
@@ -148,7 +149,7 @@ export function deleteProjectItem(
 /* ------------------------------ Thư viện ảnh ----------------------------- */
 
 export function listGallery(slug: string): Promise<ProjectGalleryImage[]> {
-  return apiFetch<ProjectGalleryImage[]>(`/projects/${slug}/gallery`);
+  return apiFetch<ProjectGalleryImage[]>(`/projects/admin/${slug}/gallery`);
 }
 
 export function addGalleryImage(
