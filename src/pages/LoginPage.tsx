@@ -192,8 +192,7 @@ export function LoginPage() {
             Khu đô thị Hưng Phú
           </h2>
           <p className="mt-2 max-w-md text-sm text-white/80">
-            Kiến tạo không gian sống hiện đại, hạ tầng đồng bộ tại TP. Thủ Đức —
-            biểu tượng phát triển của Công ty Thiên Đức.
+            Kiến tạo không gian sống hiện đại, hạ tầng đồng bộ tại TP. Thủ Đức
           </p>
         </div>
       </div>

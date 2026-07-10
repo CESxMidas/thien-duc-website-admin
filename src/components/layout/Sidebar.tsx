@@ -115,7 +115,7 @@ export function Sidebar({
 
         {/* white/40 chỉ đạt ~3.9:1 trên nền tối — giữ /60 cho đủ 4.5:1. */}
         <p className="border-t border-white/10 px-5 py-4 text-xs text-white/60">
-          Thiên Đức CMS · v0.1
+          Thiên Đức Quản Trị Nội Dung 2024. <br />
         </p>
       </aside>
     </>
