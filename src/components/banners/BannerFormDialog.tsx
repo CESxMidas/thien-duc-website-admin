@@ -7,6 +7,7 @@ import { Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { BilingualField } from "@/components/ui/BilingualField";
+import { ImagePickerField } from "@/components/ui/ImagePickerField";
 import { Input } from "@/components/ui/input";
 import {
   Dialog,
@@ -145,12 +146,17 @@ export function BannerFormDialog({ trigger, banner }: BannerFormDialogProps) {
               name="image"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Ảnh banner (URL)</FormLabel>
+                  <FormLabel>Ảnh banner</FormLabel>
                   <FormControl>
-                    <Input placeholder="https://res.cloudinary.com/..." {...field} />
+                    <ImagePickerField
+                      value={field.value}
+                      onChange={field.onChange}
+                      folder="banners"
+                    />
                   </FormControl>
                   <FormDescription>
-                    Tải ảnh ở trang Thư viện ảnh rồi dán URL vào đây.
+                    Tải ảnh từ máy hoặc chọn lại ảnh đã có. Ảnh tự tối ưu về
+                    WebP, tối đa 1200px.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
