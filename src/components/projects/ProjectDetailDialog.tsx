@@ -1,8 +1,12 @@
 // Modal chi tiết dự án — mở khi bấm vào một hàng ở trang Dự án.
 //
-// Ba tab: Thông tin (trường cơ bản + luồng duyệt), Hình ảnh (thư viện ảnh),
-// Hạng mục (các dự án con). Dữ liệu lấy từ GET /projects/:slug, chỉ gọi khi modal
-// đang mở — danh sách ngoài trang không kèm ảnh nên phải nạp riêng.
+// Quy chuẩn modal 2 cột (SplitModal): CỘT ẢNH bên trái gom toàn bộ hình ảnh với
+// phân cấp rõ ràng — "Ảnh chính" (cover, hiện ở list + đầu trang chi tiết) và
+// "Ảnh con" (thư viện, quản lý thêm/sắp xếp/xóa). CỘT NỘI DUNG bên phải là các
+// tab chữ: Thông tin · Nội dung · Hạng mục. Nhờ tách ảnh/chữ ra hai cột, người
+// dùng xem và sửa mà không phải cuộn dọc.
+//
+// Dữ liệu lấy từ GET /projects/admin/:slug, chỉ gọi khi modal đang mở.
 
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -11,13 +15,7 @@ import { ImageOff, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DetailList } from "@/components/ui/DetailDialog";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { MediaSection, SplitModal } from "@/components/ui/SplitModal";
 import { Tabs } from "@/components/ui/tabs";
 import { ProjectContentTab } from "@/components/projects/ProjectContentTab";
 import { ProjectGalleryTab } from "@/components/projects/ProjectGalleryTab";
@@ -34,7 +32,7 @@ import {
 } from "@/lib/labels";
 import type { ContentStatus, ProjectDetail } from "@/types";
 
-type TabValue = "info" | "content" | "gallery" | "items";
+type TabValue = "info" | "content" | "items";
 
 /** Các bước duyệt hợp lệ từ trạng thái hiện tại (ED-03: nháp → chờ duyệt → đã đăng). */
 const STATUS_ACTIONS: Record<
@@ -66,51 +64,82 @@ export function ProjectDetailDialog({
     if (open) setTab("info");
   }, [open, slug]);
 
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
-        <DialogHeader>
-          <DialogTitle className="font-display">
-            {project?.title.vi ?? "Chi tiết dự án"}
-          </DialogTitle>
-          <DialogDescription>
-            {project ? `/${project.slug}` : "Đang tải dữ liệu dự án…"}
-          </DialogDescription>
-        </DialogHeader>
+  const ready = !isLoading && !isError && project;
 
-        {isLoading ? (
-          <div className="space-y-3 py-2">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="h-4 animate-pulse rounded bg-cream" />
-            ))}
-          </div>
-        ) : isError || !project ? (
-          <p className="py-4 text-sm text-slate">
-            Không tải được dữ liệu dự án. Đóng và thử lại.
-          </p>
-        ) : (
-          <Tabs<TabValue>
-            value={tab}
-            onChange={setTab}
-            tabs={[
-              { value: "info", label: "Thông tin" },
-              { value: "content", label: "Nội dung" },
-              {
-                value: "gallery",
-                label: "Hình ảnh",
-                count: project.galleryImages.length,
-              },
-              { value: "items", label: "Hạng mục", count: project.items.length },
-            ]}
-          >
-            {tab === "info" && <InfoTab project={project} />}
-            {tab === "content" && <ProjectContentTab project={project} />}
-            {tab === "gallery" && <ProjectGalleryTab project={project} />}
-            {tab === "items" && <ProjectItemsTab project={project} />}
-          </Tabs>
-        )}
-      </DialogContent>
-    </Dialog>
+  return (
+    <SplitModal
+      open={open}
+      onOpenChange={onOpenChange}
+      size={ready ? "split-lg" : "wide"}
+      title={project?.title.vi ?? "Chi tiết dự án"}
+      description={project ? `/${project.slug}` : "Đang tải dữ liệu dự án…"}
+      media={
+        ready ? (
+          <>
+            <MediaSection
+              label="Ảnh chính"
+              hint="Ảnh đại diện — sửa ở nút “Sửa dự án”."
+            >
+              <CoverPreview project={project} />
+            </MediaSection>
+            <MediaSection
+              label="Ảnh con · thư viện"
+              count={project.galleryImages.length}
+              hint="Ảnh phụ hiển thị ở trang chi tiết; có thể gắn vào từng hạng mục."
+            >
+              <ProjectGalleryTab project={project} />
+            </MediaSection>
+          </>
+        ) : undefined
+      }
+    >
+      {isLoading ? (
+        <div className="space-y-3 py-2">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="h-4 animate-pulse rounded bg-cream" />
+          ))}
+        </div>
+      ) : isError || !project ? (
+        <p className="py-4 text-sm text-slate">
+          Không tải được dữ liệu dự án. Đóng và thử lại.
+        </p>
+      ) : (
+        <Tabs<TabValue>
+          value={tab}
+          onChange={setTab}
+          tabs={[
+            { value: "info", label: "Thông tin" },
+            { value: "content", label: "Nội dung" },
+            { value: "items", label: "Hạng mục", count: project.items.length },
+          ]}
+        >
+          {tab === "info" && <InfoTab project={project} />}
+          {tab === "content" && <ProjectContentTab project={project} />}
+          {tab === "items" && <ProjectItemsTab project={project} />}
+        </Tabs>
+      )}
+    </SplitModal>
+  );
+}
+
+/** Ảnh chính (cover) — chỉ xem trong modal chi tiết; sửa ở form "Sửa dự án". */
+function CoverPreview({ project }: { project: ProjectDetail }) {
+  if (!project.image) {
+    return (
+      <div className="grid aspect-3/2 w-full place-items-center rounded-xl border border-dashed border-line bg-white text-slate/60">
+        <div className="flex flex-col items-center gap-1 text-sm">
+          <ImageOff className="size-6" aria-hidden />
+          Chưa có ảnh chính
+        </div>
+      </div>
+    );
+  }
+  return (
+    <img
+      src={resolveAssetUrl(project.image)}
+      alt={`Ảnh chính ${project.title.vi}`}
+      className="aspect-3/2 w-full rounded-xl border border-line bg-white object-cover shadow-sm"
+    />
   );
 }
 
@@ -135,21 +164,6 @@ function InfoTab({ project }: { project: ProjectDetail }) {
 
   return (
     <div className="space-y-4">
-      {project.image ? (
-        <img
-          src={resolveAssetUrl(project.image)}
-          alt={`Ảnh đại diện ${project.title.vi}`}
-          className="aspect-3/2 w-full rounded-xl border border-line bg-cream object-cover"
-        />
-      ) : (
-        <div className="grid aspect-3/2 w-full place-items-center rounded-xl border border-dashed border-line bg-cream/40 text-slate/60">
-          <div className="flex flex-col items-center gap-1 text-sm">
-            <ImageOff className="size-6" aria-hidden />
-            Chưa có ảnh đại diện — thêm ở nút “Sửa”.
-          </div>
-        </div>
-      )}
-
       <DetailList
         fields={[
           { label: "Vị trí", value: project.location ?? "—" },

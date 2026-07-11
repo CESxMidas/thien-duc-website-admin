@@ -5,14 +5,7 @@ import type { ReactNode } from "react";
 import { Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { SplitModal } from "@/components/ui/SplitModal";
 
 export function ConfirmDialog({
   open,
@@ -32,13 +25,13 @@ export function ConfirmDialog({
   onConfirm: () => void;
 }) {
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
-          <DialogDescription>{description}</DialogDescription>
-        </DialogHeader>
-        <DialogFooter>
+    <SplitModal
+      open={open}
+      onOpenChange={onOpenChange}
+      size="default"
+      title={title}
+      footer={
+        <>
           <Button
             type="button"
             variant="outline"
@@ -56,8 +49,10 @@ export function ConfirmDialog({
             {submitting && <Loader2 className="size-4 animate-spin" />}
             {confirmLabel}
           </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </>
+      }
+    >
+      <div className="text-sm leading-relaxed text-slate">{description}</div>
+    </SplitModal>
   );
 }

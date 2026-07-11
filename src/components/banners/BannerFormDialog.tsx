@@ -9,15 +9,7 @@ import { Button } from "@/components/ui/button";
 import { BilingualField } from "@/components/ui/BilingualField";
 import { ImagePickerField } from "@/components/ui/ImagePickerField";
 import { Input } from "@/components/ui/input";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { MediaSection, SplitModal } from "@/components/ui/SplitModal";
 import {
   Form,
   FormControl,
@@ -124,29 +116,26 @@ export function BannerFormDialog({ trigger, banner }: BannerFormDialogProps) {
 
   const submitting = form.formState.isSubmitting;
 
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent className="max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>{isEdit ? "Sửa banner" : "Thêm banner"}</DialogTitle>
-          <DialogDescription>
-            Banner mới nằm cuối danh sách. Thứ tự và bật/tắt chỉnh ở bảng.
-          </DialogDescription>
-        </DialogHeader>
+  const formId = "banner-form";
 
-        <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(onSubmit)}
-            className="grid gap-4"
-            noValidate
+  return (
+    <Form {...form}>
+      <SplitModal
+        open={open}
+        onOpenChange={setOpen}
+        trigger={trigger}
+        title={isEdit ? "Sửa banner" : "Thêm banner"}
+        description="Banner mới nằm cuối danh sách. Thứ tự và bật/tắt chỉnh ở bảng."
+        media={
+          <MediaSection
+            label="Ảnh chính"
+            hint="Ảnh nền banner — tự tối ưu WebP, tối đa 1200px."
           >
             <FormField
               control={form.control}
               name="image"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Ảnh banner</FormLabel>
                   <FormControl>
                     <ImagePickerField
                       value={field.value}
@@ -154,15 +143,30 @@ export function BannerFormDialog({ trigger, banner }: BannerFormDialogProps) {
                       folder="banners"
                     />
                   </FormControl>
-                  <FormDescription>
-                    Tải ảnh từ máy hoặc chọn lại ảnh đã có. Ảnh tự tối ưu về
-                    WebP, tối đa 1200px.
-                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
-
+          </MediaSection>
+        }
+        footer={
+          <>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setOpen(false)}
+              disabled={submitting}
+            >
+              Hủy
+            </Button>
+            <Button type="submit" form={formId} disabled={submitting}>
+              {submitting && <Loader2 className="size-4 animate-spin" />}
+              {isEdit ? "Lưu thay đổi" : "Thêm banner"}
+            </Button>
+          </>
+        }
+      >
+        <form id={formId} onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4" noValidate>
             <FormField
               control={form.control}
               name="title"
@@ -278,23 +282,8 @@ export function BannerFormDialog({ trigger, banner }: BannerFormDialogProps) {
               )}
             />
 
-            <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setOpen(false)}
-                disabled={submitting}
-              >
-                Hủy
-              </Button>
-              <Button type="submit" disabled={submitting}>
-                {submitting && <Loader2 className="size-4 animate-spin" />}
-                {isEdit ? "Lưu thay đổi" : "Thêm banner"}
-              </Button>
-            </DialogFooter>
-          </form>
-        </Form>
-      </DialogContent>
-    </Dialog>
+        </form>
+      </SplitModal>
+    </Form>
   );
 }

@@ -6,14 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { SplitModal } from "@/components/ui/SplitModal";
 import {
   Select,
   SelectContent,
@@ -78,16 +71,13 @@ export function LeadDetailDialog({
   }
 
   return (
-    <Dialog open onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>{lead.name}</DialogTitle>
-          <DialogDescription>
-            Liên hệ gửi từ form website. Thời gian theo giờ Việt Nam.
-          </DialogDescription>
-        </DialogHeader>
-
-        <dl className="grid gap-4 sm:grid-cols-2">
+    <SplitModal
+      open
+      onOpenChange={(open) => !open && onClose()}
+      title={lead.name}
+      description="Liên hệ gửi từ form website. Thời gian theo giờ Việt Nam."
+      media={
+        <dl className="grid gap-4">
           <Field
             label="Điện thoại"
             value={
@@ -113,64 +103,26 @@ export function LeadDetailDialog({
             value={lead.inquiryType ?? <span className="text-slate">—</span>}
           />
           <Field label="Thời gian gửi" value={formatDateTime(lead.createdAt)} />
-          <div className="sm:col-span-2">
-            <Field
-              label="Trạng thái hiện tại"
-              value={
-                <Badge variant={leadStatusTone[lead.status]}>
-                  {leadStatusLabel[lead.status]}
-                </Badge>
-              }
-            />
-          </div>
-          <div className="sm:col-span-2">
-            <Field
-              label="Nội dung"
-              value={
-                <p className="whitespace-pre-wrap rounded-lg bg-cream p-3 leading-6">
-                  {lead.message}
-                </p>
-              }
-            />
-          </div>
+          <Field
+            label="Trạng thái hiện tại"
+            value={
+              <Badge variant={leadStatusTone[lead.status]}>
+                {leadStatusLabel[lead.status]}
+              </Badge>
+            }
+          />
+          <Field
+            label="Nội dung"
+            value={
+              <p className="whitespace-pre-wrap rounded-lg bg-white p-3 leading-6">
+                {lead.message}
+              </p>
+            }
+          />
         </dl>
-
-        <div className="mt-2 grid gap-4 border-t border-line pt-4">
-          <div className="grid gap-2">
-            <Label htmlFor="lead-status">Chuyển trạng thái</Label>
-            <Select
-              value={status}
-              onValueChange={(value) => setStatus(value as LeadStatus)}
-            >
-              <SelectTrigger id="lead-status">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {statusOptions.map((option) => (
-                  <SelectItem key={option} value={option}>
-                    {leadStatusLabel[option]}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="grid gap-2">
-            <Label htmlFor="lead-note">Ghi chú nội bộ</Label>
-            <Textarea
-              id="lead-note"
-              rows={4}
-              value={note}
-              onChange={(event) => setNote(event.target.value)}
-              placeholder="Đã gọi lúc 14h, khách hẹn xem nhà mẫu cuối tuần."
-            />
-            <p className="text-xs text-slate">
-              Chỉ hiển thị trong CMS, không xuất hiện trên website.
-            </p>
-          </div>
-        </div>
-
-        <DialogFooter>
+      }
+      footer={
+        <>
           <Button
             variant="outline"
             onClick={onClose}
@@ -185,8 +137,43 @@ export function LeadDetailDialog({
             {updateLead.isPending && <Loader2 className="size-4 animate-spin" />}
             Lưu thay đổi
           </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </>
+      }
+    >
+      <div className="grid gap-4">
+        <div className="grid gap-2">
+          <Label htmlFor="lead-status">Chuyển trạng thái</Label>
+          <Select
+            value={status}
+            onValueChange={(value) => setStatus(value as LeadStatus)}
+          >
+            <SelectTrigger id="lead-status">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {statusOptions.map((option) => (
+                <SelectItem key={option} value={option}>
+                  {leadStatusLabel[option]}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="grid gap-2">
+          <Label htmlFor="lead-note">Ghi chú nội bộ</Label>
+          <Textarea
+            id="lead-note"
+            rows={6}
+            value={note}
+            onChange={(event) => setNote(event.target.value)}
+            placeholder="Đã gọi lúc 14h, khách hẹn xem nhà mẫu cuối tuần."
+          />
+          <p className="text-xs text-slate">
+            Chỉ hiển thị trong CMS, không xuất hiện trên website.
+          </p>
+        </div>
+      </div>
+    </SplitModal>
   );
 }

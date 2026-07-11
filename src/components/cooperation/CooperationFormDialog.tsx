@@ -8,15 +8,7 @@ import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BilingualField } from "@/components/ui/BilingualField";
 import { ImagePickerField } from "@/components/ui/ImagePickerField";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { MediaSection, SplitModal } from "@/components/ui/SplitModal";
 import {
   Form,
   FormControl,
@@ -117,26 +109,59 @@ export function CooperationFormDialog({
 
   const submitting = form.formState.isSubmitting;
 
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent className="max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>
-            {isEdit ? "Sửa dự án hợp tác" : "Thêm dự án hợp tác"}
-          </DialogTitle>
-          <DialogDescription>
-            Dự án đồng phát triển cùng đối tác (không có trang chi tiết). Dự án
-            mới nằm cuối danh sách và ở trạng thái Nháp cho tới khi được đăng.
-          </DialogDescription>
-        </DialogHeader>
+  const formId = "cooperation-form";
 
-        <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(onSubmit)}
-            className="grid gap-4"
-            noValidate
+  return (
+    <Form {...form}>
+      <SplitModal
+        open={open}
+        onOpenChange={setOpen}
+        trigger={trigger}
+        title={isEdit ? "Sửa dự án hợp tác" : "Thêm dự án hợp tác"}
+        description="Dự án đồng phát triển cùng đối tác (không có trang chi tiết). Dự án mới nằm cuối danh sách và ở trạng thái Nháp cho tới khi được đăng."
+        media={
+          <MediaSection
+            label="Ảnh chính"
+            hint="Ảnh phối cảnh — không bắt buộc; không có thì thẻ dùng nền thương hiệu."
           >
+            <FormField
+              control={form.control}
+              name="image"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <ImagePickerField
+                      value={field.value}
+                      onChange={field.onChange}
+                      folder="cooperation"
+                      aspect="3/2"
+                      alt="Ảnh phối cảnh dự án hợp tác"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </MediaSection>
+        }
+        footer={
+          <>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setOpen(false)}
+              disabled={submitting}
+            >
+              Hủy
+            </Button>
+            <Button type="submit" form={formId} disabled={submitting}>
+              {submitting && <Loader2 className="size-4 animate-spin" />}
+              {isEdit ? "Lưu thay đổi" : "Thêm dự án hợp tác"}
+            </Button>
+          </>
+        }
+      >
+        <form id={formId} onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4" noValidate>
             <FormField
               control={form.control}
               name="name"
@@ -260,46 +285,8 @@ export function CooperationFormDialog({
               )}
             />
 
-            <FormField
-              control={form.control}
-              name="image"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Ảnh phối cảnh</FormLabel>
-                  <FormControl>
-                    <ImagePickerField
-                      value={field.value}
-                      onChange={field.onChange}
-                      folder="cooperation"
-                      aspect="3/2"
-                      alt="Ảnh phối cảnh dự án hợp tác"
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    Không bắt buộc — không có ảnh thì thẻ dùng nền thương hiệu.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setOpen(false)}
-                disabled={submitting}
-              >
-                Hủy
-              </Button>
-              <Button type="submit" disabled={submitting}>
-                {submitting && <Loader2 className="size-4 animate-spin" />}
-                {isEdit ? "Lưu thay đổi" : "Thêm dự án hợp tác"}
-              </Button>
-            </DialogFooter>
-          </form>
-        </Form>
-      </DialogContent>
-    </Dialog>
+        </form>
+      </SplitModal>
+    </Form>
   );
 }

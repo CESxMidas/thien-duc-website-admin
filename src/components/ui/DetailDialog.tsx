@@ -3,13 +3,7 @@
 // theo phong cách hồ sơ, tách nhau bằng đường kẻ ấm.
 
 import type { ReactNode } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { SplitModal } from "@/components/ui/SplitModal";
 
 export interface DetailField {
   label: string;
@@ -63,21 +57,15 @@ export function DetailDialog({
   footer?: ReactNode;
 }) {
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle className="font-display">{title}</DialogTitle>
-          {description && (
-            <DialogDescription>{description}</DialogDescription>
-          )}
-        </DialogHeader>
-        <DetailList fields={fields} />
-        {footer && (
-          <div className="flex flex-wrap justify-end gap-2 border-t border-line pt-4">
-            {footer}
-          </div>
-        )}
-      </DialogContent>
-    </Dialog>
+    <SplitModal
+      open={open}
+      onOpenChange={onOpenChange}
+      size="default"
+      title={title}
+      description={description}
+      footer={footer}
+    >
+      <DetailList fields={fields} />
+    </SplitModal>
   );
 }

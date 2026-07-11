@@ -135,13 +135,13 @@ export function ProjectGalleryTab({ project }: { project: ProjectDetail }) {
         className="space-y-3 rounded-xl border border-line bg-cream/40 p-4"
       >
         <div className="space-y-1.5">
-          <Label>Ảnh</Label>
+          <Label>Thêm ảnh con</Label>
           <ImagePickerField
             value={url}
             onChange={setUrl}
             folder="projects"
             aspect="3/2"
-            alt="Ảnh dự án đã chọn"
+            alt="Ảnh con đã chọn"
           />
         </div>
         <div className="space-y-1.5">

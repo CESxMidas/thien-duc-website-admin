@@ -8,15 +8,7 @@ import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/PasswordInput";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { SplitModal } from "@/components/ui/SplitModal";
 import {
   Form,
   FormControl,
@@ -140,27 +132,39 @@ export function UserFormDialog({ trigger, user }: UserFormDialogProps) {
 
   const submitting = form.formState.isSubmitting;
 
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>
-            {isEdit ? "Sửa tài khoản" : "Thêm tài khoản"}
-          </DialogTitle>
-          <DialogDescription>
-            {isEdit
-              ? "Cập nhật thông tin và vai trò. Đổi mật khẩu hoặc vai trò sẽ đăng xuất người này khỏi mọi thiết bị."
-              : "Tài khoản mới đăng nhập được ngay bằng email và mật khẩu bạn đặt."}
-          </DialogDescription>
-        </DialogHeader>
+  const formId = "user-form";
 
-        <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(onSubmit)}
-            className="space-y-4"
-            noValidate
-          >
+  return (
+    <Form {...form}>
+      <SplitModal
+        open={open}
+        onOpenChange={setOpen}
+        trigger={trigger}
+        size="default"
+        title={isEdit ? "Sửa tài khoản" : "Thêm tài khoản"}
+        description={
+          isEdit
+            ? "Cập nhật thông tin và vai trò. Đổi mật khẩu hoặc vai trò sẽ đăng xuất người này khỏi mọi thiết bị."
+            : "Tài khoản mới đăng nhập được ngay bằng email và mật khẩu bạn đặt."
+        }
+        footer={
+          <>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setOpen(false)}
+              disabled={submitting}
+            >
+              Hủy
+            </Button>
+            <Button type="submit" form={formId} disabled={submitting}>
+              {submitting && <Loader2 className="size-4 animate-spin" />}
+              {isEdit ? "Lưu thay đổi" : "Tạo tài khoản"}
+            </Button>
+          </>
+        }
+      >
+        <form id={formId} onSubmit={form.handleSubmit(onSubmit)} className="space-y-4" noValidate>
             <FormField
               control={form.control}
               name="name"
@@ -254,23 +258,8 @@ export function UserFormDialog({ trigger, user }: UserFormDialogProps) {
               )}
             />
 
-            <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setOpen(false)}
-                disabled={submitting}
-              >
-                Hủy
-              </Button>
-              <Button type="submit" disabled={submitting}>
-                {submitting && <Loader2 className="size-4 animate-spin" />}
-                {isEdit ? "Lưu thay đổi" : "Tạo tài khoản"}
-              </Button>
-            </DialogFooter>
-          </form>
-        </Form>
-      </DialogContent>
-    </Dialog>
+        </form>
+      </SplitModal>
+    </Form>
   );
 }

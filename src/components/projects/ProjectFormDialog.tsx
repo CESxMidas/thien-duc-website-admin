@@ -7,15 +7,7 @@ import { Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { MediaSection, SplitModal } from "@/components/ui/SplitModal";
 import {
   Form,
   FormControl,
@@ -141,88 +133,132 @@ export function ProjectFormDialog({ trigger, project }: ProjectFormDialogProps) 
 
   const submitting = form.formState.isSubmitting;
 
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>{isEdit ? "Sửa dự án" : "Tạo dự án mới"}</DialogTitle>
-          <DialogDescription>
-            {isEdit
-              ? "Cập nhật thông tin cơ bản và ảnh đại diện. Thư viện ảnh, hạng mục và nội dung chi tiết sửa ở modal chi tiết."
-              : "Điền thông tin cơ bản. Có thể bổ sung thư viện ảnh, hạng mục và nội dung sau khi tạo."}
-          </DialogDescription>
-        </DialogHeader>
+  const formId = "project-basic-form";
 
-        <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(onSubmit)}
-            className="space-y-4"
-            noValidate
+  return (
+    <Form {...form}>
+      <SplitModal
+        open={open}
+        onOpenChange={setOpen}
+        trigger={trigger}
+        title={isEdit ? "Sửa dự án" : "Tạo dự án mới"}
+        description={
+          isEdit
+            ? "Thông tin cơ bản và ảnh chính. Thư viện ảnh con, hạng mục và nội dung chi tiết sửa ở modal chi tiết."
+            : "Điền thông tin cơ bản và chọn ảnh chính. Ảnh con, hạng mục và nội dung bổ sung sau khi tạo."
+        }
+        media={
+          <MediaSection
+            label="Ảnh chính"
+            hint="Ảnh đại diện dự án — hiện ở thẻ danh sách và đầu trang chi tiết."
           >
             <FormField
               control={form.control}
-              name="title"
+              name="image"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Tên dự án</FormLabel>
                   <FormControl>
-                    <BilingualField
+                    <ImagePickerField
                       value={field.value}
                       onChange={field.onChange}
-                      placeholder={{
-                        vi: "Khu đô thị Hưng Phú",
-                        en: "Hung Phu Urban Area",
-                      }}
+                      folder="projects"
+                      aspect="3/2"
+                      alt="Ảnh chính dự án"
                     />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
+          </MediaSection>
+        }
+        footer={
+          <>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setOpen(false)}
+              disabled={submitting}
+            >
+              Hủy
+            </Button>
+            <Button type="submit" form={formId} disabled={submitting}>
+              {submitting && <Loader2 className="size-4 animate-spin" />}
+              {isEdit ? "Lưu thay đổi" : "Tạo dự án"}
+            </Button>
+          </>
+        }
+      >
+        <form
+          id={formId}
+          onSubmit={form.handleSubmit(onSubmit)}
+          className="space-y-4"
+          noValidate
+        >
+          <FormField
+            control={form.control}
+            name="title"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Tên dự án</FormLabel>
+                <FormControl>
+                  <BilingualField
+                    value={field.value}
+                    onChange={field.onChange}
+                    placeholder={{
+                      vi: "Khu đô thị Hưng Phú",
+                      en: "Hung Phu Urban Area",
+                    }}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-            <FormField
-              control={form.control}
-              name="slug"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Slug (đường dẫn)</FormLabel>
-                  <FormControl>
-                    <Input placeholder="khu-do-thi-hung-phu" {...field} />
-                  </FormControl>
-                  {isEdit && (
-                    <FormDescription>
-                      Đổi slug sẽ làm hỏng các liên kết cũ tới dự án này.
-                    </FormDescription>
-                  )}
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+          <FormField
+            control={form.control}
+            name="slug"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Slug (đường dẫn)</FormLabel>
+                <FormControl>
+                  <Input placeholder="khu-do-thi-hung-phu" {...field} />
+                </FormControl>
+                {isEdit && (
+                  <FormDescription>
+                    Đổi slug sẽ làm hỏng các liên kết cũ tới dự án này.
+                  </FormDescription>
+                )}
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-            <FormField
-              control={form.control}
-              name="summary"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Mô tả ngắn</FormLabel>
-                  <FormControl>
-                    <BilingualField
-                      multiline
-                      rows={3}
-                      value={field.value}
-                      onChange={field.onChange}
-                      placeholder={{
-                        vi: "Một hai câu giới thiệu dự án, hiện ở thẻ danh sách ngoài trang chủ.",
-                        en: "One or two sentences shown on the project card.",
-                      }}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+          <FormField
+            control={form.control}
+            name="summary"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Mô tả ngắn</FormLabel>
+                <FormControl>
+                  <BilingualField
+                    multiline
+                    rows={3}
+                    value={field.value}
+                    onChange={field.onChange}
+                    placeholder={{
+                      vi: "Một hai câu giới thiệu dự án, hiện ở thẻ danh sách ngoài trang chủ.",
+                      en: "One or two sentences shown on the project card.",
+                    }}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
+          <div className="grid gap-4 sm:grid-cols-2">
             <FormField
               control={form.control}
               name="location"
@@ -244,79 +280,40 @@ export function ProjectFormDialog({ trigger, project }: ProjectFormDialogProps) 
                 <FormItem>
                   <FormLabel>Phân loại</FormLabel>
                   <FormControl>
-                    <Input placeholder="Khu đô thị / Chung cư / Nhà phố" {...field} />
+                    <Input placeholder="Khu đô thị / Chung cư…" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
+          </div>
 
-            <FormField
-              control={form.control}
-              name="image"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Ảnh đại diện</FormLabel>
+          <FormField
+            control={form.control}
+            name="status"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Tình trạng</FormLabel>
+                <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
-                    <ImagePickerField
-                      value={field.value}
-                      onChange={field.onChange}
-                      folder="projects"
-                      aspect="3/2"
-                      alt="Ảnh đại diện dự án"
-                    />
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
                   </FormControl>
-                  <FormDescription>
-                    Hiện ở thẻ danh sách và đầu trang chi tiết. Nên có để trang
-                    công khai không bị trống ảnh.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="status"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Tình trạng</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {statusOptions.map((s) => (
-                        <SelectItem key={s} value={s}>
-                          {projectStatusLabel[s]}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setOpen(false)}
-                disabled={submitting}
-              >
-                Hủy
-              </Button>
-              <Button type="submit" disabled={submitting}>
-                {submitting && <Loader2 className="size-4 animate-spin" />}
-                {isEdit ? "Lưu thay đổi" : "Tạo dự án"}
-              </Button>
-            </DialogFooter>
-          </form>
-        </Form>
-      </DialogContent>
-    </Dialog>
+                  <SelectContent>
+                    {statusOptions.map((s) => (
+                      <SelectItem key={s} value={s}>
+                        {projectStatusLabel[s]}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </form>
+      </SplitModal>
+    </Form>
   );
 }

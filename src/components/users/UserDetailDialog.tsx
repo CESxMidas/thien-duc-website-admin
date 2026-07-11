@@ -4,13 +4,7 @@
 
 import { Badge } from "@/components/ui/badge";
 import { DetailList } from "@/components/ui/DetailDialog";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { SplitModal } from "@/components/ui/SplitModal";
 import { useUser } from "@/lib/api/queries";
 import { formatDateTime, roleLabel } from "@/lib/labels";
 
@@ -31,25 +25,27 @@ export function UserDetailDialog({
     new Date(user.lockedUntil!) > new Date();
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <div className="flex items-center gap-3">
-            <span className="grid size-11 shrink-0 place-items-center rounded-full bg-brand font-display text-lg font-bold text-white">
-              {user?.name.charAt(0) ?? "?"}
+    <SplitModal
+      open={open}
+      onOpenChange={onOpenChange}
+      size="default"
+      title={
+        <span className="flex items-center gap-3">
+          <span className="grid size-11 shrink-0 place-items-center rounded-full bg-brand font-display text-lg font-bold text-white">
+            {user?.name.charAt(0) ?? "?"}
+          </span>
+          <span className="flex min-w-0 flex-col">
+            <span className="truncate font-display text-lg text-ink">
+              {user?.name ?? "Thông tin tài khoản"}
             </span>
-            <div className="min-w-0">
-              <DialogTitle className="truncate font-display">
-                {user?.name ?? "Thông tin tài khoản"}
-              </DialogTitle>
-              <DialogDescription className="truncate">
-                {user?.email ?? "Chi tiết tài khoản quản trị."}
-              </DialogDescription>
-            </div>
-          </div>
-        </DialogHeader>
-
-        {isLoading ? (
+            <span className="truncate text-sm font-normal text-slate">
+              {user?.email ?? "Chi tiết tài khoản quản trị."}
+            </span>
+          </span>
+        </span>
+      }
+    >
+      {isLoading ? (
           <div className="space-y-3 py-2">
             {Array.from({ length: 4 }).map((_, i) => (
               <div key={i} className="h-4 animate-pulse rounded bg-cream" />
@@ -99,7 +95,6 @@ export function UserDetailDialog({
             ]}
           />
         )}
-      </DialogContent>
-    </Dialog>
+    </SplitModal>
   );
 }

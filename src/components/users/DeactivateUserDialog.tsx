@@ -3,14 +3,7 @@ import { toast } from "sonner";
 import { Loader2, Lock } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { SplitModal } from "@/components/ui/SplitModal";
 import { useDeactivateUser } from "@/lib/api/queries";
 import { resolveApiError } from "@/lib/api-error-message";
 import type { AdminUser } from "@/types";
@@ -48,16 +41,13 @@ export function DeactivateUserDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Khóa tài khoản này?</DialogTitle>
-          <DialogDescription>
-            {user?.name} ({user?.email}) sẽ bị đăng xuất khỏi mọi thiết bị và
-            không đăng nhập lại được. Bạn có thể mở khóa bất cứ lúc nào.
-          </DialogDescription>
-        </DialogHeader>
-        <DialogFooter>
+    <SplitModal
+      open={open}
+      onOpenChange={onOpenChange}
+      size="default"
+      title="Khóa tài khoản này?"
+      footer={
+        <>
           <Button
             type="button"
             variant="outline"
@@ -79,8 +69,13 @@ export function DeactivateUserDialog({
             )}
             Khóa tài khoản
           </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </>
+      }
+    >
+      <p className="text-sm leading-relaxed text-slate">
+        {user?.name} ({user?.email}) sẽ bị đăng xuất khỏi mọi thiết bị và không
+        đăng nhập lại được. Bạn có thể mở khóa bất cứ lúc nào.
+      </p>
+    </SplitModal>
   );
 }

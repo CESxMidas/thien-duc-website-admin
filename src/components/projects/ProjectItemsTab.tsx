@@ -250,14 +250,17 @@ export function ProjectItemsTab({ project }: { project: ProjectDetail }) {
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label>Ảnh đại diện</Label>
+              <Label>Ảnh chính của hạng mục</Label>
               <ImagePickerField
                 value={form.image}
                 onChange={(image) => setForm({ ...form, image })}
                 folder="projects"
                 aspect="3/2"
-                alt="Ảnh đại diện hạng mục"
+                alt="Ảnh chính hạng mục"
               />
+              <p className="text-xs text-slate/80">
+                Ảnh con của hạng mục: thêm ở cột ảnh, chọn “Thuộc hạng mục”.
+              </p>
             </div>
           </div>
 

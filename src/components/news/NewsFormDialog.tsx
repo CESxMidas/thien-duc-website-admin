@@ -7,15 +7,7 @@ import { Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { MediaSection, SplitModal } from "@/components/ui/SplitModal";
 import {
   Form,
   FormControl,
@@ -181,25 +173,64 @@ export function NewsFormDialog({ trigger, post }: NewsFormDialogProps) {
 
   const submitting = form.formState.isSubmitting;
 
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent className="max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>{isEdit ? "Sửa bài viết" : "Viết tin mới"}</DialogTitle>
-          <DialogDescription>
-            {isEdit
-              ? "Cập nhật nội dung bài. Trạng thái đăng đổi ở bảng danh sách."
-              : "Bài mới được lưu ở trạng thái nháp, gửi duyệt sau khi hoàn thiện."}
-          </DialogDescription>
-        </DialogHeader>
+  const formId = "news-form";
 
-        <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(onSubmit)}
-            className="grid gap-4"
-            noValidate
+  return (
+    <Form {...form}>
+      <SplitModal
+        open={open}
+        onOpenChange={setOpen}
+        trigger={trigger}
+        size="split-lg"
+        title={isEdit ? "Sửa bài viết" : "Viết tin mới"}
+        description={
+          isEdit
+            ? "Cập nhật nội dung bài. Trạng thái đăng đổi ở bảng danh sách."
+            : "Bài mới được lưu ở trạng thái nháp, gửi duyệt sau khi hoàn thiện."
+        }
+        media={
+          <MediaSection
+            label="Ảnh chính"
+            hint="Ảnh đại diện bài viết — hiện ở thẻ tin và đầu bài."
           >
+            <FormField
+              control={form.control}
+              name="image"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <ImagePickerField
+                      value={field.value ?? ""}
+                      onChange={field.onChange}
+                      folder="news"
+                      aspect="16/9"
+                      alt="Ảnh chính bài viết"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </MediaSection>
+        }
+        footer={
+          <>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setOpen(false)}
+              disabled={submitting}
+            >
+              Hủy
+            </Button>
+            <Button type="submit" form={formId} disabled={submitting}>
+              {submitting && <Loader2 className="size-4 animate-spin" />}
+              {isEdit ? "Lưu thay đổi" : "Tạo bài viết"}
+            </Button>
+          </>
+        }
+      >
+        <form id={formId} onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4" noValidate>
             <FormField
               control={form.control}
               name="title"
@@ -309,29 +340,6 @@ export function NewsFormDialog({ trigger, post }: NewsFormDialogProps) {
               )}
             />
 
-            <FormField
-              control={form.control}
-              name="image"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Ảnh đại diện</FormLabel>
-                  <FormControl>
-                    <ImagePickerField
-                      value={field.value ?? ""}
-                      onChange={field.onChange}
-                      folder="news"
-                      aspect="16/9"
-                      alt="Ảnh đại diện bài viết"
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    Tải ảnh từ máy hoặc chọn lại từ thư viện.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
             <div className="grid gap-4 sm:grid-cols-2">
               <FormField
                 control={form.control}
@@ -362,23 +370,8 @@ export function NewsFormDialog({ trigger, post }: NewsFormDialogProps) {
               />
             </div>
 
-            <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setOpen(false)}
-                disabled={submitting}
-              >
-                Hủy
-              </Button>
-              <Button type="submit" disabled={submitting}>
-                {submitting && <Loader2 className="size-4 animate-spin" />}
-                {isEdit ? "Lưu thay đổi" : "Tạo bài viết"}
-              </Button>
-            </DialogFooter>
-          </form>
-        </Form>
-      </DialogContent>
-    </Dialog>
+        </form>
+      </SplitModal>
+    </Form>
   );
 }

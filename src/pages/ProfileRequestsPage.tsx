@@ -6,14 +6,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { SplitModal } from "@/components/ui/SplitModal";
 import { Textarea } from "@/components/ui/textarea";
 import { useProfileRequests, useReviewProfileRequest } from "@/lib/api/queries";
 import { resolveApiError } from "@/lib/api-error-message";
@@ -200,25 +193,14 @@ export function ProfileRequestsPage() {
       )}
 
       {/* Dialog từ chối kèm lý do */}
-      <Dialog
+      <SplitModal
         open={rejecting !== null}
         onOpenChange={(open) => !open && setRejecting(null)}
-      >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Từ chối yêu cầu</DialogTitle>
-            <DialogDescription>
-              Nêu lý do để nhân viên hiểu vì sao thay đổi không được duyệt (không
-              bắt buộc).
-            </DialogDescription>
-          </DialogHeader>
-          <Textarea
-            rows={3}
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-            placeholder="Ví dụ: Số điện thoại chưa đúng định dạng."
-          />
-          <DialogFooter>
+        size="default"
+        title="Từ chối yêu cầu"
+        description="Nêu lý do để nhân viên hiểu vì sao thay đổi không được duyệt (không bắt buộc)."
+        footer={
+          <>
             <Button variant="outline" onClick={() => setRejecting(null)}>
               Hủy
             </Button>
@@ -230,9 +212,16 @@ export function ProfileRequestsPage() {
               {review.isPending && <Loader2 className="size-4 animate-spin" />}
               Từ chối
             </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </>
+        }
+      >
+        <Textarea
+          rows={3}
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
+          placeholder="Ví dụ: Số điện thoại chưa đúng định dạng."
+        />
+      </SplitModal>
     </div>
   );
 }

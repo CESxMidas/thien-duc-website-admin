@@ -8,15 +8,7 @@ import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BilingualField } from "@/components/ui/BilingualField";
 import { Input } from "@/components/ui/input";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { SplitModal } from "@/components/ui/SplitModal";
 import {
   Form,
   FormControl,
@@ -135,24 +127,35 @@ export function PageFormDialog({ trigger, page }: PageFormDialogProps) {
 
   const submitting = form.formState.isSubmitting;
 
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent className="max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>{isEdit ? "Sửa trang" : "Tạo trang nội dung"}</DialogTitle>
-          <DialogDescription>
-            Trang mới lưu ở trạng thái nháp — website công khai chỉ hiển thị
-            trang đã đăng.
-          </DialogDescription>
-        </DialogHeader>
+  const formId = "page-form";
 
-        <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(onSubmit)}
-            className="grid gap-4"
-            noValidate
-          >
+  return (
+    <Form {...form}>
+      <SplitModal
+        open={open}
+        onOpenChange={setOpen}
+        trigger={trigger}
+        size="wide"
+        title={isEdit ? "Sửa trang" : "Tạo trang nội dung"}
+        description="Trang mới lưu ở trạng thái nháp — website công khai chỉ hiển thị trang đã đăng."
+        footer={
+          <>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setOpen(false)}
+              disabled={submitting}
+            >
+              Hủy
+            </Button>
+            <Button type="submit" form={formId} disabled={submitting}>
+              {submitting && <Loader2 className="size-4 animate-spin" />}
+              {isEdit ? "Lưu thay đổi" : "Tạo trang"}
+            </Button>
+          </>
+        }
+      >
+        <form id={formId} onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4" noValidate>
             <FormField
               control={form.control}
               name="slug"
@@ -216,23 +219,8 @@ export function PageFormDialog({ trigger, page }: PageFormDialogProps) {
               )}
             />
 
-            <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setOpen(false)}
-                disabled={submitting}
-              >
-                Hủy
-              </Button>
-              <Button type="submit" disabled={submitting}>
-                {submitting && <Loader2 className="size-4 animate-spin" />}
-                {isEdit ? "Lưu thay đổi" : "Tạo trang"}
-              </Button>
-            </DialogFooter>
-          </form>
-        </Form>
-      </DialogContent>
-    </Dialog>
+        </form>
+      </SplitModal>
+    </Form>
   );
 }
