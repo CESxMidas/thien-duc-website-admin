@@ -23,7 +23,6 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useMyProfile, useUpdateMyProfile } from "@/lib/api/queries";
 import { resolveApiError } from "@/lib/api-error-message";
-import { resolveAssetUrl } from "@/lib/asset-url";
 import {
   formatDateTime,
   profileFieldLabel,
@@ -48,14 +47,6 @@ const profileSchema = z.object({
 });
 
 type ProfileFormValues = z.infer<typeof profileSchema>;
-
-/** Chữ cái đầu của tên để làm ảnh đại diện dự phòng khi chưa có ảnh. */
-function initialsOf(name: string): string {
-  const parts = name.trim().split(/\s+/);
-  const last = parts.at(-1) ?? "";
-  const first = parts[0] ?? "";
-  return ((first[0] ?? "") + (parts.length > 1 ? (last[0] ?? "") : "")).toUpperCase();
-}
 
 export function ProfilePage() {
   const { data: profile, isLoading } = useMyProfile();
@@ -128,7 +119,6 @@ function ProfileContent({ profile }: { profile: MyProfile }) {
     }
   }
 
-  const avatarUrl = form.watch("avatarUrl");
   const pending = profile.pendingRequest;
 
   return (
@@ -137,7 +127,7 @@ function ProfileContent({ profile }: { profile: MyProfile }) {
         title="Thông tin cá nhân"
         description={
           isEditor
-            ? "Cập nhật hồ sơ của bạn — thay đổi sẽ chờ quản trị viên duyệt."
+            ? "Cập nhật hồ sơ của bạn. "
             : "Xem và cập nhật hồ sơ của bạn."
         }
       />
@@ -165,21 +155,31 @@ function ProfileContent({ profile }: { profile: MyProfile }) {
         </div>
       )}
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        {/* Thẻ danh tính */}
+      <Form {...form}>
+        <form
+          onSubmit={form.handleSubmit(onSubmit)}
+          className="grid items-start gap-6 lg:grid-cols-3"
+        >
+        {/* Thẻ danh tính + ảnh đại diện */}
         <Card className="h-fit">
           <CardContent className="flex flex-col items-center pt-6 text-center">
-            {avatarUrl ? (
-              <img
-                src={resolveAssetUrl(avatarUrl)}
-                alt={`Ảnh đại diện của ${profile.name}`}
-                className="size-24 rounded-full border border-line object-cover"
-              />
-            ) : (
-              <div className="grid size-24 place-items-center rounded-full bg-espresso text-2xl font-semibold text-cream">
-                {initialsOf(profile.name) || "?"}
-              </div>
-            )}
+            <FormField
+              control={form.control}
+              name="avatarUrl"
+              render={({ field }) => (
+                <FormItem className="w-36">
+                  <FormControl>
+                    <ImagePickerField
+                      value={field.value ?? ""}
+                      onChange={field.onChange}
+                      folder="misc"
+                      aspect="1/1"
+                      alt="Ảnh đại diện"
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
             <h2 className="mt-4 text-lg font-semibold text-ink">
               {profile.name}
             </h2>
@@ -218,33 +218,8 @@ function ProfileContent({ profile }: { profile: MyProfile }) {
           <CardHeader className="border-b">
             <CardTitle className="text-base">Chỉnh sửa hồ sơ</CardTitle>
           </CardHeader>
-          <CardContent className="pt-6">
-            <Form {...form}>
-              <form
-                onSubmit={form.handleSubmit(onSubmit)}
-                className="space-y-5"
-              >
-                <FormField
-                  control={form.control}
-                  name="avatarUrl"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Ảnh đại diện</FormLabel>
-                      <FormControl>
-                        <ImagePickerField
-                          value={field.value ?? ""}
-                          onChange={field.onChange}
-                          folder="misc"
-                          aspect="1/1"
-                          alt="Ảnh đại diện"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <div className="grid gap-5 sm:grid-cols-2">
+          <CardContent className="space-y-4 pt-5">
+                <div className="grid gap-4 sm:grid-cols-2">
                   <FormField
                     control={form.control}
                     name="name"
@@ -314,7 +289,7 @@ function ProfileContent({ profile }: { profile: MyProfile }) {
                       <FormLabel>Giới thiệu</FormLabel>
                       <FormControl>
                         <Textarea
-                          rows={3}
+                          rows={2}
                           placeholder="Vài dòng giới thiệu về bạn."
                           {...field}
                         />
@@ -339,11 +314,10 @@ function ProfileContent({ profile }: { profile: MyProfile }) {
                     {isEditor ? "Gửi yêu cầu duyệt" : "Lưu thay đổi"}
                   </Button>
                 </div>
-              </form>
-            </Form>
           </CardContent>
         </Card>
-      </div>
+        </form>
+      </Form>
     </div>
   );
 }
