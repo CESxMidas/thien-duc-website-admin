@@ -5,6 +5,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import * as bannersApi from "./banners";
 import * as contactApi from "./contact";
+import * as cooperationApi from "./cooperation";
 import * as mediaApi from "./media";
 import * as newsApi from "./news";
 import * as pagesApi from "./pages";
@@ -18,17 +19,26 @@ export const queryKeys = {
   newsCategories: ["news", "categories"] as const,
   pages: ["pages"] as const,
   banners: ["banners"] as const,
+  cooperation: ["cooperation"] as const,
   leads: ["leads"] as const,
   media: ["media"] as const,
   users: ["users"] as const,
+  myProfile: ["my-profile"] as const,
+  profileRequests: ["profile-requests"] as const,
 };
 
 /* -------------------------------------------------------------------------
    Liên hệ (lead) — /contact
    ------------------------------------------------------------------------- */
 
-export function useLeads() {
-  return useQuery({ queryKey: queryKeys.leads, queryFn: contactApi.listLeads });
+// `/contact` chỉ dành cho ADMIN/SUPER_ADMIN — truyền `enabled: false` để EDITOR
+// không gọi và nổ 403. Giữ nguyên queryKey theo quy ước.
+export function useLeads(enabled = true) {
+  return useQuery({
+    queryKey: queryKeys.leads,
+    queryFn: contactApi.listLeads,
+    enabled,
+  });
 }
 
 export function useUpdateLead() {
@@ -186,6 +196,54 @@ export function useReorderBanners() {
 
 export function useDeleteBanner() {
   return useBannersMutation(bannersApi.deleteBanner);
+}
+
+/* -------------------------------------------------------------------------
+   Dự án hợp tác — /cooperation
+   ------------------------------------------------------------------------- */
+
+export function useCooperationProjects() {
+  return useQuery({
+    queryKey: queryKeys.cooperation,
+    queryFn: cooperationApi.listCooperationProjects,
+  });
+}
+
+function useCooperationMutation<TArgs, TResult>(
+  fn: (args: TArgs) => Promise<TResult>,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: fn,
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: queryKeys.cooperation }),
+  });
+}
+
+export function useCreateCooperationProject() {
+  return useCooperationMutation(cooperationApi.createCooperationProject);
+}
+
+export function useUpdateCooperationProject() {
+  return useCooperationMutation(
+    ({ id, data }: { id: string; data: cooperationApi.UpdateCooperationInput }) =>
+      cooperationApi.updateCooperationProject(id, data),
+  );
+}
+
+export function useUpdateCooperationStatus() {
+  return useCooperationMutation(
+    ({ id, status }: { id: string; status: ContentStatus }) =>
+      cooperationApi.updateCooperationStatus(id, status),
+  );
+}
+
+export function useReorderCooperationProjects() {
+  return useCooperationMutation(cooperationApi.reorderCooperationProjects);
+}
+
+export function useDeleteCooperationProject() {
+  return useCooperationMutation(cooperationApi.deleteCooperationProject);
 }
 
 /* -------------------------------------------------------------------------
@@ -401,4 +459,55 @@ export function useDeactivateUser() {
 
 export function useReactivateUser() {
   return useUsersMutation(usersApi.reactivateUser);
+}
+
+/* -------------------------------------------------------------------------
+   Hồ sơ cá nhân + luồng duyệt — /users/me, /users/profile-requests
+   ------------------------------------------------------------------------- */
+
+/** Hồ sơ của người đang đăng nhập (mọi vai trò). */
+export function useMyProfile() {
+  return useQuery({
+    queryKey: queryKeys.myProfile,
+    queryFn: usersApi.getMyProfile,
+  });
+}
+
+/** Gửi cập nhật hồ sơ; làm mới lại hồ sơ và (nếu admin) hàng chờ duyệt. */
+export function useUpdateMyProfile() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: usersApi.updateMyProfile,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.myProfile });
+      queryClient.invalidateQueries({ queryKey: queryKeys.profileRequests });
+    },
+  });
+}
+
+/** Hàng chờ duyệt hồ sơ — chỉ ADMIN/SUPER_ADMIN gọi (truyền enabled). */
+export function useProfileRequests(enabled = true) {
+  return useQuery({
+    queryKey: queryKeys.profileRequests,
+    queryFn: () => usersApi.listProfileRequests(),
+    enabled,
+  });
+}
+
+/** Duyệt/từ chối; làm mới hàng chờ và hồ sơ (phòng khi admin duyệt của mình). */
+export function useReviewProfileRequest() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      id,
+      input,
+    }: {
+      id: string;
+      input: usersApi.ReviewProfileRequestInput;
+    }) => usersApi.reviewProfileRequest(id, input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.profileRequests });
+      queryClient.invalidateQueries({ queryKey: queryKeys.myProfile });
+    },
+  });
 }

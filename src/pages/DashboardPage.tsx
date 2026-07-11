@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useLeads, useNews, useProjects } from "@/lib/api/queries";
+import { useAuth } from "@/context/AuthContext";
 import {
   contentStatusLabel,
   contentStatusTone,
@@ -21,7 +22,12 @@ import {
 } from "@/lib/labels";
 
 export function DashboardPage() {
-  const { data: leads = [] } = useLeads();
+  const { user } = useAuth();
+  // `/contact` chỉ cho ADMIN/SUPER_ADMIN — EDITOR không xem lead (khớp nav.ts).
+  const canViewLeads =
+    user?.role === "ADMIN" || user?.role === "SUPER_ADMIN";
+
+  const { data: leads = [] } = useLeads(canViewLeads);
   const { data: news = [] } = useNews();
   const { data: projects = [] } = useProjects();
 
@@ -41,6 +47,15 @@ export function DashboardPage() {
       .map((p) => ({ id: p.id, title: p.title.vi, kind: "Dự án" })),
   ];
 
+  // Grid thích ứng số card để không hụt ô: ADMIN 4 card (4 cột), EDITOR 3 card
+  // (3 cột). Khối nội dung dưới: ADMIN 2 cột, EDITOR để "Chờ duyệt" chiếm trọn.
+  const statGridClass = canViewLeads
+    ? "grid gap-4 sm:grid-cols-2 xl:grid-cols-4"
+    : "grid gap-4 sm:grid-cols-2 lg:grid-cols-3";
+  const panelGridClass = canViewLeads
+    ? "mt-8 grid gap-6 lg:grid-cols-2"
+    : "mt-8 grid gap-6";
+
   return (
     <div>
       <PageHeader
@@ -49,15 +64,17 @@ export function DashboardPage() {
       />
 
       {/* Số liệu nhanh (ED-02) */}
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard
-          label="Form liên hệ mới"
-          value={newLeads}
-          hint="Chưa xử lý"
-          icon={Inbox}
-          to="/lien-he"
-          accent="blue"
-        />
+      <div className={statGridClass}>
+        {canViewLeads && (
+          <StatCard
+            label="Form liên hệ mới"
+            value={newLeads}
+            hint="Chưa xử lý"
+            icon={Inbox}
+            to="/lien-he"
+            accent="blue"
+          />
+        )}
         <StatCard
           label="Nội dung chờ duyệt"
           value={pendingContent}
@@ -98,8 +115,9 @@ export function DashboardPage() {
         </Button>
       </div>
 
-      <div className="mt-8 grid gap-6 lg:grid-cols-2">
-        {/* Form liên hệ mới nhất */}
+      <div className={panelGridClass}>
+        {/* Form liên hệ mới nhất — chỉ ADMIN/SUPER_ADMIN */}
+        {canViewLeads && (
         <Card className="gap-0 py-0">
           <CardHeader className="flex flex-row items-center justify-between border-b py-3">
             <CardTitle className="text-base">Liên hệ mới nhất</CardTitle>
@@ -109,7 +127,12 @@ export function DashboardPage() {
           </CardHeader>
           <CardContent className="px-0">
             <ul className="divide-y divide-line/70">
-              {recentLeads.map((lead) => (
+              {recentLeads.length === 0 ? (
+                <li className="px-5 py-6 text-center text-sm text-slate">
+                  Chưa có form liên hệ nào.
+                </li>
+              ) : (
+              recentLeads.map((lead) => (
                 <li key={lead.id} className="flex items-center gap-3 px-5 py-3">
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium text-ink">
@@ -129,10 +152,12 @@ export function DashboardPage() {
                     {formatDateTime(lead.createdAt)}
                   </span>
                 </li>
-              ))}
+              ))
+              )}
             </ul>
           </CardContent>
         </Card>
+        )}
 
         {/* Nội dung chờ duyệt */}
         <Card className="gap-0 py-0">

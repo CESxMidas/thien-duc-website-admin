@@ -8,7 +8,15 @@
 // Admin cuối cùng) và trả 400 kèm message tiếng Việt — UI chỉ việc hiện toast.
 
 import { apiFetch } from "./client";
-import type { AdminUser, AdminUserDetail, Role } from "@/types";
+import type {
+  AdminUser,
+  AdminUserDetail,
+  MyProfile,
+  ProfileChangeRequestRow,
+  ProfileChangeStatus,
+  ProfilePayload,
+  Role,
+} from "@/types";
 
 export interface CreateUserInput {
   name: string;
@@ -62,4 +70,49 @@ export function deactivateUser(id: string): Promise<{ deactivated: boolean }> {
 /** Mở khóa lại tài khoản đã bị khóa. */
 export function reactivateUser(id: string): Promise<AdminUser> {
   return updateUser(id, { isActive: true });
+}
+
+/* -------------------------------------------------------------------------
+   Hồ sơ cá nhân + luồng duyệt
+   GET   /users/me                       -> MyProfile
+   PATCH /users/me                       -> MyProfile (EDITOR: chờ duyệt)
+   GET   /users/profile-requests         -> ProfileChangeRequestRow[]
+   PATCH /users/profile-requests/:id     -> quyết định duyệt/từ chối
+   ------------------------------------------------------------------------- */
+
+/** Hồ sơ đầy đủ của người đang đăng nhập (mọi vai trò). */
+export function getMyProfile(): Promise<MyProfile> {
+  return apiFetch<MyProfile>("/users/me");
+}
+
+/** Gửi cập nhật hồ sơ. EDITOR → tạo yêu cầu chờ duyệt; admin → áp thẳng. */
+export function updateMyProfile(input: ProfilePayload): Promise<MyProfile> {
+  return apiFetch<MyProfile>("/users/me", {
+    method: "PATCH",
+    body: JSON.stringify(input),
+  });
+}
+
+/** Danh sách yêu cầu cập nhật hồ sơ để ADMIN/SUPER_ADMIN duyệt. */
+export function listProfileRequests(
+  status?: ProfileChangeStatus,
+): Promise<ProfileChangeRequestRow[]> {
+  const query = status ? `?status=${status}` : "";
+  return apiFetch<ProfileChangeRequestRow[]>(`/users/profile-requests${query}`);
+}
+
+export interface ReviewProfileRequestInput {
+  action: "APPROVE" | "REJECT";
+  note?: string;
+}
+
+/** Duyệt hoặc từ chối một yêu cầu cập nhật hồ sơ. */
+export function reviewProfileRequest(
+  id: string,
+  input: ReviewProfileRequestInput,
+): Promise<ProfileChangeRequestRow> {
+  return apiFetch<ProfileChangeRequestRow>(`/users/profile-requests/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(input),
+  });
 }

@@ -1,14 +1,13 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { Menu, LogOut, ChevronDown, CircleUserRound } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
-import { UserDetailDialog } from "@/components/users/UserDetailDialog";
 import { roleLabel } from "@/lib/labels";
 import { usePresence } from "@/lib/use-presence";
 
 export function Topbar({ onMenu }: { onMenu: () => void }) {
   const { user, logout } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [profileOpen, setProfileOpen] = useState(false);
   const menu = usePresence(menuOpen);
 
   return (
@@ -76,16 +75,14 @@ export function Topbar({ onMenu }: { onMenu: () => void }) {
                 </p>
                 <p className="truncate text-xs text-slate">{user?.email}</p>
               </div>
-              <button
+              <Link
+                to="/ho-so"
                 className="flex w-full items-center gap-2 px-4 py-2 text-sm text-ink transition-colors duration-150 hover:bg-cream"
-                onClick={() => {
-                  setMenuOpen(false);
-                  setProfileOpen(true);
-                }}
+                onClick={() => setMenuOpen(false)}
               >
                 <CircleUserRound className="size-4 text-slate" />
-                Thông tin tài khoản
-              </button>
+                Thông tin cá nhân
+              </Link>
               <button
                 className="flex w-full items-center gap-2 px-4 py-2 text-sm text-red-600 transition-colors duration-150 hover:bg-red-50"
                 onClick={logout}
@@ -97,12 +94,6 @@ export function Topbar({ onMenu }: { onMenu: () => void }) {
           </>
         )}
       </div>
-
-      <UserDetailDialog
-        userId={user?.id ?? null}
-        open={profileOpen}
-        onOpenChange={setProfileOpen}
-      />
     </header>
   );
 }

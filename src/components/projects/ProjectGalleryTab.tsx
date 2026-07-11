@@ -11,6 +11,7 @@ import { ChevronDown, ChevronUp, ImageOff, Loader2, Plus, Trash2 } from "lucide-
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { ImagePickerField } from "@/components/ui/ImagePickerField";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -133,25 +134,24 @@ export function ProjectGalleryTab({ project }: { project: ProjectDetail }) {
         onSubmit={onAdd}
         className="space-y-3 rounded-xl border border-line bg-cream/40 p-4"
       >
-        <div className="grid gap-3 sm:grid-cols-2">
-          <div className="space-y-1.5">
-            <Label htmlFor="gallery-url">URL ảnh</Label>
-            <Input
-              id="gallery-url"
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              placeholder="https://res.cloudinary.com/.../anh.webp"
-            />
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="gallery-caption">Chú thích (không bắt buộc)</Label>
-            <Input
-              id="gallery-caption"
-              value={caption}
-              onChange={(e) => setCaption(e.target.value)}
-              placeholder="Phối cảnh mặt tiền"
-            />
-          </div>
+        <div className="space-y-1.5">
+          <Label>Ảnh</Label>
+          <ImagePickerField
+            value={url}
+            onChange={setUrl}
+            folder="projects"
+            aspect="3/2"
+            alt="Ảnh dự án đã chọn"
+          />
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="gallery-caption">Chú thích (không bắt buộc)</Label>
+          <Input
+            id="gallery-caption"
+            value={caption}
+            onChange={(e) => setCaption(e.target.value)}
+            placeholder="Phối cảnh mặt tiền"
+          />
         </div>
 
         <div className="flex flex-wrap items-end justify-between gap-3">
@@ -201,10 +201,9 @@ export function ProjectGalleryTab({ project }: { project: ProjectDetail }) {
                     <span className="text-slate italic">Không có chú thích</span>
                   )}
                 </p>
-                {/* `title`: tên file nằm ở cuối URL nên phần bị cắt lại là phần
-                    cần đọc — cho phép rê chuột xem đủ. */}
+                {/* Chỉ hiện tên file cho gọn; rê chuột xem URL đầy đủ. */}
                 <p className="truncate text-xs text-slate" title={image.url}>
-                  {image.url}
+                  {image.url.split("/").pop() || image.url}
                 </p>
                 {image.projectItemId && (
                   <Badge variant="blue" className="mt-1">

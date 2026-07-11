@@ -77,8 +77,8 @@ export function ContactPage() {
   return (
     <div>
       <PageHeader
-        title="Liên hệ (Lead)"
-        description="Bấm vào một hàng để xem chi tiết, đổi trạng thái và ghi chú nội bộ (KB-08). Thời gian hiển thị theo giờ VN."
+        title="Liên hệ"
+        description="Danh sách các form liên hệ từ website, bao gồm thông tin khách hàng và nội dung họ gửi. Bạn có thể xem chi tiết, thay đổi trạng thái xử lý, và thêm ghi chú nội bộ."
       />
 
       <div className="mb-4 flex flex-wrap gap-2">

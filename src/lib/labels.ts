@@ -3,6 +3,7 @@
 import type {
   ContentStatus,
   LeadStatus,
+  ProfileChangeStatus,
   ProjectStatus,
   Role,
 } from "@/types";
@@ -43,6 +44,28 @@ export const roleLabel: Record<Role, string> = {
   EDITOR: "Biên tập viên",
   ADMIN: "Quản trị",
   SUPER_ADMIN: "Super Admin",
+};
+
+export const profileStatusLabel: Record<ProfileChangeStatus, string> = {
+  PENDING: "Chờ duyệt",
+  APPROVED: "Đã duyệt",
+  REJECTED: "Từ chối",
+};
+
+export const profileStatusTone: Record<ProfileChangeStatus, BadgeTone> = {
+  PENDING: "amber",
+  APPROVED: "green",
+  REJECTED: "red",
+};
+
+/** Nhãn field hồ sơ — dùng khi liệt kê các thay đổi trong yêu cầu duyệt. */
+export const profileFieldLabel: Record<string, string> = {
+  name: "Tên hiển thị",
+  phone: "Số điện thoại",
+  avatarUrl: "Ảnh đại diện",
+  position: "Chức vụ",
+  department: "Phòng ban",
+  bio: "Giới thiệu",
 };
 
 /**

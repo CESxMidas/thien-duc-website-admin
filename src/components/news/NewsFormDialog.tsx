@@ -38,6 +38,7 @@ import {
   useUpdateNews,
 } from "@/lib/api/queries";
 import { BilingualField } from "@/components/ui/BilingualField";
+import { ImagePickerField } from "@/components/ui/ImagePickerField";
 import { resolveApiError } from "@/lib/api-error-message";
 import {
   toBilingualPayload,
@@ -315,10 +316,16 @@ export function NewsFormDialog({ trigger, post }: NewsFormDialogProps) {
                 <FormItem>
                   <FormLabel>Ảnh đại diện</FormLabel>
                   <FormControl>
-                    <Input placeholder="https://res.cloudinary.com/..." {...field} />
+                    <ImagePickerField
+                      value={field.value ?? ""}
+                      onChange={field.onChange}
+                      folder="news"
+                      aspect="16/9"
+                      alt="Ảnh đại diện bài viết"
+                    />
                   </FormControl>
                   <FormDescription>
-                    Dán đường dẫn ảnh từ Thư viện ảnh.
+                    Tải ảnh từ máy hoặc chọn lại từ thư viện.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>

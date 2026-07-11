@@ -135,6 +135,24 @@ export interface Banner {
   updatedAt: string;
 }
 
+/**
+ * Dự án hợp tác (`cooperation_projects`) — hiển thị ở section "Dự án hợp tác"
+ * trang chủ. Không có trang chi tiết, không ảnh; mọi field chữ đều song ngữ.
+ */
+export interface CooperationProject {
+  id: string;
+  name: Bilingual;
+  location: Bilingual;
+  role: Bilingual;
+  partner: Bilingual;
+  scale: Bilingual;
+  status: Bilingual;
+  contentStatus: ContentStatus;
+  order: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
 /** Form liên hệ (`contact_submissions`). */
 export interface Lead {
   id: string;
@@ -180,4 +198,60 @@ export interface AdminUserDetail extends AdminUser {
   updatedAt: string;
   /** Hạn khóa tạm do đăng nhập sai nhiều lần; null = không bị khóa tạm. */
   lockedUntil: string | null;
+}
+
+/** Trạng thái yêu cầu cập nhật hồ sơ (ProfileChangeStatus của backend). */
+export type ProfileChangeStatus = "PENDING" | "APPROVED" | "REJECTED";
+
+/** Các field hồ sơ nhân viên tự cập nhật được (payload yêu cầu). */
+export interface ProfilePayload {
+  name?: string;
+  phone?: string;
+  avatarUrl?: string;
+  position?: string;
+  department?: string;
+  bio?: string;
+}
+
+/** Một yêu cầu cập nhật hồ sơ đang/đã xử lý. */
+export interface ProfileChangeRequest {
+  id: string;
+  userId: string;
+  payload: ProfilePayload;
+  status: ProfileChangeStatus;
+  reviewNote: string | null;
+  reviewedById: string | null;
+  reviewedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/** GET /users/me — hồ sơ đầy đủ của người đang đăng nhập. */
+export interface MyProfile {
+  id: string;
+  email: string;
+  name: string;
+  role: Role;
+  phone: string | null;
+  avatarUrl: string | null;
+  position: string | null;
+  department: string | null;
+  bio: string | null;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  /** Yêu cầu đang chờ duyệt của chính mình (nếu có). */
+  pendingRequest: ProfileChangeRequest | null;
+}
+
+/** Một dòng trong hàng chờ duyệt — kèm thông tin người gửi/người duyệt. */
+export interface ProfileChangeRequestRow extends ProfileChangeRequest {
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    role: Role;
+    avatarUrl: string | null;
+  };
+  reviewedBy: { id: string; name: string } | null;
 }

@@ -3,7 +3,6 @@ import { ImageOff, Library, Loader2, Trash2, Upload } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   Dialog,
   DialogContent,
@@ -17,21 +16,42 @@ import { resolveApiError } from "@/lib/api-error-message";
 import { resolveAssetUrl } from "@/lib/asset-url";
 import type { MediaAsset } from "@/types";
 
+/** Tỷ lệ khung ảnh xem trước — map sang class Tailwind tĩnh (không nội suy). */
+type AspectRatio = "3/1" | "16/9" | "3/2" | "1/1";
+const ASPECT_CLASS: Record<AspectRatio, string> = {
+  "3/1": "aspect-3/1",
+  "16/9": "aspect-video",
+  "3/2": "aspect-3/2",
+  "1/1": "aspect-square",
+};
+
 interface ImagePickerFieldProps {
   /** URL ảnh hiện tại (chuỗi rỗng = chưa chọn). */
   value: string;
   onChange: (url: string) => void;
   /** Thư mục Cloudinary để tải lên và lọc thư viện. */
   folder?: string;
+  /** Tỷ lệ khung ảnh xem trước (mặc định 3/1 kiểu banner). */
+  aspect?: AspectRatio;
+  /** Văn bản thay thế cho ảnh xem trước. */
+  alt?: string;
 }
 
 /** Ảnh xem trước, tự đổi sang ô giữ chỗ khi URL hỏng. */
-function Preview({ url }: { url: string }) {
+function Preview({
+  url,
+  aspectClass,
+  alt,
+}: {
+  url: string;
+  aspectClass: string;
+  alt: string;
+}) {
   const [failed, setFailed] = useState(false);
   if (failed) {
     return (
       <div
-        className="grid aspect-3/1 w-full place-items-center rounded-lg bg-cream text-slate/50"
+        className={`grid ${aspectClass} w-full place-items-center rounded-lg bg-cream text-slate/50`}
         title="Không tải được ảnh từ URL này"
       >
         <ImageOff className="size-6" aria-hidden />
@@ -44,8 +64,8 @@ function Preview({ url }: { url: string }) {
     <img
       key={url}
       src={resolveAssetUrl(url)}
-      alt="Ảnh banner đã chọn"
-      className="aspect-3/1 w-full rounded-lg border border-line bg-cream object-cover"
+      alt={alt}
+      className={`${aspectClass} w-full rounded-lg border border-line bg-cream object-cover`}
       onError={() => setFailed(true)}
     />
   );
@@ -55,11 +75,13 @@ export function ImagePickerField({
   value,
   onChange,
   folder = "banners",
+  aspect = "3/1",
+  alt = "Ảnh đã chọn",
 }: ImagePickerFieldProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const upload = useUploadMedia();
   const [libraryOpen, setLibraryOpen] = useState(false);
-  const [manualUrl, setManualUrl] = useState(false);
+  const aspectClass = ASPECT_CLASS[aspect];
 
   async function handleFile(file: File | undefined) {
     if (!file) return;
@@ -91,7 +113,7 @@ export function ImagePickerField({
 
       {value ? (
         <div className="space-y-2">
-          <Preview url={value} />
+          <Preview url={value} aspectClass={aspectClass} alt={alt} />
           <div className="flex flex-wrap gap-2">
             <Button
               type="button"
@@ -165,23 +187,6 @@ export function ImagePickerField({
         </div>
       )}
 
-      {/* Lối thoát cho người dùng nâng cao: vẫn dán URL trực tiếp nếu muốn. */}
-      {manualUrl ? (
-        <Input
-          value={value}
-          onChange={(event) => onChange(event.target.value)}
-          placeholder="https://res.cloudinary.com/..."
-        />
-      ) : (
-        <button
-          type="button"
-          onClick={() => setManualUrl(true)}
-          className="text-xs text-slate underline-offset-2 hover:text-brand hover:underline"
-        >
-          Hoặc dán URL thủ công
-        </button>
-      )}
-
       <MediaLibraryDialog
         open={libraryOpen}
         onOpenChange={setLibraryOpen}
@@ -218,8 +223,8 @@ function MediaLibraryDialog({
         <DialogHeader>
           <DialogTitle>Chọn ảnh từ thư viện</DialogTitle>
           <DialogDescription>
-            Bấm vào một ảnh để dùng cho banner. Muốn thêm ảnh mới thì đóng cửa
-            sổ này và bấm “Tải ảnh từ máy”.
+            Bấm vào một ảnh để sử dụng. Muốn thêm ảnh mới thì đóng cửa sổ này và
+            bấm “Tải ảnh từ máy”.
           </DialogDescription>
         </DialogHeader>
 
@@ -234,7 +239,7 @@ function MediaLibraryDialog({
           </div>
         ) : media.length === 0 ? (
           <p className="py-10 text-center text-sm text-slate">
-            Thư mục “Banner” chưa có ảnh nào. Hãy tải ảnh từ máy.
+            Thư mục này chưa có ảnh nào. Hãy tải ảnh từ máy.
           </p>
         ) : (
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">

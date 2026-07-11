@@ -8,9 +8,12 @@ import { ProjectsPage } from "@/pages/ProjectsPage";
 import { NewsPage } from "@/pages/NewsPage";
 import { PagesPage } from "@/pages/PagesPage";
 import { BannersPage } from "@/pages/BannersPage";
+import { CooperationPage } from "@/pages/CooperationPage";
 import { ContactPage } from "@/pages/ContactPage";
 import { MediaPage } from "@/pages/MediaPage";
 import { UsersPage } from "@/pages/UsersPage";
+import { ProfilePage } from "@/pages/ProfilePage";
+import { ProfileRequestsPage } from "@/pages/ProfileRequestsPage";
 import { ForbiddenPage } from "@/pages/ForbiddenPage";
 import { NotFoundPage } from "@/pages/NotFoundPage";
 
@@ -33,8 +36,28 @@ export default function App() {
             <Route path="tin-tuc" element={<NewsPage />} />
             <Route path="trang" element={<PagesPage />} />
             <Route path="banner" element={<BannersPage />} />
-            <Route path="lien-he" element={<ContactPage />} />
+            <Route path="du-an-hop-tac" element={<CooperationPage />} />
+            {/* Form liên hệ (lead) chỉ dành cho Admin/Super Admin. */}
+            <Route
+              path="lien-he"
+              element={
+                <ProtectedRoute roles={["ADMIN", "SUPER_ADMIN"]}>
+                  <ContactPage />
+                </ProtectedRoute>
+              }
+            />
             <Route path="thu-vien" element={<MediaPage />} />
+            {/* Hồ sơ cá nhân — mọi vai trò. */}
+            <Route path="ho-so" element={<ProfilePage />} />
+            {/* Duyệt cập nhật hồ sơ — chỉ Admin/Super Admin. */}
+            <Route
+              path="duyet-ho-so"
+              element={
+                <ProtectedRoute roles={["ADMIN", "SUPER_ADMIN"]}>
+                  <ProfileRequestsPage />
+                </ProtectedRoute>
+              }
+            />
             {/* Quản lý tài khoản chỉ dành cho Admin/Super Admin. */}
             <Route
               path="tai-khoan"
