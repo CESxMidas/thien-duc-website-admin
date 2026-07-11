@@ -28,6 +28,43 @@ export interface AuthUser {
   role: Role;
 }
 
+/** Một dòng thông số nhanh của dự án (`quick_facts`) — nhãn + giá trị, chữ thuần. */
+export interface ProjectFact {
+  label: string;
+  value: string;
+}
+
+/** Loại nhãn vẽ đè lên ảnh bản đồ nền của dự án. */
+export type ProjectMapLabelKind = "place" | "area" | "road" | "direction";
+
+/** Một nhãn chữ trên ảnh bản đồ, vị trí tính theo phần trăm (0-100). */
+export interface ProjectMapLabel {
+  text: string;
+  left: number;
+  top: number;
+  kind?: ProjectMapLabelKind;
+}
+
+/** Khối bản đồ vị trí (`map_location`) — ảnh nền + marker + nhãn. */
+export interface ProjectMapLocation {
+  image: string;
+  googleMapsUrl: string;
+  heading?: string;
+  description?: string;
+  address?: string;
+  markerLeft: number;
+  markerTop: number;
+  /** Nhãn chữ vẽ đè lên ảnh nền — hiện chỉ chỉnh qua seed, admin giữ nguyên. */
+  labels?: ProjectMapLabel[];
+}
+
+/** Một nhóm ảnh có tiêu đề (`gallery_sections`) hiển thị ở trang chi tiết. */
+export interface ProjectGallerySection {
+  title: string;
+  description?: string;
+  images: string[];
+}
+
 /** Một ảnh trong `project_gallery`. `projectItemId` null = ảnh ở cấp dự án. */
 export interface ProjectGalleryImage {
   id: string;
@@ -65,6 +102,14 @@ export interface Project {
   location: string | null;
   image: string | null;
   category: string | null;
+  /** Điểm nổi bật — mảng field song ngữ; UI đọc/sửa `.vi` (EN tùy chọn). */
+  highlights: Bilingual[] | null;
+  /** Thông số nhanh (nhãn/giá trị). */
+  quickFacts: ProjectFact[] | null;
+  /** Ảnh gallery cấp dự án (mảng URL) — khác `galleryImages` (bản ghi đầy đủ). */
+  gallery: string[];
+  gallerySections: ProjectGallerySection[] | null;
+  mapLocation: ProjectMapLocation | null;
   order: number;
   createdAt: string;
   updatedAt: string;
@@ -147,6 +192,8 @@ export interface CooperationProject {
   partner: Bilingual;
   scale: Bilingual;
   status: Bilingual;
+  /** Ảnh phối cảnh (tùy chọn). */
+  image: string | null;
   contentStatus: ContentStatus;
   order: number;
   createdAt: string;

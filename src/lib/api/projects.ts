@@ -25,8 +25,10 @@ import type {
   ContentStatus,
   Project,
   ProjectDetail,
+  ProjectFact,
   ProjectGalleryImage,
   ProjectItem,
+  ProjectMapLocation,
   ProjectStatus,
 } from "@/types";
 
@@ -39,6 +41,10 @@ export interface CreateProjectInput {
   category?: string;
   image?: string;
   description?: Bilingual;
+  /** Mảng field song ngữ; gửi cả `.vi` và `.en` để không mất bản dịch. */
+  highlights?: Bilingual[];
+  quickFacts?: ProjectFact[];
+  mapLocation?: ProjectMapLocation;
 }
 
 export type UpdateProjectInput = Partial<CreateProjectInput>;

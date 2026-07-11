@@ -7,6 +7,7 @@ import { Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { BilingualField } from "@/components/ui/BilingualField";
+import { ImagePickerField } from "@/components/ui/ImagePickerField";
 import {
   Dialog,
   DialogContent,
@@ -46,6 +47,7 @@ const cooperationSchema = z.object({
   partner: requiredBilingual(1, "Cần tên đối tác."),
   scale: requiredBilingual(1, "Cần thông tin quy mô."),
   status: requiredBilingual(1, "Cần trạng thái dự án."),
+  image: z.string().trim(),
 });
 
 type CooperationFormValues = z.infer<typeof cooperationSchema>;
@@ -64,6 +66,7 @@ function toFormValues(project?: CooperationProject): CooperationFormValues {
     partner: toBilingualValue(project?.partner),
     scale: toBilingualValue(project?.scale),
     status: toBilingualValue(project?.status),
+    image: project?.image ?? "",
   };
 }
 
@@ -93,6 +96,7 @@ export function CooperationFormDialog({
       partner: toBilingualPayload(values.partner),
       scale: toBilingualPayload(values.scale),
       status: toBilingualPayload(values.status),
+      image: values.image || undefined,
     };
 
     try {
@@ -250,6 +254,29 @@ export function CooperationFormDialog({
                   </FormControl>
                   <FormDescription>
                     Mô tả tiến độ hiển thị trên thẻ, ví dụ “Đã bàn giao”.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="image"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Ảnh phối cảnh</FormLabel>
+                  <FormControl>
+                    <ImagePickerField
+                      value={field.value}
+                      onChange={field.onChange}
+                      folder="cooperation"
+                      aspect="3/2"
+                      alt="Ảnh phối cảnh dự án hợp tác"
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Không bắt buộc — không có ảnh thì thẻ dùng nền thương hiệu.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>

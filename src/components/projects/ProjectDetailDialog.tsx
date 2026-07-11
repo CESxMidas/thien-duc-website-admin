@@ -6,7 +6,7 @@
 
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+import { ImageOff, Loader2 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -19,11 +19,13 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Tabs } from "@/components/ui/tabs";
+import { ProjectContentTab } from "@/components/projects/ProjectContentTab";
 import { ProjectGalleryTab } from "@/components/projects/ProjectGalleryTab";
 import { ProjectItemsTab } from "@/components/projects/ProjectItemsTab";
 import { useAuth } from "@/context/AuthContext";
 import { useProject, useUpdateProjectStatus } from "@/lib/api/queries";
 import { resolveApiError } from "@/lib/api-error-message";
+import { resolveAssetUrl } from "@/lib/asset-url";
 import {
   contentStatusLabel,
   contentStatusTone,
@@ -32,7 +34,7 @@ import {
 } from "@/lib/labels";
 import type { ContentStatus, ProjectDetail } from "@/types";
 
-type TabValue = "info" | "gallery" | "items";
+type TabValue = "info" | "content" | "gallery" | "items";
 
 /** Các bước duyệt hợp lệ từ trạng thái hiện tại (ED-03: nháp → chờ duyệt → đã đăng). */
 const STATUS_ACTIONS: Record<
@@ -92,6 +94,7 @@ export function ProjectDetailDialog({
             onChange={setTab}
             tabs={[
               { value: "info", label: "Thông tin" },
+              { value: "content", label: "Nội dung" },
               {
                 value: "gallery",
                 label: "Hình ảnh",
@@ -101,6 +104,7 @@ export function ProjectDetailDialog({
             ]}
           >
             {tab === "info" && <InfoTab project={project} />}
+            {tab === "content" && <ProjectContentTab project={project} />}
             {tab === "gallery" && <ProjectGalleryTab project={project} />}
             {tab === "items" && <ProjectItemsTab project={project} />}
           </Tabs>
@@ -131,6 +135,21 @@ function InfoTab({ project }: { project: ProjectDetail }) {
 
   return (
     <div className="space-y-4">
+      {project.image ? (
+        <img
+          src={resolveAssetUrl(project.image)}
+          alt={`Ảnh đại diện ${project.title.vi}`}
+          className="aspect-3/2 w-full rounded-xl border border-line bg-cream object-cover"
+        />
+      ) : (
+        <div className="grid aspect-3/2 w-full place-items-center rounded-xl border border-dashed border-line bg-cream/40 text-slate/60">
+          <div className="flex flex-col items-center gap-1 text-sm">
+            <ImageOff className="size-6" aria-hidden />
+            Chưa có ảnh đại diện — thêm ở nút “Sửa”.
+          </div>
+        </div>
+      )}
+
       <DetailList
         fields={[
           { label: "Vị trí", value: project.location ?? "—" },

@@ -19,6 +19,7 @@ export interface CreateCooperationInput {
   partner: Bilingual;
   scale: Bilingual;
   status: Bilingual;
+  image?: string;
   contentStatus?: ContentStatus;
   order?: number;
 }

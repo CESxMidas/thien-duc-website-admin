@@ -23,11 +23,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useMyProfile, useUpdateMyProfile } from "@/lib/api/queries";
 import { resolveApiError } from "@/lib/api-error-message";
-import {
-  formatDateTime,
-  profileFieldLabel,
-  roleLabel,
-} from "@/lib/labels";
+import { formatDateTime, profileFieldLabel, roleLabel } from "@/lib/labels";
 import type { BadgeTone } from "@/lib/labels";
 import type { MyProfile, ProfilePayload, Role } from "@/types";
 
@@ -145,7 +141,9 @@ function ProfileContent({ profile }: { profile: MyProfile }) {
                 <span className="font-medium">
                   {profileFieldLabel[key] ?? key}:
                 </span>{" "}
-                {key === "avatarUrl" ? "(ảnh mới)" : String(value) || "(để trống)"}
+                {key === "avatarUrl"
+                  ? "(ảnh mới)"
+                  : String(value) || "(để trống)"}
               </li>
             ))}
           </ul>
@@ -160,162 +158,163 @@ function ProfileContent({ profile }: { profile: MyProfile }) {
           onSubmit={form.handleSubmit(onSubmit)}
           className="grid items-start gap-6 lg:grid-cols-3"
         >
-        {/* Thẻ danh tính + ảnh đại diện */}
-        <Card className="h-fit">
-          <CardContent className="flex flex-col items-center pt-6 text-center">
-            <FormField
-              control={form.control}
-              name="avatarUrl"
-              render={({ field }) => (
-                <FormItem className="w-36">
-                  <FormControl>
-                    <ImagePickerField
-                      value={field.value ?? ""}
-                      onChange={field.onChange}
-                      folder="misc"
-                      aspect="1/1"
-                      alt="Ảnh đại diện"
-                    />
-                  </FormControl>
-                </FormItem>
+          {/* Thẻ danh tính + ảnh đại diện */}
+          <Card className="h-fit">
+            <CardContent className="flex flex-col items-center pt-6 text-center">
+              <FormField
+                control={form.control}
+                name="avatarUrl"
+                render={({ field }) => (
+                  <FormItem className="w-36">
+                    <FormControl>
+                      <ImagePickerField
+                        value={field.value ?? ""}
+                        onChange={field.onChange}
+                        folder="misc"
+                        aspect="1/1"
+                        alt="Ảnh đại diện"
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+              <h2 className="mt-4 text-lg font-semibold text-ink">
+                {profile.name}
+              </h2>
+              {profile.position && (
+                <p className="text-sm text-slate">{profile.position}</p>
               )}
-            />
-            <h2 className="mt-4 text-lg font-semibold text-ink">
-              {profile.name}
-            </h2>
-            {profile.position && (
-              <p className="text-sm text-slate">{profile.position}</p>
-            )}
-            <Badge variant={roleTone[profile.role]} className="mt-3">
-              <ShieldCheck className="size-3.5" /> {roleLabel[profile.role]}
-            </Badge>
+              <Badge variant={roleTone[profile.role]} className="mt-3">
+                <ShieldCheck className="size-3.5" /> {roleLabel[profile.role]}
+              </Badge>
 
-            <dl className="mt-6 w-full space-y-2 border-t border-line pt-4 text-left text-sm">
-              <div className="flex items-center gap-2 text-slate">
-                <Mail className="size-4 shrink-0" />
-                <span className="truncate" title={profile.email}>
-                  {profile.email}
-                </span>
-              </div>
-              {profile.department && (
+              <dl className="mt-6 w-full space-y-2 border-t border-line pt-4 text-left text-sm">
                 <div className="flex items-center gap-2 text-slate">
-                  <span className="shrink-0 text-xs uppercase tracking-wide">
-                    Phòng ban
+                  <Mail className="size-4 shrink-0" />
+                  <span className="truncate" title={profile.email}>
+                    {profile.email}
                   </span>
-                  <span className="truncate text-ink">{profile.department}</span>
                 </div>
-              )}
-              <div className="flex items-center gap-2 text-slate">
-                <Clock className="size-4 shrink-0" />
-                <span>Tham gia {formatDateTime(profile.createdAt)}</span>
-              </div>
-            </dl>
-          </CardContent>
-        </Card>
-
-        {/* Biểu mẫu chỉnh sửa */}
-        <Card className="lg:col-span-2">
-          <CardHeader className="border-b">
-            <CardTitle className="text-base">Chỉnh sửa hồ sơ</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4 pt-5">
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <FormField
-                    control={form.control}
-                    name="name"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Tên hiển thị *</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Nguyễn Văn A" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="phone"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Số điện thoại</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="tel"
-                            placeholder="09xx xxx xxx"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="position"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Chức vụ</FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="Biên tập viên nội dung"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="department"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Phòng ban</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Marketing" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                {profile.department && (
+                  <div className="flex items-center gap-2 text-slate">
+                    <span className="shrink-0 text-xs uppercase tracking-wide">
+                      Phòng ban
+                    </span>
+                    <span className="truncate text-ink">
+                      {profile.department}
+                    </span>
+                  </div>
+                )}
+                <div className="flex items-center gap-2 text-slate">
+                  <Clock className="size-4 shrink-0" />
+                  <span>Tham gia {formatDateTime(profile.createdAt)}</span>
                 </div>
+              </dl>
+            </CardContent>
+          </Card>
 
+          {/* Biểu mẫu chỉnh sửa */}
+          <Card className="lg:col-span-2">
+            <CardHeader className="border-b">
+              <CardTitle className="text-base">Chỉnh sửa hồ sơ</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4 pt-5">
+              <div className="grid gap-4 sm:grid-cols-2">
                 <FormField
                   control={form.control}
-                  name="bio"
+                  name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Giới thiệu</FormLabel>
+                      <FormLabel>Tên hiển thị *</FormLabel>
                       <FormControl>
-                        <Textarea
-                          rows={2}
-                          placeholder="Vài dòng giới thiệu về bạn."
-                          {...field}
-                        />
+                        <Input placeholder="Nguyễn Văn A" {...field} />
                       </FormControl>
-                      <FormDescription>
-                        Email và vai trò do quản trị viên quản lý, không sửa ở
-                        đây.
-                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
+                <FormField
+                  control={form.control}
+                  name="phone"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Số điện thoại</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="tel"
+                          placeholder="09xx xxx xxx"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="position"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Chức vụ</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Biên tập viên nội dung"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="department"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Phòng ban</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Marketing" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
-                <div className="flex justify-end">
-                  <Button
-                    type="submit"
-                    disabled={update.isPending || !form.formState.isDirty}
-                  >
-                    {update.isPending && (
-                      <Loader2 className="size-4 animate-spin" />
-                    )}
-                    {isEditor ? "Gửi yêu cầu duyệt" : "Lưu thay đổi"}
-                  </Button>
-                </div>
-          </CardContent>
-        </Card>
+              <FormField
+                control={form.control}
+                name="bio"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Giới thiệu</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        rows={2}
+                        placeholder="Vài dòng giới thiệu về bạn."
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      Email và vai trò do quản trị viên quản lý/cập nhật.
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div className="flex justify-end">
+                <Button
+                  type="submit"
+                  disabled={update.isPending || !form.formState.isDirty}
+                >
+                  {update.isPending && (
+                    <Loader2 className="size-4 animate-spin" />
+                  )}
+                  {isEditor ? "Gửi yêu cầu duyệt" : "Lưu thay đổi"}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </form>
       </Form>
     </div>

@@ -33,6 +33,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { BilingualField } from "@/components/ui/BilingualField";
+import { ImagePickerField } from "@/components/ui/ImagePickerField";
 import { useCreateProject, useUpdateProject } from "@/lib/api/queries";
 import { resolveApiError } from "@/lib/api-error-message";
 import { toBilingualPayload, toBilingualValue } from "@/lib/bilingual";
@@ -61,6 +62,9 @@ const projectSchema = z.object({
   summary: bilingual(10, "Mô tả ngắn tối thiểu 10 ký tự."),
   location: z.string().trim(),
   category: z.string().trim(),
+  // Ảnh đại diện (thẻ danh sách + hero trang chi tiết). Không bắt buộc nhưng
+  // thiếu thì trang công khai hiện ô trống — nên khuyến khích nhập.
+  image: z.string().trim(),
   status: z.enum(["DA_BAN_GIAO", "DANG_THI_CONG", "CHUAN_BI_KHOI_CONG"]),
 });
 
@@ -81,6 +85,7 @@ function toFormValues(project?: Project): ProjectFormValues {
     summary: toBilingualValue(project?.summary),
     location: project?.location ?? "",
     category: project?.category ?? "",
+    image: project?.image ?? "",
     status: project?.status ?? "CHUAN_BI_KHOI_CONG",
   };
 }
@@ -110,6 +115,7 @@ export function ProjectFormDialog({ trigger, project }: ProjectFormDialogProps) 
       // Chuỗi rỗng = không nhập; backend nhận `undefined` thay vì "".
       location: values.location || undefined,
       category: values.category || undefined,
+      image: values.image || undefined,
     };
 
     try {
@@ -143,8 +149,8 @@ export function ProjectFormDialog({ trigger, project }: ProjectFormDialogProps) 
           <DialogTitle>{isEdit ? "Sửa dự án" : "Tạo dự án mới"}</DialogTitle>
           <DialogDescription>
             {isEdit
-              ? "Cập nhật thông tin cơ bản. Ảnh và hạng mục sửa ở modal chi tiết."
-              : "Điền thông tin cơ bản. Có thể bổ sung hạng mục và ảnh sau khi tạo."}
+              ? "Cập nhật thông tin cơ bản và ảnh đại diện. Thư viện ảnh, hạng mục và nội dung chi tiết sửa ở modal chi tiết."
+              : "Điền thông tin cơ bản. Có thể bổ sung thư viện ảnh, hạng mục và nội dung sau khi tạo."}
           </DialogDescription>
         </DialogHeader>
 
@@ -240,6 +246,30 @@ export function ProjectFormDialog({ trigger, project }: ProjectFormDialogProps) 
                   <FormControl>
                     <Input placeholder="Khu đô thị / Chung cư / Nhà phố" {...field} />
                   </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="image"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Ảnh đại diện</FormLabel>
+                  <FormControl>
+                    <ImagePickerField
+                      value={field.value}
+                      onChange={field.onChange}
+                      folder="projects"
+                      aspect="3/2"
+                      alt="Ảnh đại diện dự án"
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Hiện ở thẻ danh sách và đầu trang chi tiết. Nên có để trang
+                    công khai không bị trống ảnh.
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}

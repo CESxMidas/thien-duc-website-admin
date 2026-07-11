@@ -16,6 +16,7 @@ import {
   useUpdateCooperationStatus,
 } from "@/lib/api/queries";
 import { resolveApiError } from "@/lib/api-error-message";
+import { resolveAssetUrl } from "@/lib/asset-url";
 import { contentStatusLabel, contentStatusTone, formatDateTime } from "@/lib/labels";
 import type { CooperationProject } from "@/types";
 
@@ -123,11 +124,28 @@ export function CooperationPage() {
       key: "name",
       header: "Dự án",
       render: (project) => (
-        <div>
-          <p className="font-medium text-ink">{project.name.vi}</p>
-          <p className="text-xs text-slate">
-            {project.location.vi} · {project.role.vi}
-          </p>
+        <div className="flex items-center gap-3">
+          {project.image ? (
+            <img
+              src={resolveAssetUrl(project.image)}
+              alt=""
+              loading="lazy"
+              className="size-11 shrink-0 rounded-lg border border-line bg-cream object-cover"
+            />
+          ) : (
+            <div
+              className="grid size-11 shrink-0 place-items-center rounded-lg bg-cream text-slate/50"
+              title="Chưa có ảnh phối cảnh"
+            >
+              <Handshake className="size-5" aria-hidden />
+            </div>
+          )}
+          <div className="min-w-0">
+            <p className="font-medium text-ink">{project.name.vi}</p>
+            <p className="text-xs text-slate">
+              {project.location.vi} · {project.role.vi}
+            </p>
+          </div>
         </div>
       ),
     },

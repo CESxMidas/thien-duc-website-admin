@@ -11,6 +11,7 @@ import { Loader2, Pencil, Plus, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BilingualField } from "@/components/ui/BilingualField";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { ImagePickerField } from "@/components/ui/ImagePickerField";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -249,12 +250,13 @@ export function ProjectItemsTab({ project }: { project: ProjectDetail }) {
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="item-image">Ảnh đại diện (URL)</Label>
-              <Input
-                id="item-image"
+              <Label>Ảnh đại diện</Label>
+              <ImagePickerField
                 value={form.image}
-                onChange={(e) => setForm({ ...form, image: e.target.value })}
-                placeholder="https://..."
+                onChange={(image) => setForm({ ...form, image })}
+                folder="projects"
+                aspect="3/2"
+                alt="Ảnh đại diện hạng mục"
               />
             </div>
           </div>
