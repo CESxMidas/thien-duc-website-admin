@@ -80,7 +80,10 @@ export function Sidebar({
           </button>
         </div>
 
-        <nav className="scrollbar-on-dark flex-1 space-y-1 overflow-y-auto px-3 py-4">
+        {/* `space-y-2` + `py-2.5`: giãn các mục chiếm hết chiều cao cột, không
+            dồn cục lên trên để lại khoảng trống lớn dưới đáy. Màn hình thấp
+            vẫn an toàn nhờ `overflow-y-auto`. */}
+        <nav className="scrollbar-on-dark flex-1 space-y-2 overflow-y-auto px-3 py-5">
           {items.map(({ to, label, icon: Icon }) => (
             <NavLink
               key={to}
@@ -92,7 +95,7 @@ export function Sidebar({
               // tồn tại trong DOM và chỉ đổi `scaleY`, nên nó *mọc* ra từ tâm
               // khi chuyển mục; nếu dựng/hủy phần tử thì nó bật ra tức thì.
               className={({ isActive }) =>
-                `group relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors duration-150 before:absolute before:inset-y-1.5 before:left-0 before:w-0.75 before:rounded-full before:bg-gold before:transition-transform before:duration-200 before:ease-enter ${
+                `group relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors duration-150 before:absolute before:inset-y-1.5 before:left-0 before:w-0.75 before:rounded-full before:bg-gold before:transition-transform before:duration-200 before:ease-enter ${
                   isActive
                     ? "bg-brand/25 font-medium text-white before:scale-y-100"
                     : "text-white/70 before:scale-y-0 hover:bg-white/8 hover:text-white"
