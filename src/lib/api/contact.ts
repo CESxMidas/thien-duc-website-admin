@@ -18,10 +18,6 @@ export function listLeads(): Promise<Lead[]> {
   return apiFetch<Lead[]>("/contact");
 }
 
-export function getLead(id: string): Promise<Lead> {
-  return apiFetch<Lead>(`/contact/${id}`);
-}
-
 export function updateLead(id: string, input: UpdateLeadInput): Promise<Lead> {
   return apiFetch<Lead>(`/contact/${id}`, {
     method: "PATCH",

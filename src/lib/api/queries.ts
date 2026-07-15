@@ -101,21 +101,6 @@ export function useDeleteNews() {
   return useNewsMutation(newsApi.deleteNews);
 }
 
-export function useCreateNewsCategory() {
-  return useNewsMutation(newsApi.createNewsCategory);
-}
-
-export function useUpdateNewsCategory() {
-  return useNewsMutation(
-    ({ slug, data }: { slug: string; data: newsApi.UpdateNewsCategoryInput }) =>
-      newsApi.updateNewsCategory(slug, data),
-  );
-}
-
-export function useDeleteNewsCategory() {
-  return useNewsMutation(newsApi.deleteNewsCategory);
-}
-
 /* -------------------------------------------------------------------------
    Trang nội dung — /pages
    ------------------------------------------------------------------------- */
@@ -153,10 +138,6 @@ export function useUpdatePageStatus() {
   );
 }
 
-export function useDeletePage() {
-  return usePagesMutation(pagesApi.deletePage);
-}
-
 /* -------------------------------------------------------------------------
    Banner — /banners
    ------------------------------------------------------------------------- */
@@ -192,10 +173,6 @@ export function useUpdateBanner() {
 
 export function useReorderBanners() {
   return useBannersMutation(bannersApi.reorderBanners);
-}
-
-export function useDeleteBanner() {
-  return useBannersMutation(bannersApi.deleteBanner);
 }
 
 /* -------------------------------------------------------------------------
@@ -379,20 +356,6 @@ export function useAddGalleryImage() {
       slug: string;
       data: projectsApi.CreateGalleryImageInput;
     }) => projectsApi.addGalleryImage(slug, data),
-  );
-}
-
-export function useUpdateGalleryImage() {
-  return useProjectsMutation(
-    ({
-      slug,
-      imageId,
-      data,
-    }: {
-      slug: string;
-      imageId: string;
-      data: projectsApi.UpdateGalleryImageInput;
-    }) => projectsApi.updateGalleryImage(slug, imageId, data),
   );
 }
 

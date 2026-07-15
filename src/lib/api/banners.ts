@@ -29,10 +29,6 @@ export function listBanners(): Promise<Banner[]> {
   return apiFetch<Banner[]>("/banners/admin");
 }
 
-export function getBanner(id: string): Promise<Banner> {
-  return apiFetch<Banner>(`/banners/admin/${id}`);
-}
-
 export function createBanner(input: CreateBannerInput): Promise<Banner> {
   return apiFetch<Banner>("/banners", {
     method: "POST",
@@ -59,8 +55,4 @@ export function reorderBanners(bannerIds: string[]): Promise<Banner[]> {
     method: "PATCH",
     body: JSON.stringify({ bannerIds }),
   });
-}
-
-export function deleteBanner(id: string): Promise<{ deleted: boolean }> {
-  return apiFetch<{ deleted: boolean }>(`/banners/${id}`, { method: "DELETE" });
 }

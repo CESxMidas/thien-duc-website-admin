@@ -66,13 +66,6 @@ export interface CreateGalleryImageInput {
   itemSlug?: string;
 }
 
-export interface UpdateGalleryImageInput {
-  url?: string;
-  caption?: Bilingual;
-  /** Chuỗi rỗng = gỡ ảnh khỏi hạng mục, đưa về cấp dự án (quy ước của backend). */
-  itemSlug?: string;
-}
-
 /* -------------------------------- Dự án --------------------------------- */
 
 /** Danh sách cho Admin CMS: gồm cả bản nháp và bài chờ duyệt. */
@@ -154,27 +147,12 @@ export function deleteProjectItem(
 
 /* ------------------------------ Thư viện ảnh ----------------------------- */
 
-export function listGallery(slug: string): Promise<ProjectGalleryImage[]> {
-  return apiFetch<ProjectGalleryImage[]>(`/projects/admin/${slug}/gallery`);
-}
-
 export function addGalleryImage(
   slug: string,
   input: CreateGalleryImageInput,
 ): Promise<ProjectGalleryImage> {
   return apiFetch<ProjectGalleryImage>(`/projects/${slug}/gallery`, {
     method: "POST",
-    body: JSON.stringify(input),
-  });
-}
-
-export function updateGalleryImage(
-  slug: string,
-  imageId: string,
-  input: UpdateGalleryImageInput,
-): Promise<ProjectGalleryImage> {
-  return apiFetch<ProjectGalleryImage>(`/projects/${slug}/gallery/${imageId}`, {
-    method: "PATCH",
     body: JSON.stringify(input),
   });
 }

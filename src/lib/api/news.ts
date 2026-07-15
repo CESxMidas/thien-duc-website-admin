@@ -33,20 +33,8 @@ export interface CreateNewsPostInput {
 
 export type UpdateNewsPostInput = Partial<CreateNewsPostInput>;
 
-export interface CreateNewsCategoryInput {
-  slug: string;
-  name: Bilingual;
-  order?: number;
-}
-
-export type UpdateNewsCategoryInput = Partial<CreateNewsCategoryInput>;
-
 export function listNews(): Promise<NewsPost[]> {
   return apiFetch<NewsPost[]>("/news/admin");
-}
-
-export function getNews(slug: string): Promise<NewsPost> {
-  return apiFetch<NewsPost>(`/news/admin/${encodeURIComponent(slug)}`);
 }
 
 export function createNews(input: CreateNewsPostInput): Promise<NewsPost> {
@@ -84,30 +72,4 @@ export function deleteNews(slug: string): Promise<{ deleted: boolean }> {
 
 export function listNewsCategories(): Promise<NewsCategory[]> {
   return apiFetch<NewsCategory[]>("/news/categories");
-}
-
-export function createNewsCategory(
-  input: CreateNewsCategoryInput,
-): Promise<NewsCategory> {
-  return apiFetch<NewsCategory>("/news/categories", {
-    method: "POST",
-    body: JSON.stringify(input),
-  });
-}
-
-export function updateNewsCategory(
-  slug: string,
-  input: UpdateNewsCategoryInput,
-): Promise<NewsCategory> {
-  return apiFetch<NewsCategory>(
-    `/news/categories/${encodeURIComponent(slug)}`,
-    { method: "PATCH", body: JSON.stringify(input) },
-  );
-}
-
-export function deleteNewsCategory(slug: string): Promise<{ deleted: boolean }> {
-  return apiFetch<{ deleted: boolean }>(
-    `/news/categories/${encodeURIComponent(slug)}`,
-    { method: "DELETE" },
-  );
 }

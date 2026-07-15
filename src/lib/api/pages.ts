@@ -23,10 +23,6 @@ export function listPages(): Promise<StaticPage[]> {
   return apiFetch<StaticPage[]>("/pages/admin");
 }
 
-export function getPage(slug: string): Promise<StaticPage> {
-  return apiFetch<StaticPage>(`/pages/admin/${encodeURIComponent(slug)}`);
-}
-
 export function createPage(input: CreatePageInput): Promise<StaticPage> {
   return apiFetch<StaticPage>("/pages", {
     method: "POST",
@@ -51,11 +47,5 @@ export function updatePageStatus(
   return apiFetch<StaticPage>(`/pages/${encodeURIComponent(slug)}/status`, {
     method: "PATCH",
     body: JSON.stringify({ status }),
-  });
-}
-
-export function deletePage(slug: string): Promise<{ deleted: boolean }> {
-  return apiFetch<{ deleted: boolean }>(`/pages/${encodeURIComponent(slug)}`, {
-    method: "DELETE",
   });
 }

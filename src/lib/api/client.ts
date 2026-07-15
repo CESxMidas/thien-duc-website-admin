@@ -223,6 +223,3 @@ async function requestWithRefresh<T>(
 
   return (body?.data ?? (body as unknown)) as T;
 }
-
-/** Bật cờ khi chưa cấu hình backend — các trang tự dùng mock data. */
-export const isApiConfigured = Boolean(API_URL);
