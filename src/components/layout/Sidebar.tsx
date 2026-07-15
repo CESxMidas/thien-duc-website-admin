@@ -59,8 +59,14 @@ export function Sidebar({
       >
         <div className="flex h-16 items-center justify-between border-b border-white/10 px-5">
           <div className="flex items-center gap-2.5">
-            <span className="grid size-9 place-items-center rounded-lg bg-gold font-display font-bold text-ink">
-              TĐ
+            {/* Logo chung với FE public (public/images/brand/logo-thien-duc.png) —
+                cùng một file thương hiệu, khác nền hộp cho phù hợp sidebar tối. */}
+            <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-white p-1">
+              <img
+                src="/images/brand/logo-thien-duc.png"
+                alt="Logo Thiên Đức"
+                className="size-full object-contain"
+              />
             </span>
             <div className="leading-tight">
               <p className="font-display text-sm font-semibold tracking-wide">
