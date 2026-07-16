@@ -15,7 +15,7 @@ Trang quản trị nội dung website Thiên Đức. Công nghệ đúng theo **
 > token khi access token hết hạn và khôi phục phiên khi tải lại trang.
 > **Toàn bộ trang dữ liệu (Dự án, Tin tức, Trang nội dung, Banner, Liên hệ, Thư
 > viện ảnh, Tài khoản, Tổng quan) đã nối API thật — không còn mock data.**
-> Tiến độ chi tiết: `thien-duc-website-docs/KE-HOACH-CODING.md`.
+> Tiến độ chi tiết: `thien-duc-website-docs/docs/04-implementation/implementation-plan.md`.
 > Quy ước code dùng chung cho FE/BE/Admin: `../AGENTS.md`.
 
 ## Chạy local
