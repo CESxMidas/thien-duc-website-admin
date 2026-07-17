@@ -15,7 +15,6 @@ import { BilingualField } from "@/components/ui/BilingualField";
 import { ImagePickerField } from "@/components/ui/ImagePickerField";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { useUpdateProject } from "@/lib/api/queries";
 import { resolveApiError } from "@/lib/api-error-message";
 import {
@@ -25,10 +24,21 @@ import {
   toBilingualValue,
   type BilingualValue,
 } from "@/lib/bilingual";
-import type { ProjectDetail, ProjectMapLocation } from "@/types";
+import type { Bilingual, ProjectDetail, ProjectMapLocation } from "@/types";
 
 /** Quick-fact trong form: nhãn + giá trị đều song ngữ (EN-FULL-C3). */
 type FactDraft = { label: BilingualValue; value: BilingualValue };
+
+/**
+ * Chuẩn hóa một field prose của bản đồ (EN-FULL-C5a) về payload song ngữ
+ * `{ vi, en? }`. Rỗng cả hai ngôn ngữ → `undefined` (bỏ field thay vì lưu chuỗi
+ * rỗng). Nhận cả dữ liệu cũ (chuỗi thuần) lẫn giá trị đang sửa trong form.
+ */
+function proseField(value?: Bilingual | string): Bilingual | undefined {
+  const bl = toBilingualLoose(value);
+  if (!bl.vi.trim() && !bl.en.trim()) return undefined;
+  return toBilingualPayload(bl);
+}
 
 /** Đưa một phần tử trong mảng lên/xuống một bậc (trả về mảng mới). */
 function move<T>(list: T[], index: number, delta: -1 | 1): T[] {
@@ -78,8 +88,17 @@ export function ProjectContentTab({ project }: { project: ProjectDetail }) {
           label: toBilingualPayload(f.label),
           value: toBilingualPayload(f.value),
         })),
-      // `null` xóa hẳn bản đồ; object thì gửi nguyên (kể cả labels giữ nguyên).
-      mapLocation: map,
+      // `null` xóa hẳn bản đồ. Ngược lại gửi nguyên object — labels + marker +
+      // ảnh giữ nguyên — chỉ chuẩn hóa prose (heading/description/address) sang
+      // song ngữ `{ vi, en? }` (EN-FULL-C5a); rỗng → bỏ hẳn field.
+      mapLocation: map
+        ? {
+            ...map,
+            heading: proseField(map.heading),
+            description: proseField(map.description),
+            address: proseField(map.address),
+          }
+        : null,
     };
     try {
       await updateProject.mutateAsync({
@@ -335,32 +354,42 @@ export function ProjectContentTab({ project }: { project: ProjectDetail }) {
 
             <div className="space-y-1.5">
               <Label htmlFor="map-heading">Tiêu đề</Label>
-              <Input
+              <BilingualField
                 id="map-heading"
-                value={map.heading ?? ""}
-                onChange={(e) => patchMap({ heading: e.target.value })}
-                placeholder="Tọa lạc tại trung tâm thành phố…"
+                value={toBilingualLoose(map.heading)}
+                onChange={(next) => patchMap({ heading: next })}
+                placeholder={{
+                  vi: "Tọa lạc tại trung tâm thành phố…",
+                  en: "Located in the heart of the city…",
+                }}
               />
             </div>
 
             <div className="space-y-1.5">
               <Label htmlFor="map-desc">Mô tả</Label>
-              <Textarea
+              <BilingualField
                 id="map-desc"
+                multiline
                 rows={2}
-                value={map.description ?? ""}
-                onChange={(e) => patchMap({ description: e.target.value })}
-                placeholder="Vài câu mô tả vị trí, tiện ích xung quanh…"
+                value={toBilingualLoose(map.description)}
+                onChange={(next) => patchMap({ description: next })}
+                placeholder={{
+                  vi: "Vài câu mô tả vị trí, tiện ích xung quanh…",
+                  en: "A few sentences about the location and nearby amenities…",
+                }}
               />
             </div>
 
             <div className="space-y-1.5">
               <Label htmlFor="map-address">Địa chỉ</Label>
-              <Input
+              <BilingualField
                 id="map-address"
-                value={map.address ?? ""}
-                onChange={(e) => patchMap({ address: e.target.value })}
-                placeholder="Phường …, thành phố …, tỉnh …"
+                value={toBilingualLoose(map.address)}
+                onChange={(next) => patchMap({ address: next })}
+                placeholder={{
+                  vi: "Phường …, thành phố …, tỉnh …",
+                  en: "… Ward, … City, … Province",
+                }}
               />
             </div>
 

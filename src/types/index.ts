@@ -53,12 +53,13 @@ export interface ProjectMapLabel {
 export interface ProjectMapLocation {
   image: string;
   googleMapsUrl: string;
-  heading?: string;
-  description?: string;
-  address?: string;
+  // Prose song ngữ (EN-FULL-C5a); chấp nhận `string` cho dữ liệu cũ chưa migrate.
+  heading?: Bilingual | string;
+  description?: Bilingual | string;
+  address?: Bilingual | string;
   markerLeft: number;
   markerTop: number;
-  /** Nhãn chữ vẽ đè lên ảnh nền — hiện chỉ chỉnh qua seed, admin giữ nguyên. */
+  /** Nhãn chữ vẽ đè lên ảnh nền — hiện chỉ chỉnh qua seed, admin giữ nguyên (C5b). */
   labels?: ProjectMapLabel[];
 }
 
