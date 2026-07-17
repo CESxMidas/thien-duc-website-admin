@@ -16,6 +16,19 @@ export function toBilingualValue(value?: Bilingual | null): BilingualValue {
   return { vi: value?.vi ?? "", en: value?.en ?? "" };
 }
 
+/**
+ * Như `toBilingualValue` nhưng chấp nhận cả **chuỗi thuần** — quick-fact cũ lưu
+ * `{ label: string, value: string }` (EN-FULL-C3). Chuỗi cũ nạp vào ô tiếng
+ * Việt, EN để trống chờ dịch; nhờ vậy form không render `[object Object]` và
+ * không mất dữ liệu VI đang có.
+ */
+export function toBilingualLoose(
+  value?: Bilingual | string | null,
+): BilingualValue {
+  if (typeof value === "string") return { vi: value, en: "" };
+  return toBilingualValue(value);
+}
+
 export function toBilingualPayload(value: BilingualValue): Bilingual {
   const en = value.en.trim();
   return { vi: value.vi.trim(), ...(en && { en }) };

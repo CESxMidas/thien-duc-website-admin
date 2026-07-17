@@ -28,10 +28,14 @@ export interface AuthUser {
   role: Role;
 }
 
-/** Một dòng thông số nhanh của dự án (`quick_facts`) — nhãn + giá trị, chữ thuần. */
+/**
+ * Một dòng thông số nhanh của dự án (`quick_facts`) — nhãn + giá trị **song ngữ**
+ * (EN-FULL-C3). Chấp nhận cả `string` để tương thích dữ liệu cũ (chưa song ngữ
+ * hóa); Admin luôn ghi lại dạng `Bilingual`.
+ */
 export interface ProjectFact {
-  label: string;
-  value: string;
+  label: Bilingual | string;
+  value: Bilingual | string;
 }
 
 /** Loại nhãn vẽ đè lên ảnh bản đồ nền của dự án. */

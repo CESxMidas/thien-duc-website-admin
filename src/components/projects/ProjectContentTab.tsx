@@ -20,15 +20,15 @@ import { useUpdateProject } from "@/lib/api/queries";
 import { resolveApiError } from "@/lib/api-error-message";
 import {
   emptyBilingual,
+  toBilingualLoose,
   toBilingualPayload,
   toBilingualValue,
   type BilingualValue,
 } from "@/lib/bilingual";
-import type {
-  ProjectDetail,
-  ProjectFact,
-  ProjectMapLocation,
-} from "@/types";
+import type { ProjectDetail, ProjectMapLocation } from "@/types";
+
+/** Quick-fact trong form: nhãn + giá trị đều song ngữ (EN-FULL-C3). */
+type FactDraft = { label: BilingualValue; value: BilingualValue };
 
 /** Đưa một phần tử trong mảng lên/xuống một bậc (trả về mảng mới). */
 function move<T>(list: T[], index: number, delta: -1 | 1): T[] {
@@ -44,14 +44,19 @@ export function ProjectContentTab({ project }: { project: ProjectDetail }) {
 
   const [description, setDescription] = useState<BilingualValue>(emptyBilingual);
   const [highlights, setHighlights] = useState<BilingualValue[]>([]);
-  const [facts, setFacts] = useState<ProjectFact[]>([]);
+  const [facts, setFacts] = useState<FactDraft[]>([]);
   const [map, setMap] = useState<ProjectMapLocation | null>(null);
 
   // Nạp lại state mỗi khi đổi dự án (modal tái sử dụng cho nhiều dự án).
   useEffect(() => {
     setDescription(toBilingualValue(project.description));
     setHighlights((project.highlights ?? []).map(toBilingualValue));
-    setFacts((project.quickFacts ?? []).map((f) => ({ ...f })));
+    setFacts(
+      (project.quickFacts ?? []).map((f) => ({
+        label: toBilingualLoose(f.label),
+        value: toBilingualLoose(f.value),
+      })),
+    );
     setMap(project.mapLocation ? { ...project.mapLocation } : null);
   }, [project]);
 
@@ -65,9 +70,14 @@ export function ProjectContentTab({ project }: { project: ProjectDetail }) {
       highlights: highlights
         .filter((h) => h.vi.trim())
         .map(toBilingualPayload),
+      // Hàng tồn tại khi có nhãn hoặc giá trị tiếng Việt (VI là nguồn); gửi cả
+      // vi + en của cả label lẫn value để không mất bản dịch đã nhập.
       quickFacts: facts
-        .filter((f) => f.label.trim() || f.value.trim())
-        .map((f) => ({ label: f.label.trim(), value: f.value.trim() })),
+        .filter((f) => f.label.vi.trim() || f.value.vi.trim())
+        .map((f) => ({
+          label: toBilingualPayload(f.label),
+          value: toBilingualPayload(f.value),
+        })),
       // `null` xóa hẳn bản đồ; object thì gửi nguyên (kể cả labels giữ nguyên).
       mapLocation: map,
     };
@@ -183,14 +193,20 @@ export function ProjectContentTab({ project }: { project: ProjectDetail }) {
               Thông số nhanh
             </h3>
             <p className="text-xs text-slate">
-              Cặp nhãn – giá trị, ví dụ “Tổng diện tích – 11,25 ha”.
+              Cặp nhãn – giá trị song ngữ (VI/EN), ví dụ “Tổng diện tích – 11,25
+              ha”. Chấm vàng trên nút EN = chưa có bản dịch.
             </p>
           </div>
           <Button
             type="button"
             variant="outline"
             size="sm"
-            onClick={() => setFacts([...facts, { label: "", value: "" }])}
+            onClick={() =>
+              setFacts([
+                ...facts,
+                { label: { ...emptyBilingual }, value: { ...emptyBilingual } },
+              ])
+            }
           >
             <Plus className="size-4" /> Thêm dòng
           </Button>
@@ -206,32 +222,40 @@ export function ProjectContentTab({ project }: { project: ProjectDetail }) {
               <li
                 key={index}
                 style={{ "--row-index": Math.min(index, 7) } as CSSProperties}
-                className="row-in flex items-center gap-2 rounded-xl border border-line p-2"
+                className="row-in flex items-start gap-2 rounded-xl border border-line p-2"
               >
-                <Input
-                  className="w-40 shrink-0"
-                  value={fact.label}
-                  onChange={(e) =>
-                    setFacts(
-                      facts.map((f, i) =>
-                        i === index ? { ...f, label: e.target.value } : f,
-                      ),
-                    )
-                  }
-                  placeholder="Nhãn"
-                />
-                <Input
-                  className="flex-1"
-                  value={fact.value}
-                  onChange={(e) =>
-                    setFacts(
-                      facts.map((f, i) =>
-                        i === index ? { ...f, value: e.target.value } : f,
-                      ),
-                    )
-                  }
-                  placeholder="Giá trị"
-                />
+                <div className="flex-1 space-y-2">
+                  <div className="space-y-1">
+                    <Label className="text-xs text-slate">Nhãn</Label>
+                    <BilingualField
+                      value={fact.label}
+                      onChange={(next) =>
+                        setFacts(
+                          facts.map((f, i) =>
+                            i === index ? { ...f, label: next } : f,
+                          ),
+                        )
+                      }
+                      placeholder={{ vi: "Tổng diện tích", en: "Total area" }}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs text-slate">Giá trị</Label>
+                    <BilingualField
+                      multiline
+                      rows={2}
+                      value={fact.value}
+                      onChange={(next) =>
+                        setFacts(
+                          facts.map((f, i) =>
+                            i === index ? { ...f, value: next } : f,
+                          ),
+                        )
+                      }
+                      placeholder={{ vi: "11,25 ha", en: "11.25 ha" }}
+                    />
+                  </div>
+                </div>
                 <RowControls
                   onUp={() => setFacts(move(facts, index, -1))}
                   onDown={() => setFacts(move(facts, index, 1))}
