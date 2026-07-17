@@ -42,12 +42,14 @@ function move<T>(list: T[], index: number, delta: -1 | 1): T[] {
 export function ProjectContentTab({ project }: { project: ProjectDetail }) {
   const updateProject = useUpdateProject();
 
+  const [description, setDescription] = useState<BilingualValue>(emptyBilingual);
   const [highlights, setHighlights] = useState<BilingualValue[]>([]);
   const [facts, setFacts] = useState<ProjectFact[]>([]);
   const [map, setMap] = useState<ProjectMapLocation | null>(null);
 
   // Nạp lại state mỗi khi đổi dự án (modal tái sử dụng cho nhiều dự án).
   useEffect(() => {
+    setDescription(toBilingualValue(project.description));
     setHighlights((project.highlights ?? []).map(toBilingualValue));
     setFacts((project.quickFacts ?? []).map((f) => ({ ...f })));
     setMap(project.mapLocation ? { ...project.mapLocation } : null);
@@ -55,6 +57,11 @@ export function ProjectContentTab({ project }: { project: ProjectDetail }) {
 
   async function onSave() {
     const payload = {
+      // Chỉ gửi khi có nội dung tiếng Việt: `undefined` = không đụng tới bản
+      // hiện có (không vô tình xóa). Gửi cả vi + en để không mất bản dịch.
+      description: description.vi.trim()
+        ? toBilingualPayload(description)
+        : undefined,
       highlights: highlights
         .filter((h) => h.vi.trim())
         .map(toBilingualPayload),
@@ -82,6 +89,28 @@ export function ProjectContentTab({ project }: { project: ProjectDetail }) {
 
   return (
     <div className="space-y-6">
+      {/* ------------------------ Mô tả tổng quan ------------------------ */}
+      <section className="space-y-3">
+        <div>
+          <h3 className="font-display text-sm font-semibold text-ink">
+            Mô tả tổng quan
+          </h3>
+          <p className="text-xs text-slate">
+            Đoạn mô tả dài hiện ở khối “Tổng quan” trang chi tiết dự án.
+          </p>
+        </div>
+        <BilingualField
+          multiline
+          rows={5}
+          value={description}
+          onChange={setDescription}
+          placeholder={{
+            vi: "Giới thiệu tổng quan về quy mô, vị trí, hạ tầng và tiến độ dự án…",
+            en: "An overview of the project's scale, location, infrastructure, and progress…",
+          }}
+        />
+      </section>
+
       {/* -------------------------- Điểm nổi bật -------------------------- */}
       <section className="space-y-3">
         <div className="flex items-center justify-between">

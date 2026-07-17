@@ -73,3 +73,26 @@ export function deleteNews(slug: string): Promise<{ deleted: boolean }> {
 export function listNewsCategories(): Promise<NewsCategory[]> {
   return apiFetch<NewsCategory[]>("/news/categories");
 }
+
+/**
+ * Sửa chuyên mục (PATCH /news/categories/:slug). Backend nhận `Partial` của
+ * DTO tạo mới nên chỉ cần gửi field muốn đổi — ở đây là `name` song ngữ để bổ
+ * sung bản dịch tiếng Anh. Không đổi `slug` để giữ liên kết công khai.
+ */
+export interface UpdateNewsCategoryInput {
+  name?: Bilingual;
+  order?: number;
+}
+
+export function updateNewsCategory(
+  slug: string,
+  input: UpdateNewsCategoryInput,
+): Promise<NewsCategory> {
+  return apiFetch<NewsCategory>(
+    `/news/categories/${encodeURIComponent(slug)}`,
+    {
+      method: "PATCH",
+      body: JSON.stringify(input),
+    },
+  );
+}

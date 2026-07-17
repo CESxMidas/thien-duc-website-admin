@@ -101,6 +101,17 @@ export function useDeleteNews() {
   return useNewsMutation(newsApi.deleteNews);
 }
 
+/**
+ * Sửa chuyên mục tin (tên song ngữ). `queryKeys.news` là tiền tố của
+ * `queryKeys.newsCategories` nên một lần invalidate làm mới cả danh sách chuyên mục.
+ */
+export function useUpdateNewsCategory() {
+  return useNewsMutation(
+    ({ slug, data }: { slug: string; data: newsApi.UpdateNewsCategoryInput }) =>
+      newsApi.updateNewsCategory(slug, data),
+  );
+}
+
 /* -------------------------------------------------------------------------
    Trang nội dung — /pages
    ------------------------------------------------------------------------- */

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Loader2, Pencil, Plus, Send, Trash2, Undo2 } from "lucide-react";
+import { Loader2, Pencil, Plus, Send, Tags, Trash2, Undo2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { PageHeader } from "@/components/ui/PageHeader";
@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { DataTable, type Column } from "@/components/ui/DataTable";
 import { NewsFormDialog } from "@/components/news/NewsFormDialog";
+import { NewsCategoryManagerDialog } from "@/components/news/NewsCategoryManagerDialog";
 import { useAuth } from "@/context/AuthContext";
 import {
   useDeleteNews,
@@ -186,13 +187,22 @@ export function NewsPage() {
             : "Chuyên mục và bài viết."
         }
         actions={
-          <NewsFormDialog
-            trigger={
-              <Button>
-                <Plus className="size-4" /> Viết tin
-              </Button>
-            }
-          />
+          <div className="flex gap-2">
+            <NewsCategoryManagerDialog
+              trigger={
+                <Button variant="outline">
+                  <Tags className="size-4" /> Chuyên mục
+                </Button>
+              }
+            />
+            <NewsFormDialog
+              trigger={
+                <Button>
+                  <Plus className="size-4" /> Viết tin
+                </Button>
+              }
+            />
+          </div>
         }
       />
 
