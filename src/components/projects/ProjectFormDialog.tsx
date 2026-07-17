@@ -43,6 +43,12 @@ const bilingual = (minVi: number, message: string) =>
     en: z.string().trim(),
   });
 
+/** Song ngữ không bắt buộc (location/category) — VI có thể để trống. */
+const optionalBilingual = z.object({
+  vi: z.string().trim(),
+  en: z.string().trim(),
+});
+
 // Schema kiểm tra dữ liệu bằng Zod (mục 2.5 — "Form: React Hook Form + Zod").
 const projectSchema = z.object({
   title: bilingual(3, "Tên dự án tối thiểu 3 ký tự."),
@@ -52,8 +58,8 @@ const projectSchema = z.object({
     .min(3, "Slug tối thiểu 3 ký tự.")
     .regex(/^[a-z0-9-]+$/, "Chỉ gồm chữ thường, số và dấu gạch ngang."),
   summary: bilingual(10, "Mô tả ngắn tối thiểu 10 ký tự."),
-  location: z.string().trim(),
-  category: z.string().trim(),
+  location: optionalBilingual,
+  category: optionalBilingual,
   // Ảnh đại diện (thẻ danh sách + hero trang chi tiết). Không bắt buộc nhưng
   // thiếu thì trang công khai hiện ô trống — nên khuyến khích nhập.
   image: z.string().trim(),
@@ -75,8 +81,8 @@ function toFormValues(project?: Project): ProjectFormValues {
     title: toBilingualValue(project?.title),
     slug: project?.slug ?? "",
     summary: toBilingualValue(project?.summary),
-    location: project?.location ?? "",
-    category: project?.category ?? "",
+    location: toBilingualValue(project?.location),
+    category: toBilingualValue(project?.category),
     image: project?.image ?? "",
     status: project?.status ?? "CHUAN_BI_KHOI_CONG",
   };
@@ -104,9 +110,14 @@ export function ProjectFormDialog({ trigger, project }: ProjectFormDialogProps) 
       title: toBilingualPayload(values.title),
       summary: toBilingualPayload(values.summary),
       status: values.status,
-      // Chuỗi rỗng = không nhập; backend nhận `undefined` thay vì "".
-      location: values.location || undefined,
-      category: values.category || undefined,
+      // Trống (VI rỗng) = không nhập; gửi `undefined` thay vì object rỗng. Gửi
+      // cả vi + en để giữ nguyên bản tiếng Việt khi biên tập viên thêm EN.
+      location: values.location.vi.trim()
+        ? toBilingualPayload(values.location)
+        : undefined,
+      category: values.category.vi.trim()
+        ? toBilingualPayload(values.category)
+        : undefined,
       image: values.image || undefined,
     };
 
@@ -266,7 +277,11 @@ export function ProjectFormDialog({ trigger, project }: ProjectFormDialogProps) 
                 <FormItem>
                   <FormLabel>Vị trí</FormLabel>
                   <FormControl>
-                    <Input placeholder="TP. Thủ Đức, TP.HCM" {...field} />
+                    <BilingualField
+                      value={field.value}
+                      onChange={field.onChange}
+                      placeholder={{ vi: "Bến Tre", en: "Ben Tre" }}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -280,7 +295,11 @@ export function ProjectFormDialog({ trigger, project }: ProjectFormDialogProps) 
                 <FormItem>
                   <FormLabel>Phân loại</FormLabel>
                   <FormControl>
-                    <Input placeholder="Khu đô thị / Chung cư…" {...field} />
+                    <BilingualField
+                      value={field.value}
+                      onChange={field.onChange}
+                      placeholder={{ vi: "Khu đô thị", en: "Urban Area" }}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

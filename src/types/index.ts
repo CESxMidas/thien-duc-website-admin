@@ -99,9 +99,9 @@ export interface Project {
   summary: Bilingual;
   status: ProjectStatus;
   contentStatus: ContentStatus;
-  location: string | null;
+  location: Bilingual | null;
   image: string | null;
-  category: string | null;
+  category: Bilingual | null;
   /** Điểm nổi bật — mảng field song ngữ; UI đọc/sửa `.vi` (EN tùy chọn). */
   highlights: Bilingual[] | null;
   /** Thông số nhanh (nhãn/giá trị). */

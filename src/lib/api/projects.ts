@@ -37,8 +37,8 @@ export interface CreateProjectInput {
   title: Bilingual;
   summary: Bilingual;
   status: ProjectStatus;
-  location?: string;
-  category?: string;
+  location?: Bilingual;
+  category?: Bilingual;
   image?: string;
   description?: Bilingual;
   /** Mảng field song ngữ; gửi cả `.vi` và `.en` để không mất bản dịch. */

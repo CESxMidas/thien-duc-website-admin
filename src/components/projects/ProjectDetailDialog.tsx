@@ -166,8 +166,8 @@ function InfoTab({ project }: { project: ProjectDetail }) {
     <div className="space-y-4">
       <DetailList
         fields={[
-          { label: "Vị trí", value: project.location ?? "—" },
-          { label: "Phân loại", value: project.category ?? "—" },
+          { label: "Vị trí", value: project.location?.vi ?? "—" },
+          { label: "Phân loại", value: project.category?.vi ?? "—" },
           { label: "Tình trạng", value: projectStatusLabel[project.status] },
           {
             label: "Trạng thái nội dung",

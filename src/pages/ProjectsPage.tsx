@@ -64,9 +64,9 @@ export function ProjectsPage() {
       render: (p) => (
         <span
           className="line-clamp-2 text-slate"
-          title={p.location ?? undefined}
+          title={p.location?.vi ?? undefined}
         >
-          {p.location ?? "—"}
+          {p.location?.vi ?? "—"}
         </span>
       ),
     },
