@@ -88,6 +88,12 @@ export interface ProjectItem {
   slug: string;
   title: Bilingual;
   summary: Bilingual | null;
+  /** Nội dung chi tiết; chấp nhận chuỗi thuần để đọc dữ liệu JSON cũ an toàn. */
+  description: Bilingual | string | null;
+  /** Các điểm nổi bật của riêng hạng mục. */
+  highlights: (Bilingual | string)[] | null;
+  /** Thông số nhanh (nhãn/giá trị) của riêng hạng mục. */
+  quickFacts: ProjectFact[] | null;
   /** Hạng mục có thể không đặt tình trạng riêng — khi đó lấy theo dự án cha. */
   status: ProjectStatus | null;
   image: string | null;

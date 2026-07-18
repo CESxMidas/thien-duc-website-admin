@@ -55,6 +55,9 @@ export interface CreateProjectItemInput {
   summary?: Bilingual;
   status?: ProjectStatus;
   image?: string;
+  description?: Bilingual;
+  highlights?: Bilingual[];
+  quickFacts?: ProjectFact[];
 }
 
 export type UpdateProjectItemInput = Partial<CreateProjectItemInput>;
