@@ -31,6 +31,8 @@ import {
 } from "@/lib/api/queries";
 import { BilingualField } from "@/components/ui/BilingualField";
 import { ImagePickerField } from "@/components/ui/ImagePickerField";
+import { useAuth } from "@/context/AuthContext";
+import { canBypassApproval } from "@/lib/roles";
 import { resolveApiError } from "@/lib/api-error-message";
 import {
   toBilingualPayload,
@@ -122,6 +124,10 @@ function toFormValues(post?: NewsPost): NewsFormValues {
 
 export function NewsFormDialog({ trigger, post }: NewsFormDialogProps) {
   const isEdit = post !== undefined;
+  const { user } = useAuth();
+  // SUPER_ADMIN bỏ qua luồng duyệt: backend đăng bài ngay khi tạo, nên đừng hứa
+  // "lưu ở trạng thái nháp" gây hiểu là còn phải bấm duyệt.
+  const bypassesApproval = canBypassApproval(user);
   const [open, setOpen] = useState(false);
   const createNews = useCreateNews();
   const updateNews = useUpdateNews();
@@ -186,7 +192,9 @@ export function NewsFormDialog({ trigger, post }: NewsFormDialogProps) {
         description={
           isEdit
             ? "Cập nhật nội dung bài. Trạng thái đăng đổi ở bảng danh sách."
-            : "Bài mới được lưu ở trạng thái nháp, gửi duyệt sau khi hoàn thiện."
+            : bypassesApproval
+              ? "Bài mới được đăng ngay khi tạo — không cần chờ duyệt."
+              : "Bài mới được lưu ở trạng thái nháp, gửi duyệt sau khi hoàn thiện."
         }
         media={
           <MediaSection
