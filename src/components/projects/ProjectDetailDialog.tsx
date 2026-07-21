@@ -30,22 +30,10 @@ import {
   formatDateTime,
   projectStatusLabel,
 } from "@/lib/labels";
+import { contentStatusActions } from "@/lib/content-status-actions";
 import type { ContentStatus, ProjectDetail } from "@/types";
 
 type TabValue = "info" | "content" | "items";
-
-/** Các bước duyệt hợp lệ từ trạng thái hiện tại (ED-03: nháp → chờ duyệt → đã đăng). */
-const STATUS_ACTIONS: Record<
-  ContentStatus,
-  { to: ContentStatus; label: string; variant?: "outline" }[]
-> = {
-  DRAFT: [{ to: "PENDING", label: "Gửi duyệt" }],
-  PENDING: [
-    { to: "PUBLISHED", label: "Duyệt & đăng" },
-    { to: "DRAFT", label: "Trả về nháp", variant: "outline" },
-  ],
-  PUBLISHED: [{ to: "DRAFT", label: "Gỡ xuống, về nháp", variant: "outline" }],
-};
 
 export function ProjectDetailDialog({
   slug,
@@ -149,7 +137,8 @@ function InfoTab({ project }: { project: ProjectDetail }) {
 
   // Duyệt/gỡ nội dung là quyền ADMIN trở lên (backend cũng chặn).
   const canApprove = user?.role === "ADMIN" || user?.role === "SUPER_ADMIN";
-  const actions = STATUS_ACTIONS[project.contentStatus];
+  // SUPER_ADMIN: DRAFT → "Đăng ngay" (PUBLISHED) thay vì "Gửi duyệt".
+  const actions = contentStatusActions(user?.role, project.contentStatus);
 
   async function onChangeStatus(to: ContentStatus) {
     try {
@@ -200,7 +189,8 @@ function InfoTab({ project }: { project: ProjectDetail }) {
           {actions.map((action) => (
             <Button
               key={action.to}
-              variant={action.variant}
+              // Thao tác lùi trạng thái (trả về nháp) là nút viền; còn lại nút đậm.
+              variant={action.intent === "revert" ? "outline" : undefined}
               disabled={updateStatus.isPending}
               onClick={() => void onChangeStatus(action.to)}
             >

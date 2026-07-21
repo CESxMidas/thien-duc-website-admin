@@ -17,6 +17,7 @@ import {
   useUpdateNewsStatus,
 } from "@/lib/api/queries";
 import { resolveApiError } from "@/lib/api-error-message";
+import { contentStatusActions } from "@/lib/content-status-actions";
 import {
   contentStatusLabel,
   contentStatusTone,
@@ -118,37 +119,25 @@ export function NewsPage() {
           >
             {busy && <Loader2 className="size-4 animate-spin text-slate" />}
 
-            {post.status === "DRAFT" && (
+            {contentStatusActions(user?.role, post.status).map((action) => (
               <Button
-                variant="ghost"
+                key={action.to}
+                // Thao tác chính (đăng/duyệt) là nút đậm; gửi duyệt/trả nháp là ghost.
+                variant={
+                  action.intent === "publish" || action.intent === "approve"
+                    ? undefined
+                    : "ghost"
+                }
                 size="sm"
                 disabled={busy}
-                onClick={() => void changeStatus(post, "PENDING")}
+                onClick={() => void changeStatus(post, action.to)}
               >
-                <Send className="size-4" /> Gửi duyệt
+                {action.intent === "submit" && <Send className="size-4" />}
+                {action.intent === "publish" && <Send className="size-4" />}
+                {action.intent === "revert" && <Undo2 className="size-4" />}
+                {action.label}
               </Button>
-            )}
-
-            {canApprove && post.status === "PENDING" && (
-              <Button
-                size="sm"
-                disabled={busy}
-                onClick={() => void changeStatus(post, "PUBLISHED")}
-              >
-                Duyệt &amp; đăng
-              </Button>
-            )}
-
-            {canApprove && post.status !== "DRAFT" && (
-              <Button
-                variant="ghost"
-                size="sm"
-                disabled={busy}
-                onClick={() => void changeStatus(post, "DRAFT")}
-              >
-                <Undo2 className="size-4" /> Trả về nháp
-              </Button>
-            )}
+            ))}
 
             <NewsFormDialog
               post={post}
