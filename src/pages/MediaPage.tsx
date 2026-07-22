@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { useAuth } from "@/context/AuthContext";
 import { useDeleteMedia, useMedia, useUploadMedia } from "@/lib/api/queries";
 import {
   MEDIA_FOLDERS,
@@ -23,9 +24,15 @@ export function MediaPage() {
   const [pending, setPending] = useState<MediaAsset | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  const { user } = useAuth();
   const { data: media = [], isLoading } = useMedia(folder);
   const upload = useUploadMedia();
   const remove = useDeleteMedia();
+
+  // Xóa ảnh là thao tác phá hủy (gỡ khỏi Cloudinary, có thể hỏng trang đang dùng)
+  // — chỉ ADMIN trở lên, khớp `@Roles(ADMIN, SUPER_ADMIN)` ở backend. EDITOR vẫn
+  // tải ảnh lên bình thường, chỉ không thấy nút xóa.
+  const canDelete = user?.role === "ADMIN" || user?.role === "SUPER_ADMIN";
 
   async function handleFiles(files: FileList | null) {
     if (!files?.length) return;
@@ -158,14 +165,16 @@ export function MediaPage() {
                   loading="lazy"
                   className="size-full object-cover"
                 />
-                <button
-                  type="button"
-                  onClick={() => setPending(asset)}
-                  aria-label={`Xóa ảnh ${fileNameOf(asset)}`}
-                  className="absolute right-2 top-2 grid size-9 place-items-center rounded-lg bg-white/90 text-slate opacity-0 transition hover:bg-white hover:text-red-600 focus-visible:opacity-100 group-hover:opacity-100"
-                >
-                  <Trash2 className="size-4" />
-                </button>
+                {canDelete && (
+                  <button
+                    type="button"
+                    onClick={() => setPending(asset)}
+                    aria-label={`Xóa ảnh ${fileNameOf(asset)}`}
+                    className="absolute right-2 top-2 grid size-9 place-items-center rounded-lg bg-white/90 text-slate opacity-0 transition hover:bg-white hover:text-red-600 focus-visible:opacity-100 group-hover:opacity-100"
+                  >
+                    <Trash2 className="size-4" />
+                  </button>
+                )}
               </div>
               <figcaption className="px-3 py-2">
                 <p className="truncate text-xs font-medium text-ink">
