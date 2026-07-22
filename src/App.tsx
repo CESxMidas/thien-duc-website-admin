@@ -35,7 +35,15 @@ export default function App() {
             <Route path="du-an" element={<ProjectsPage />} />
             <Route path="tin-tuc" element={<NewsPage />} />
             <Route path="trang" element={<PagesPage />} />
-            <Route path="banner" element={<BannersPage />} />
+            {/* Banner là nội dung trang chủ — chỉ Admin/Super Admin quản lý. */}
+            <Route
+              path="banner"
+              element={
+                <ProtectedRoute roles={["ADMIN", "SUPER_ADMIN"]}>
+                  <BannersPage />
+                </ProtectedRoute>
+              }
+            />
             <Route path="du-an-hop-tac" element={<CooperationPage />} />
             {/* Form liên hệ (lead) chỉ dành cho Admin/Super Admin. */}
             <Route

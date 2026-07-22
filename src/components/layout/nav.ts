@@ -28,7 +28,14 @@ export const navItems: NavItem[] = [
   { to: "/du-an-hop-tac", label: "Dự án hợp tác", icon: Handshake },
   { to: "/tin-tuc", label: "Tin tức", icon: Newspaper },
   { to: "/trang", label: "Trang nội dung", icon: FileText },
-  { to: "/banner", label: "Banner", icon: GalleryHorizontalEnd },
+  {
+    // Banner là nội dung trang chủ hiển thị cao, không có luồng duyệt riêng —
+    // chỉ ADMIN trở lên quản lý (khớp `@Roles(ADMIN, SUPER_ADMIN)` ở backend).
+    to: "/banner",
+    label: "Banner",
+    icon: GalleryHorizontalEnd,
+    roles: ["ADMIN", "SUPER_ADMIN"],
+  },
   {
     to: "/lien-he",
     label: "Liên hệ",
