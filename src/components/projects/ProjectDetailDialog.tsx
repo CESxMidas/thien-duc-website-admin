@@ -135,9 +135,9 @@ function InfoTab({ project }: { project: ProjectDetail }) {
   const { user } = useAuth();
   const updateStatus = useUpdateProjectStatus();
 
-  // Duyệt/gỡ nội dung là quyền ADMIN trở lên (backend cũng chặn).
-  const canApprove = user?.role === "ADMIN" || user?.role === "SUPER_ADMIN";
-  // SUPER_ADMIN: DRAFT → "Đăng ngay" (PUBLISHED) thay vì "Gửi duyệt".
+  // Thao tác trạng thái do helper dùng chung quyết định theo vai trò:
+  // SUPER_ADMIN DRAFT → "Đăng ngay"; EDITOR DRAFT → "Gửi duyệt"; PENDING/PUBLISHED
+  // chỉ ADMIN trở lên có nút. Ẩn cả cụm khi vai trò không có thao tác nào hợp lệ.
   const actions = contentStatusActions(user?.role, project.contentStatus);
 
   async function onChangeStatus(to: ContentStatus) {
@@ -184,7 +184,7 @@ function InfoTab({ project }: { project: ProjectDetail }) {
         ]}
       />
 
-      {canApprove && (
+      {actions.length > 0 && (
         <div className="flex flex-wrap justify-end gap-2 border-t border-line pt-4">
           {actions.map((action) => (
             <Button

@@ -15,14 +15,13 @@ export interface ContentStatusAction {
   intent: StatusIntent;
 }
 
-/** Vai trò được duyệt/gỡ nội dung (khớp `@Roles(ADMIN, SUPER_ADMIN)` ở backend). */
+/**
+ * Vai trò được **đăng thẳng / duyệt / gỡ** nội dung (khớp chốt quyền backend:
+ * route `.../status` cho EDITOR trở lên gọi, nhưng `assertContentStatusTransition`
+ * chỉ để ADMIN/SUPER_ADMIN đặt trạng thái tùy ý).
+ */
 function canApproveRole(role?: Role | null): boolean {
   return role === "ADMIN" || role === "SUPER_ADMIN";
-}
-
-/** Vai trò bỏ qua luồng duyệt cho chính thao tác của mình. */
-function canBypassRole(role?: Role | null): boolean {
-  return role === "SUPER_ADMIN";
 }
 
 const REVERT: ContentStatusAction = {
@@ -33,17 +32,18 @@ const REVERT: ContentStatusAction = {
 
 /**
  * Các thao tác đổi trạng thái khả dụng cho một vai trò tại một trạng thái, dùng
- * chung cho mọi module theo bậc thang `DRAFT → PENDING → PUBLISHED`
- * (Tin tức, Dự án). Gom về một chỗ để không lặp logic nút ở từng trang.
+ * chung cho cả bốn module nội dung (Tin tức, Dự án, Trang, Dự án hợp tác) theo
+ * bậc thang `DRAFT → PENDING → PUBLISHED`. Gom về một chỗ để không lặp logic nút.
  *
- * - **SUPER_ADMIN** bỏ qua luồng duyệt: từ DRAFT **đăng thẳng** (PUBLISHED) với
- *   nhãn "Đăng ngay", không phải "Gửi duyệt" — không tự gửi duyệt nội dung của
- *   chính mình.
- * - **ADMIN** giữ luồng duyệt: DRAFT → "Gửi duyệt" (PENDING) → "Duyệt & đăng".
- * - **EDITOR** chỉ gửi duyệt được bản nháp; không duyệt/gỡ.
+ * Quy tắc nghiệp vụ (Option B — công ty nhỏ, ít quản trị viên):
+ * - **ADMIN / SUPER_ADMIN**: từ DRAFT **đăng thẳng** (PUBLISHED) với nhãn
+ *   "Đăng ngay" — không phải tự gửi duyệt nội dung của chính mình; vẫn duyệt được
+ *   bài EDITOR gửi lên (PENDING → PUBLISHED) và trả về nháp.
+ * - **EDITOR**: chỉ **gửi duyệt** bản nháp (DRAFT → PENDING); không đăng/duyệt/gỡ.
  *
- * Backend (`PATCH .../status`, `@Roles(ADMIN, SUPER_ADMIN)`) mới là nơi chốt
- * quyền; helper này chỉ quyết định UI hiển thị nhãn/thao tác nào.
+ * Backend (`PATCH .../status` + `assertContentStatusTransition`) mới là nơi chốt
+ * quyền; helper này chỉ quyết định UI hiển thị nhãn/thao tác nào, luôn khớp với
+ * những gì backend cho phép để không hiện nút gây 403.
  */
 export function contentStatusActions(
   role: Role | undefined | null,
@@ -51,7 +51,7 @@ export function contentStatusActions(
 ): ContentStatusAction[] {
   switch (status) {
     case "DRAFT":
-      return canBypassRole(role)
+      return canApproveRole(role)
         ? [{ to: "PUBLISHED", label: "Đăng ngay", intent: "publish" }]
         : [{ to: "PENDING", label: "Gửi duyệt", intent: "submit" }];
     case "PENDING":

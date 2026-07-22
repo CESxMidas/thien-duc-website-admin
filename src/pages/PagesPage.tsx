@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Loader2, Pencil, Plus } from "lucide-react";
+import { Loader2, Pencil, Plus, Send, Undo2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { PageFormDialog } from "@/components/pages/PageFormDialog";
@@ -12,12 +12,13 @@ import { useAuth } from "@/context/AuthContext";
 import { usePages, useUpdatePageStatus } from "@/lib/api/queries";
 import { resolveApiError } from "@/lib/api-error-message";
 import { hasEnglish } from "@/lib/bilingual";
+import { contentStatusActions } from "@/lib/content-status-actions";
 import {
   contentStatusLabel,
   contentStatusTone,
   formatDateTime,
 } from "@/lib/labels";
-import type { StaticPage } from "@/types";
+import type { ContentStatus, StaticPage } from "@/types";
 
 export function PagesPage() {
   const { user } = useAuth();
@@ -26,15 +27,13 @@ export function PagesPage() {
   const [detail, setDetail] = useState<StaticPage | null>(null);
   const [busySlug, setBusySlug] = useState<string | null>(null);
 
-  // Backend chỉ cho ADMIN trở lên đổi trạng thái đăng — ẩn nút với EDITOR.
-  const canPublish = user?.role === "ADMIN" || user?.role === "SUPER_ADMIN";
-
-  async function togglePublished(page: StaticPage) {
-    const next = page.status === "PUBLISHED" ? "DRAFT" : "PUBLISHED";
+  // Thao tác trạng thái theo bậc thang DRAFT → PENDING → PUBLISHED, dùng chung
+  // helper với Tin tức/Dự án. Nút hiển thị và trạng thái đích do vai trò quyết định.
+  async function changeStatus(page: StaticPage, status: ContentStatus) {
     setBusySlug(page.slug);
     try {
-      await updateStatus.mutateAsync({ slug: page.slug, status: next });
-      toast.success(next === "PUBLISHED" ? "Đã đăng trang." : "Đã về nháp.");
+      await updateStatus.mutateAsync({ slug: page.slug, status });
+      toast.success(`Đã chuyển sang "${contentStatusLabel[status]}".`);
     } catch (error) {
       toast.error(resolveApiError(error, "Không đổi được trạng thái."));
     } finally {
@@ -105,19 +104,29 @@ export function PagesPage() {
               </Button>
             }
           />
-          {canPublish && (
+          {busySlug === page.slug && (
+            <Loader2 className="size-3.5 animate-spin text-slate" />
+          )}
+          {contentStatusActions(user?.role, page.status).map((action) => (
             <Button
-              variant="ghost"
+              key={action.to}
+              // Đăng/duyệt là nút đậm; gửi duyệt/trả nháp là ghost.
+              variant={
+                action.intent === "publish" || action.intent === "approve"
+                  ? undefined
+                  : "ghost"
+              }
               size="sm"
               disabled={busySlug === page.slug}
-              onClick={() => void togglePublished(page)}
+              onClick={() => void changeStatus(page, action.to)}
             >
-              {busySlug === page.slug && (
-                <Loader2 className="size-3.5 animate-spin" />
+              {(action.intent === "submit" || action.intent === "publish") && (
+                <Send className="size-4" />
               )}
-              {page.status === "PUBLISHED" ? "Về nháp" : "Đăng"}
+              {action.intent === "revert" && <Undo2 className="size-4" />}
+              {action.label}
             </Button>
-          )}
+          ))}
         </div>
       ),
     },

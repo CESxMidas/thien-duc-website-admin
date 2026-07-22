@@ -3,9 +3,10 @@ import { describe, it, expect } from "vitest";
 import { contentStatusActions } from "@/lib/content-status-actions";
 
 /**
- * ADMIN-SUPER-ADMIN-GLOBAL-ADMIN-WORKFLOW-FIX-M1: SUPER_ADMIN đăng thẳng từ nháp
- * ("Đăng ngay" → PUBLISHED), không đi qua "Gửi duyệt". ADMIN/EDITOR giữ luồng
- * duyệt cũ (nháp → gửi duyệt → duyệt & đăng).
+ * ADMIN-CONTENT-WORKFLOW-BUSINESS-RULE-AUDIT-M1 (Option B): ADMIN và SUPER_ADMIN
+ * đều đăng thẳng từ nháp ("Đăng ngay" → PUBLISHED), không tự gửi duyệt nội dung
+ * của chính mình. EDITOR chỉ gửi duyệt (nháp → PENDING) và không có thao tác ở
+ * PENDING/PUBLISHED.
  */
 describe("contentStatusActions", () => {
   it("SUPER_ADMIN: nháp đăng thẳng (PUBLISHED), không gửi duyệt", () => {
@@ -15,10 +16,10 @@ describe("contentStatusActions", () => {
     ]);
   });
 
-  it("ADMIN: nháp → Gửi duyệt (PENDING)", () => {
+  it("ADMIN: nháp đăng thẳng (PUBLISHED), không gửi duyệt", () => {
     const actions = contentStatusActions("ADMIN", "DRAFT");
     expect(actions).toEqual([
-      { to: "PENDING", label: "Gửi duyệt", intent: "submit" },
+      { to: "PUBLISHED", label: "Đăng ngay", intent: "publish" },
     ]);
   });
 

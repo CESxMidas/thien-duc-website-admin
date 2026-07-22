@@ -1,6 +1,16 @@
 import { useState } from "react";
 import { toast } from "sonner";
-import { ArrowDown, ArrowUp, Handshake, Loader2, Pencil, Plus, Trash2 } from "lucide-react";
+import {
+  ArrowDown,
+  ArrowUp,
+  Handshake,
+  Loader2,
+  Pencil,
+  Plus,
+  Send,
+  Trash2,
+  Undo2,
+} from "lucide-react";
 
 import { CooperationFormDialog } from "@/components/cooperation/CooperationFormDialog";
 import { PageHeader } from "@/components/ui/PageHeader";
@@ -17,8 +27,9 @@ import {
 } from "@/lib/api/queries";
 import { resolveApiError } from "@/lib/api-error-message";
 import { resolveAssetUrl } from "@/lib/asset-url";
+import { contentStatusActions } from "@/lib/content-status-actions";
 import { contentStatusLabel, contentStatusTone, formatDateTime } from "@/lib/labels";
-import type { CooperationProject } from "@/types";
+import type { ContentStatus, CooperationProject } from "@/types";
 
 /** Đổi chỗ hai phần tử, trả mảng mới — không sửa mảng gốc của React Query. */
 function swap(
@@ -58,12 +69,13 @@ export function CooperationPage() {
     }
   }
 
-  async function togglePublished(project: CooperationProject) {
-    const next = project.contentStatus === "PUBLISHED" ? "DRAFT" : "PUBLISHED";
+  // Thao tác trạng thái theo bậc thang DRAFT → PENDING → PUBLISHED, dùng chung
+  // helper với Tin tức/Dự án/Trang. Nút và trạng thái đích do vai trò quyết định.
+  async function changeStatus(project: CooperationProject, status: ContentStatus) {
     setBusyId(project.id);
     try {
-      await updateStatus.mutateAsync({ id: project.id, status: next });
-      toast.success(next === "PUBLISHED" ? "Đã đăng dự án." : "Đã ẩn dự án.");
+      await updateStatus.mutateAsync({ id: project.id, status });
+      toast.success(`Đã chuyển sang "${contentStatusLabel[status]}".`);
     } catch (error) {
       toast.error(resolveApiError(error, "Không đổi được trạng thái."));
     } finally {
@@ -160,30 +172,11 @@ export function CooperationPage() {
     {
       key: "contentStatus",
       header: "Trạng thái",
-      render: (project) =>
-        canManage ? (
-          <button
-            type="button"
-            disabled={busyId === project.id}
-            onClick={(event) => {
-              event.stopPropagation();
-              void togglePublished(project);
-            }}
-            aria-label={
-              project.contentStatus === "PUBLISHED"
-                ? "Ẩn dự án"
-                : "Đăng dự án"
-            }
-          >
-            <Badge variant={contentStatusTone[project.contentStatus]}>
-              {contentStatusLabel[project.contentStatus]}
-            </Badge>
-          </button>
-        ) : (
-          <Badge variant={contentStatusTone[project.contentStatus]}>
-            {contentStatusLabel[project.contentStatus]}
-          </Badge>
-        ),
+      render: (project) => (
+        <Badge variant={contentStatusTone[project.contentStatus]}>
+          {contentStatusLabel[project.contentStatus]}
+        </Badge>
+      ),
     },
     {
       key: "updatedAt",
@@ -204,6 +197,30 @@ export function CooperationPage() {
           className="flex justify-end gap-1"
           onClick={(event) => event.stopPropagation()}
         >
+          {busyId === project.id && (
+            <Loader2 className="size-3.5 animate-spin text-slate" />
+          )}
+          {contentStatusActions(user?.role, project.contentStatus).map(
+            (action) => (
+              <Button
+                key={action.to}
+                // Đăng/duyệt là nút đậm; gửi duyệt/trả nháp là ghost.
+                variant={
+                  action.intent === "publish" || action.intent === "approve"
+                    ? undefined
+                    : "ghost"
+                }
+                size="sm"
+                disabled={busyId === project.id}
+                onClick={() => void changeStatus(project, action.to)}
+              >
+                {(action.intent === "submit" ||
+                  action.intent === "publish") && <Send className="size-4" />}
+                {action.intent === "revert" && <Undo2 className="size-4" />}
+                {action.label}
+              </Button>
+            ),
+          )}
           <CooperationFormDialog
             project={project}
             trigger={
