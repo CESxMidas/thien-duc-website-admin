@@ -9,8 +9,11 @@
 
 import { apiFetch } from "./client";
 import type {
+  AccountInvitationMeta,
   AdminUser,
   AdminUserDetail,
+  CreateAccountInvitationInput,
+  CreateAccountInvitationResult,
   MyProfile,
   ProfileChangeRequestRow,
   ProfileChangeStatus,
@@ -48,6 +51,46 @@ export function createUser(input: CreateUserInput): Promise<AdminUser> {
     method: "POST",
     body: JSON.stringify(input),
   });
+}
+
+/* -------------------------------------------------------------------------
+   Lời mời thiết lập tài khoản (luồng chuẩn thay cho tạo trực tiếp có mật khẩu)
+   POST /users/invitations          -> { user, invitation }   (SUPER_ADMIN)
+   POST /users/:id/resend-invitation -> AccountInvitationMeta  (SUPER_ADMIN)
+   POST /users/:id/revoke-invitation -> { revoked }            (SUPER_ADMIN)
+
+   KHÔNG có field mật khẩu ở input; response KHÔNG bao giờ chứa token thô —
+   token chỉ được gửi qua email tới người được mời.
+   ------------------------------------------------------------------------- */
+
+/** SUPER_ADMIN tạo tài khoản qua lời mời — không đặt/không thấy mật khẩu. */
+export function createUserInvitation(
+  input: CreateAccountInvitationInput,
+): Promise<CreateAccountInvitationResult> {
+  return apiFetch<CreateAccountInvitationResult>("/users/invitations", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+}
+
+/** Gửi lại lời mời (thu hồi lời mời cũ, tạo lời mời mới + gửi email lại). */
+export function resendUserInvitation(
+  userId: string,
+): Promise<AccountInvitationMeta> {
+  return apiFetch<AccountInvitationMeta>(
+    `/users/${userId}/resend-invitation`,
+    { method: "POST" },
+  );
+}
+
+/** Thu hồi lời mời đang hiệu lực của một tài khoản chờ thiết lập. */
+export function revokeUserInvitation(
+  userId: string,
+): Promise<{ revoked: boolean }> {
+  return apiFetch<{ revoked: boolean }>(
+    `/users/${userId}/revoke-invitation`,
+    { method: "POST" },
+  );
 }
 
 export function updateUser(

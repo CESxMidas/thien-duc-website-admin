@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { toast } from "sonner";
-import { LockOpen, Pencil, UserPlus } from "lucide-react";
+import { LockOpen, MailX, Pencil, Send, UserPlus } from "lucide-react";
 
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Button } from "@/components/ui/button";
@@ -9,17 +9,27 @@ import { DataTable, type Column } from "@/components/ui/DataTable";
 import { UserFormDialog } from "@/components/users/UserFormDialog";
 import { UserDetailDialog } from "@/components/users/UserDetailDialog";
 import { DeactivateUserDialog } from "@/components/users/DeactivateUserDialog";
+import { RevokeInvitationDialog } from "@/components/users/RevokeInvitationDialog";
 import { useAuth } from "@/context/AuthContext";
-import { useReactivateUser, useUsers } from "@/lib/api/queries";
+import {
+  useReactivateUser,
+  useResendUserInvitation,
+  useUsers,
+} from "@/lib/api/queries";
+import { ApiRequestError } from "@/lib/api/client";
 import { resolveApiError } from "@/lib/api-error-message";
 import { roleLabel } from "@/lib/labels";
+import { getUserStatus } from "@/lib/user-status";
 import type { AdminUser } from "@/types";
 
 export function UsersPage() {
   const { data: users = [], isLoading } = useUsers();
   const { user: currentUser } = useAuth();
   const reactivate = useReactivateUser();
+  const resendInvitation = useResendUserInvitation();
   const [toDeactivate, setToDeactivate] = useState<AdminUser | null>(null);
+  const [toRevoke, setToRevoke] = useState<AdminUser | null>(null);
+  const [resendingId, setResendingId] = useState<string | null>(null);
   const [detailId, setDetailId] = useState<string | null>(null);
 
   // Chỉ Super Admin mới được thêm/sửa/khóa (backend cũng chặn). Admin thường
@@ -34,6 +44,25 @@ export function UsersPage() {
       toast.error(
         resolveApiError(error, "Không mở khóa được. Vui lòng thử lại."),
       );
+    }
+  }
+
+  async function onResendInvitation(user: AdminUser) {
+    setResendingId(user.id);
+    try {
+      await resendInvitation.mutateAsync(user.id);
+      toast.success("Đã gửi lại lời mời thiết lập mật khẩu.");
+    } catch (error) {
+      // Backend trả 429 khi còn trong thời gian chờ (cooldown 60s).
+      if (error instanceof ApiRequestError && error.status === 429) {
+        toast.error("Vui lòng chờ trước khi gửi lại lời mời.");
+      } else {
+        toast.error(
+          resolveApiError(error, "Không gửi lại được lời mời. Vui lòng thử lại."),
+        );
+      }
+    } finally {
+      setResendingId(null);
     }
   }
 
@@ -63,11 +92,10 @@ export function UsersPage() {
     {
       key: "isActive",
       header: "Trạng thái",
-      render: (u) => (
-        <Badge variant={u.isActive ? "green" : "gray"}>
-          {u.isActive ? "Hoạt động" : "Đã khóa"}
-        </Badge>
-      ),
+      render: (u) => {
+        const status = getUserStatus(u);
+        return <Badge variant={status.tone}>{status.label}</Badge>;
+      },
     },
     {
       key: "actions",
@@ -75,6 +103,7 @@ export function UsersPage() {
       render: (u) => {
         if (!canManage) return null;
         const isSelf = u.id === currentUser?.id;
+        const status = getUserStatus(u);
         return (
           // stopPropagation: hàng đã bấm được để mở chi tiết — các nút thao
           // tác không được kích hoạt luôn cả modal.
@@ -91,7 +120,29 @@ export function UsersPage() {
                 </Button>
               }
             />
-            {u.isActive ? (
+            {status.isPending ? (
+              // Tài khoản chờ thiết lập: gửi lại / thu hồi lời mời thay cho khóa.
+              <>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => void onResendInvitation(u)}
+                  disabled={resendingId === u.id}
+                >
+                  <Send className="size-4" />
+                  Gửi lại lời mời
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-red-600 hover:bg-red-50 hover:text-red-700"
+                  onClick={() => setToRevoke(u)}
+                >
+                  <MailX className="size-4" />
+                  Thu hồi
+                </Button>
+              </>
+            ) : u.isActive ? (
               <Button
                 variant="ghost"
                 size="sm"
@@ -155,6 +206,12 @@ export function UsersPage() {
         user={toDeactivate}
         open={toDeactivate !== null}
         onOpenChange={(open) => !open && setToDeactivate(null)}
+      />
+
+      <RevokeInvitationDialog
+        user={toRevoke}
+        open={toRevoke !== null}
+        onOpenChange={(open) => !open && setToRevoke(null)}
       />
     </div>
   );

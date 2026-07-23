@@ -249,6 +249,13 @@ export interface AdminUser {
   role: Role;
   isActive: boolean;
   createdAt: string;
+  /**
+   * Thời điểm tài khoản hoàn tất thiết lập mật khẩu (luồng lời mời).
+   * `null` = tài khoản do lời mời tạo ra, đang chờ người dùng tự đặt mật khẩu.
+   * `undefined` = backend chưa expose field này trong response (xem
+   * getUserStatus): coi như đã hoạt động, không hiện trạng thái "chờ thiết lập".
+   */
+  setupCompletedAt?: string | null;
 }
 
 /** GET /users/:id — chi tiết một tài khoản (modal xem thông tin). */
@@ -256,6 +263,35 @@ export interface AdminUserDetail extends AdminUser {
   updatedAt: string;
   /** Hạn khóa tạm do đăng nhập sai nhiều lần; null = không bị khóa tạm. */
   lockedUntil: string | null;
+}
+
+/** POST /users/invitations — SUPER_ADMIN tạo tài khoản qua lời mời (không mật khẩu). */
+export interface CreateAccountInvitationInput {
+  name: string;
+  email: string;
+  role: Role;
+}
+
+/** Metadata lời mời an toàn để hiển thị (KHÔNG bao giờ gồm token thô). */
+export interface AccountInvitationMeta {
+  id: string;
+  createdAt: string;
+  expiresAt: string;
+  usedAt: string | null;
+  revokedAt: string | null;
+}
+
+/** Response của POST /users/invitations: tài khoản mới + metadata lời mời. */
+export interface CreateAccountInvitationResult {
+  user: AdminUser;
+  invitation: AccountInvitationMeta;
+}
+
+/** POST /auth/accept-invitation — người được mời tự đặt mật khẩu đầu tiên. */
+export interface AcceptInvitationInput {
+  token: string;
+  newPassword: string;
+  confirmPassword: string;
 }
 
 /** Trạng thái yêu cầu cập nhật hồ sơ (ProfileChangeStatus của backend). */

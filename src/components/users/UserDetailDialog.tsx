@@ -7,6 +7,7 @@ import { DetailList } from "@/components/ui/DetailDialog";
 import { SplitModal } from "@/components/ui/SplitModal";
 import { useUser } from "@/lib/api/queries";
 import { formatDateTime, roleLabel } from "@/lib/labels";
+import { getUserStatus } from "@/lib/user-status";
 
 export function UserDetailDialog({
   userId,
@@ -61,11 +62,10 @@ export function UserDetailDialog({
               { label: "Vai trò", value: roleLabel[user.role] },
               {
                 label: "Trạng thái",
-                value: (
-                  <Badge variant={user.isActive ? "green" : "gray"}>
-                    {user.isActive ? "Hoạt động" : "Đã khóa"}
-                  </Badge>
-                ),
+                value: (() => {
+                  const status = getUserStatus(user);
+                  return <Badge variant={status.tone}>{status.label}</Badge>;
+                })(),
               },
               ...(tempLocked
                 ? [

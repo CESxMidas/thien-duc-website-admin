@@ -26,7 +26,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useAuth } from "@/context/AuthContext";
-import { useCreateUser, useUpdateUser } from "@/lib/api/queries";
+import {
+  useCreateUserInvitation,
+  useUpdateUser,
+} from "@/lib/api/queries";
 import { resolveApiError } from "@/lib/api-error-message";
 import { roleLabel } from "@/lib/labels";
 import type { AdminUser, Role } from "@/types";
@@ -41,15 +44,14 @@ const baseSchema = z.object({
     .min(1, "Vui lòng nhập email.")
     .email("Email không đúng định dạng."),
   role: z.enum(["EDITOR", "ADMIN", "SUPER_ADMIN"]),
+  // Chỉ dùng khi SỬA (đặt lại mật khẩu). Tạo mới đi theo luồng lời mời — người
+  // dùng tự đặt mật khẩu qua email, SUPER_ADMIN không nhập mật khẩu ở đây.
   password: z.string(),
 });
 
-/** Tạo mới bắt buộc mật khẩu; khi sửa thì bỏ trống = giữ nguyên mật khẩu cũ. */
-function buildSchema(isEdit: boolean) {
+/** Khi sửa: bỏ trống = giữ nguyên mật khẩu cũ; có nhập thì tối thiểu 8 ký tự. */
+function buildSchema() {
   return baseSchema.refine(
-    (values) => isEdit || values.password.length >= 8,
-    { path: ["password"], message: "Mật khẩu phải có ít nhất 8 ký tự." },
-  ).refine(
     (values) => values.password.length === 0 || values.password.length >= 8,
     { path: ["password"], message: "Mật khẩu phải có ít nhất 8 ký tự." },
   );
@@ -67,7 +69,7 @@ export function UserFormDialog({ trigger, user }: UserFormDialogProps) {
   const isEdit = user !== undefined;
   const [open, setOpen] = useState(false);
   const { user: currentUser } = useAuth();
-  const createUser = useCreateUser();
+  const createInvitation = useCreateUserInvitation();
   const updateUser = useUpdateUser();
 
   // Backend chặn tự đổi vai trò của chính mình — khóa sẵn ô chọn để người dùng
@@ -75,7 +77,7 @@ export function UserFormDialog({ trigger, user }: UserFormDialogProps) {
   const isSelf = isEdit && user.id === currentUser?.id;
 
   const form = useForm<UserFormValues>({
-    resolver: zodResolver(buildSchema(isEdit)),
+    resolver: zodResolver(buildSchema()),
     defaultValues: {
       name: user?.name ?? "",
       email: user?.email ?? "",
@@ -109,13 +111,14 @@ export function UserFormDialog({ trigger, user }: UserFormDialogProps) {
         });
         toast.success("Đã lưu thay đổi.");
       } else {
-        await createUser.mutateAsync({
+        // Luồng lời mời: KHÔNG gửi mật khẩu. Backend tạo tài khoản chờ thiết
+        // lập và gửi email để người dùng tự đặt mật khẩu.
+        await createInvitation.mutateAsync({
           name: values.name,
           email: values.email,
           role: values.role,
-          password: values.password,
         });
-        toast.success(`Đã tạo tài khoản ${values.email}.`);
+        toast.success("Đã tạo tài khoản và gửi lời mời thiết lập mật khẩu.");
       }
       setOpen(false);
     } catch (error) {
@@ -145,7 +148,7 @@ export function UserFormDialog({ trigger, user }: UserFormDialogProps) {
         description={
           isEdit
             ? "Cập nhật thông tin và vai trò. Đổi mật khẩu hoặc vai trò sẽ đăng xuất người này khỏi mọi thiết bị."
-            : "Tài khoản mới đăng nhập được ngay bằng email và mật khẩu bạn đặt."
+            : "Hệ thống sẽ gửi email để người dùng tự thiết lập mật khẩu."
         }
         footer={
           <>
@@ -159,7 +162,7 @@ export function UserFormDialog({ trigger, user }: UserFormDialogProps) {
             </Button>
             <Button type="submit" form={formId} disabled={submitting}>
               {submitting && <Loader2 className="size-4 animate-spin" />}
-              {isEdit ? "Lưu thay đổi" : "Tạo tài khoản"}
+              {isEdit ? "Lưu thay đổi" : "Tạo tài khoản và gửi lời mời"}
             </Button>
           </>
         }
@@ -198,30 +201,30 @@ export function UserFormDialog({ trigger, user }: UserFormDialogProps) {
               )}
             />
 
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>
-                    {isEdit ? "Mật khẩu mới" : "Mật khẩu"}
-                  </FormLabel>
-                  <FormControl>
-                    <PasswordInput
-                      autoComplete="new-password"
-                      placeholder="Tối thiểu 8 ký tự"
-                      {...field}
-                    />
-                  </FormControl>
-                  {isEdit && (
+            {/* Tạo mới KHÔNG có ô mật khẩu — người dùng tự đặt qua email lời
+                mời. Ô này chỉ hiện khi SỬA (đặt lại mật khẩu). */}
+            {isEdit && (
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Mật khẩu mới</FormLabel>
+                    <FormControl>
+                      <PasswordInput
+                        autoComplete="new-password"
+                        placeholder="Tối thiểu 8 ký tự"
+                        {...field}
+                      />
+                    </FormControl>
                     <FormDescription>
                       Để trống nếu không muốn đổi mật khẩu.
                     </FormDescription>
-                  )}
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
 
             <FormField
               control={form.control}

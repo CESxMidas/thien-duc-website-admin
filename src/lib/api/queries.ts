@@ -420,6 +420,21 @@ export function useCreateUser() {
   return useUsersMutation(usersApi.createUser);
 }
 
+/** Tạo tài khoản qua lời mời (luồng chuẩn — không mật khẩu). */
+export function useCreateUserInvitation() {
+  return useUsersMutation(usersApi.createUserInvitation);
+}
+
+/** Gửi lại lời mời cho một tài khoản chờ thiết lập. */
+export function useResendUserInvitation() {
+  return useUsersMutation(usersApi.resendUserInvitation);
+}
+
+/** Thu hồi lời mời của một tài khoản chờ thiết lập. */
+export function useRevokeUserInvitation() {
+  return useUsersMutation(usersApi.revokeUserInvitation);
+}
+
 export function useUpdateUser() {
   return useUsersMutation(
     ({ id, ...input }: usersApi.UpdateUserInput & { id: string }) =>

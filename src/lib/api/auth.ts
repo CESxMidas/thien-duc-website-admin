@@ -8,7 +8,7 @@
 // email, role) dùng để dựng user tạm ngay lập tức — tránh chờ mạng khi tải
 // trang — và làm phương án dự phòng nếu /auth/me lỗi.
 
-import type { AuthUser, Role } from "@/types";
+import type { AcceptInvitationInput, AuthUser, Role } from "@/types";
 import { decodeJwt, isTokenExpired, type JwtPayload } from "@/lib/jwt";
 import {
   apiFetch,
@@ -90,6 +90,41 @@ export async function login(
 
   setTokens(tokens.accessToken, tokens.refreshToken, remember);
   return fetchMeOrFallback(payload);
+}
+
+/* -------------------------------------------------------------------------
+   Lời mời thiết lập tài khoản — endpoint CÔNG KHAI (không cần đăng nhập).
+   Dùng `skipAuthHandler` để lỗi 400/401 của token lời mời KHÔNG kích hoạt luồng
+   "phiên hết hạn" toàn cục (toast + điều hướng về /dang-nhap). Token chỉ nằm
+   trong tham số hàm, không lưu storage, không log.
+   ------------------------------------------------------------------------- */
+
+/**
+ * Kiểm tra nhanh token lời mời cho UX (backend vẫn tự xác thực lại khi accept).
+ * Trả `{ valid }` — không kèm email/tên/vai trò.
+ */
+export async function validateInvitation(
+  token: string,
+): Promise<{ valid: boolean }> {
+  return apiFetch<{ valid: boolean }>(
+    "/auth/validate-invitation",
+    { method: "POST", body: JSON.stringify({ token }) },
+    { skipAuthHandler: true },
+  );
+}
+
+/**
+ * Chấp nhận lời mời + đặt mật khẩu đầu tiên. KHÔNG tạo phiên đăng nhập —
+ * người dùng đăng nhập lại bình thường sau đó.
+ */
+export async function acceptInvitation(
+  input: AcceptInvitationInput,
+): Promise<{ success: boolean; loginRequired: boolean }> {
+  return apiFetch<{ success: boolean; loginRequired: boolean }>(
+    "/auth/accept-invitation",
+    { method: "POST", body: JSON.stringify(input) },
+    { skipAuthHandler: true },
+  );
 }
 
 /** Đăng xuất: thu hồi refresh token ở backend (best-effort) rồi xóa token cục bộ. */

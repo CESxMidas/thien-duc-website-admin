@@ -35,6 +35,8 @@ vi.mock("@/context/AuthContext", () => ({
   }),
 }));
 
+let usersData: AdminUser[] = [row];
+
 vi.mock("@/lib/api/queries", () => {
   const hook = () => ({
     data: undefined,
@@ -45,12 +47,15 @@ vi.mock("@/lib/api/queries", () => {
     mutateAsync: vi.fn(async () => {}),
   });
   return {
-    useUsers: () => ({ data: [row], isLoading: false }),
+    useUsers: () => ({ data: usersData, isLoading: false }),
     useUser: hook,
     useCreateUser: hook,
+    useCreateUserInvitation: hook,
     useUpdateUser: hook,
     useDeactivateUser: hook,
     useReactivateUser: hook,
+    useResendUserInvitation: hook,
+    useRevokeUserInvitation: hook,
   };
 });
 
@@ -70,6 +75,7 @@ function renderUsersPage() {
 describe("UsersPage — quyền quản lý theo vai trò", () => {
   beforeEach(() => {
     currentRole = "ADMIN";
+    usersData = [row];
   });
 
   it("ADMIN: xem danh sách nhưng KHÔNG có nút thêm/sửa/khóa", () => {
@@ -98,5 +104,51 @@ describe("UsersPage — quyền quản lý theo vai trò", () => {
     ).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Sửa/ })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /^Khóa/ })).toBeInTheDocument();
+  });
+
+  it("tài khoản chờ thiết lập: badge 'Chờ thiết lập' + nút gửi lại/thu hồi (SUPER_ADMIN)", () => {
+    currentRole = "SUPER_ADMIN";
+    usersData = [{ ...row, setupCompletedAt: null }];
+    renderUsersPage();
+
+    expect(screen.getByText("Chờ thiết lập")).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /Gửi lại lời mời/ }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Thu hồi/ })).toBeInTheDocument();
+    // Không hiện nút "Khóa" cho tài khoản chờ thiết lập.
+    expect(screen.queryByRole("button", { name: /^Khóa/ })).toBeNull();
+  });
+
+  it("tài khoản đã hoạt động (setupCompletedAt != null): badge 'Đang hoạt động', không có nút lời mời", () => {
+    currentRole = "SUPER_ADMIN";
+    usersData = [{ ...row, setupCompletedAt: "2026-07-01T00:00:00Z" }];
+    renderUsersPage();
+
+    expect(screen.getByText("Đang hoạt động")).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /Gửi lại lời mời/ }),
+    ).toBeNull();
+  });
+
+  it("tài khoản bị vô hiệu hóa: badge 'Đã vô hiệu hóa'", () => {
+    currentRole = "SUPER_ADMIN";
+    usersData = [{ ...row, isActive: false, setupCompletedAt: null }];
+    renderUsersPage();
+
+    // isActive=false ưu tiên hơn chờ thiết lập.
+    expect(screen.getByText("Đã vô hiệu hóa")).toBeInTheDocument();
+  });
+
+  it("ADMIN: KHÔNG thấy nút gửi lại/thu hồi lời mời của tài khoản chờ thiết lập", () => {
+    currentRole = "ADMIN";
+    usersData = [{ ...row, setupCompletedAt: null }];
+    renderUsersPage();
+
+    expect(screen.getByText("Chờ thiết lập")).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /Gửi lại lời mời/ }),
+    ).toBeNull();
+    expect(screen.queryByRole("button", { name: /Thu hồi/ })).toBeNull();
   });
 });
