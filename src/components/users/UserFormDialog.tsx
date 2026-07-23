@@ -7,7 +7,6 @@ import { Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { PasswordInput } from "@/components/PasswordInput";
 import { SplitModal } from "@/components/ui/SplitModal";
 import {
   Form,
@@ -36,7 +35,10 @@ import type { AdminUser, Role } from "@/types";
 
 const roleOptions = Object.keys(roleLabel) as Role[];
 
-const baseSchema = z.object({
+// KHÔNG có field mật khẩu ở cả tạo mới lẫn sửa: người dùng tự đặt mật khẩu qua
+// email lời mời, và tự đổi qua luồng quên mật khẩu. SUPER_ADMIN không chọn,
+// không thấy, không gửi mật khẩu vĩnh viễn của tài khoản khác.
+const formSchema = z.object({
   name: z.string().trim().min(2, "Họ tên tối thiểu 2 ký tự."),
   email: z
     .string()
@@ -44,20 +46,9 @@ const baseSchema = z.object({
     .min(1, "Vui lòng nhập email.")
     .email("Email không đúng định dạng."),
   role: z.enum(["EDITOR", "ADMIN", "SUPER_ADMIN"]),
-  // Chỉ dùng khi SỬA (đặt lại mật khẩu). Tạo mới đi theo luồng lời mời — người
-  // dùng tự đặt mật khẩu qua email, SUPER_ADMIN không nhập mật khẩu ở đây.
-  password: z.string(),
 });
 
-/** Khi sửa: bỏ trống = giữ nguyên mật khẩu cũ; có nhập thì tối thiểu 8 ký tự. */
-function buildSchema() {
-  return baseSchema.refine(
-    (values) => values.password.length === 0 || values.password.length >= 8,
-    { path: ["password"], message: "Mật khẩu phải có ít nhất 8 ký tự." },
-  );
-}
-
-type UserFormValues = z.infer<typeof baseSchema>;
+type UserFormValues = z.infer<typeof formSchema>;
 
 interface UserFormDialogProps {
   trigger: ReactNode;
@@ -77,12 +68,11 @@ export function UserFormDialog({ trigger, user }: UserFormDialogProps) {
   const isSelf = isEdit && user.id === currentUser?.id;
 
   const form = useForm<UserFormValues>({
-    resolver: zodResolver(buildSchema()),
+    resolver: zodResolver(formSchema),
     defaultValues: {
       name: user?.name ?? "",
       email: user?.email ?? "",
       role: user?.role ?? "EDITOR",
-      password: "",
     },
   });
 
@@ -93,7 +83,6 @@ export function UserFormDialog({ trigger, user }: UserFormDialogProps) {
         name: user?.name ?? "",
         email: user?.email ?? "",
         role: user?.role ?? "EDITOR",
-        password: "",
       });
     }
   }, [open, user, form]);
@@ -105,9 +94,8 @@ export function UserFormDialog({ trigger, user }: UserFormDialogProps) {
           id: user.id,
           name: values.name,
           email: values.email,
-          // Giữ nguyên vai trò khi sửa chính mình; bỏ mật khẩu nếu để trống.
+          // Giữ nguyên vai trò khi sửa chính mình.
           ...(isSelf ? {} : { role: values.role }),
-          ...(values.password ? { password: values.password } : {}),
         });
         toast.success("Đã lưu thay đổi.");
       } else {
@@ -147,7 +135,7 @@ export function UserFormDialog({ trigger, user }: UserFormDialogProps) {
         title={isEdit ? "Sửa tài khoản" : "Thêm tài khoản"}
         description={
           isEdit
-            ? "Cập nhật thông tin và vai trò. Đổi mật khẩu hoặc vai trò sẽ đăng xuất người này khỏi mọi thiết bị."
+            ? "Cập nhật thông tin và vai trò. Nếu thay đổi vai trò, người dùng có thể cần đăng nhập lại."
             : "Hệ thống sẽ gửi email để người dùng tự thiết lập mật khẩu."
         }
         footer={
@@ -200,31 +188,6 @@ export function UserFormDialog({ trigger, user }: UserFormDialogProps) {
                 </FormItem>
               )}
             />
-
-            {/* Tạo mới KHÔNG có ô mật khẩu — người dùng tự đặt qua email lời
-                mời. Ô này chỉ hiện khi SỬA (đặt lại mật khẩu). */}
-            {isEdit && (
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Mật khẩu mới</FormLabel>
-                    <FormControl>
-                      <PasswordInput
-                        autoComplete="new-password"
-                        placeholder="Tối thiểu 8 ký tự"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormDescription>
-                      Để trống nếu không muốn đổi mật khẩu.
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            )}
 
             <FormField
               control={form.control}

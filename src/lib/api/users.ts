@@ -28,11 +28,14 @@ export interface CreateUserInput {
   role: Role;
 }
 
-/** Mọi field đều tùy chọn; `password` có truyền thì đặt lại mật khẩu. */
+/**
+ * Mọi field đều tùy chọn. KHÔNG có `password`: SUPER_ADMIN không được đặt mật
+ * khẩu cho tài khoản khác — người dùng tự đặt qua lời mời, tự đổi qua luồng
+ * quên mật khẩu. Backend cũng từ chối `password` trong PATCH /users/:id.
+ */
 export interface UpdateUserInput {
   name?: string;
   email?: string;
-  password?: string;
   role?: Role;
   isActive?: boolean;
 }
