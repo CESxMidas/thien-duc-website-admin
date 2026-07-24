@@ -59,7 +59,7 @@ export function AuthLayout({ children }: { children: ReactNode }) {
             Khu đô thị Hưng Phú
           </p>
           <p className="mt-2 max-w-md text-sm text-white/80">
-            Kiến tạo không gian sống hiện đại, hạ tầng đồng bộ tại TP. Thủ Đức
+            Công ty TNHH Đầu Tư - Xây Dựng - Thương Mại Thiên Đức
           </p>
         </div>
       </div>
