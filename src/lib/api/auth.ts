@@ -8,7 +8,12 @@
 // email, role) dùng để dựng user tạm ngay lập tức — tránh chờ mạng khi tải
 // trang — và làm phương án dự phòng nếu /auth/me lỗi.
 
-import type { AcceptInvitationInput, AuthUser, Role } from "@/types";
+import type {
+  AcceptInvitationInput,
+  AuthUser,
+  ResetPasswordInput,
+  Role,
+} from "@/types";
 import { decodeJwt, isTokenExpired, type JwtPayload } from "@/lib/jwt";
 import {
   apiFetch,
@@ -122,6 +127,55 @@ export async function acceptInvitation(
 ): Promise<{ success: boolean; loginRequired: boolean }> {
   return apiFetch<{ success: boolean; loginRequired: boolean }>(
     "/auth/accept-invitation",
+    { method: "POST", body: JSON.stringify(input) },
+    { skipAuthHandler: true },
+  );
+}
+
+/* -------------------------------------------------------------------------
+   Quên mật khẩu — 3 endpoint CÔNG KHAI (không cần đăng nhập). Dùng
+   `skipAuthHandler` để 400/401/429 KHÔNG kích hoạt luồng "phiên hết hạn" toàn
+   cục. Token đặt lại chỉ nằm trong tham số hàm — không lưu storage, không đưa
+   vào queryKey, không log.
+   ------------------------------------------------------------------------- */
+
+/**
+ * Yêu cầu gửi email đặt lại mật khẩu. Response LUÔN trung tính (backend không
+ * tiết lộ email có tồn tại hay không) — UI chỉ cần biết request đã được nhận.
+ */
+export async function requestPasswordReset(
+  email: string,
+): Promise<{ success: boolean; message: string }> {
+  return apiFetch<{ success: boolean; message: string }>(
+    "/auth/forgot-password",
+    { method: "POST", body: JSON.stringify({ email }) },
+    { skipAuthHandler: true },
+  );
+}
+
+/**
+ * Kiểm tra nhanh token đặt lại cho UX (backend vẫn tự xác thực lại khi reset).
+ * Trả `{ valid }` — không kèm email/tên/vai trò/metadata token.
+ */
+export async function validatePasswordReset(
+  token: string,
+): Promise<{ valid: boolean }> {
+  return apiFetch<{ valid: boolean }>(
+    "/auth/validate-password-reset",
+    { method: "POST", body: JSON.stringify({ token }) },
+    { skipAuthHandler: true },
+  );
+}
+
+/**
+ * Đặt lại mật khẩu bằng token. KHÔNG tạo phiên đăng nhập — người dùng đăng nhập
+ * lại bình thường sau đó. Mọi phiên cũ đã bị backend thu hồi.
+ */
+export async function resetPassword(
+  input: ResetPasswordInput,
+): Promise<{ success: boolean; message: string }> {
+  return apiFetch<{ success: boolean; message: string }>(
+    "/auth/reset-password",
     { method: "POST", body: JSON.stringify(input) },
     { skipAuthHandler: true },
   );

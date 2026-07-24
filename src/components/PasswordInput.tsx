@@ -21,11 +21,15 @@ function PasswordInput({
       <button
         type="button"
         onClick={() => setShow((v) => !v)}
-        tabIndex={-1}
         aria-label={show ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
-        className="absolute inset-y-0 right-0 flex items-center px-3 text-slate transition-colors hover:text-ink"
+        className="absolute inset-y-0 right-0 flex items-center rounded-sm px-3 text-slate transition-colors hover:text-ink"
       >
-        {show ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+        {/* Tên khả truy cập lấy từ aria-label ở trên — icon chỉ trang trí. */}
+        {show ? (
+          <EyeOff className="size-4" aria-hidden="true" />
+        ) : (
+          <Eye className="size-4" aria-hidden="true" />
+        )}
       </button>
     </div>
   );

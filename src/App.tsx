@@ -4,6 +4,8 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import { LoginPage } from "@/pages/LoginPage";
 import { AccountSetupPage } from "@/pages/AccountSetupPage";
+import { ForgotPasswordPage } from "@/pages/ForgotPasswordPage";
+import { ResetPasswordPage } from "@/pages/ResetPasswordPage";
 import { DashboardPage } from "@/pages/DashboardPage";
 import { ProjectsPage } from "@/pages/ProjectsPage";
 import { NewsPage } from "@/pages/NewsPage";
@@ -26,6 +28,9 @@ export default function App() {
           <Route path="/dang-nhap" element={<LoginPage />} />
           {/* Trang CÔNG KHAI: người được mời tự đặt mật khẩu (ngoài ProtectedRoute). */}
           <Route path="/thiet-lap-tai-khoan" element={<AccountSetupPage />} />
+          {/* Trang CÔNG KHAI: quên / đặt lại mật khẩu (ngoài ProtectedRoute). */}
+          <Route path="/quen-mat-khau" element={<ForgotPasswordPage />} />
+          <Route path="/dat-lai-mat-khau" element={<ResetPasswordPage />} />
           <Route path="/403" element={<ForbiddenPage />} />
           <Route
             element={

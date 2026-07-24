@@ -12,6 +12,12 @@ const REFRESH_TOKEN_KEY = "td_admin_refresh_token";
 /** Đường dẫn trang đăng nhập (khớp route trong App.tsx). */
 export const LOGIN_PATH = "/dang-nhap";
 
+/** Trang quên mật khẩu — công khai (khớp route trong App.tsx). */
+export const FORGOT_PASSWORD_PATH = "/quen-mat-khau";
+
+/** Trang đặt lại mật khẩu — công khai, nhận `?token=...` (khớp route App.tsx). */
+export const RESET_PASSWORD_PATH = "/dat-lai-mat-khau";
+
 /**
  * Đọc token ưu tiên localStorage (đã tick "Ghi nhớ đăng nhập") rồi tới
  * sessionStorage (phiên tạm — mất khi đóng tab).

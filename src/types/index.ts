@@ -294,6 +294,13 @@ export interface AcceptInvitationInput {
   confirmPassword: string;
 }
 
+/** POST /auth/reset-password — đặt lại mật khẩu bằng token gửi qua email. */
+export interface ResetPasswordInput {
+  token: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+
 /** Trạng thái yêu cầu cập nhật hồ sơ (ProfileChangeStatus của backend). */
 export type ProfileChangeStatus = "PENDING" | "APPROVED" | "REJECTED";
 

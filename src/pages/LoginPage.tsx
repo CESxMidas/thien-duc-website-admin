@@ -1,5 +1,10 @@
 import { useState } from "react";
-import { useNavigate, useLocation, Navigate } from "react-router-dom";
+import {
+  useNavigate,
+  useLocation,
+  Navigate,
+  Link,
+} from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -8,6 +13,8 @@ import { Loader2, LogIn } from "lucide-react";
 
 import { useAuth } from "@/context/AuthContext";
 import { resolveLoginError } from "@/lib/auth-error-message";
+import { FORGOT_PASSWORD_PATH } from "@/lib/api/client";
+import { AuthLayout } from "@/components/layout/AuthLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/PasswordInput";
@@ -71,131 +78,98 @@ export function LoginPage() {
   const submitting = form.formState.isSubmitting;
 
   return (
-    <div className="min-h-screen bg-white lg:grid lg:grid-cols-2">
-      {/* ---- Cột form ---- */}
-      <div className="flex min-h-screen flex-col justify-center px-6 py-12 sm:px-12 lg:px-16 xl:px-24">
-        <div className="mx-auto w-full max-w-md">
-          {/* Logo */}
-          <div className="mb-8 flex items-center gap-3">
-            <span className="grid size-12 shrink-0 place-items-center rounded-lg border border-black/10 bg-white p-1.5 shadow-sm">
-              <img
-                src="/images/brand/logo-thien-duc.png"
-                alt="Logo Thiên Đức"
-                width={48}
-                height={48}
-                className="size-full object-contain"
+    <AuthLayout>
+      <h1 className="text-2xl font-bold text-ink sm:text-3xl">
+        Đăng nhập hệ thống quản trị
+      </h1>
+      <p className="mt-2 text-sm text-slate">
+        Chào mừng trở lại! Đăng nhập để quản lý dự án, tin tức và nội dung
+        website Thiên Đức.
+      </p>
+
+      <Form {...form}>
+        <form
+          onSubmit={form.handleSubmit(onSubmit)}
+          className="mt-8 space-y-4"
+          noValidate
+        >
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Email</FormLabel>
+                <FormControl>
+                  <Input
+                    type="email"
+                    autoComplete="username"
+                    placeholder="ban@thienduc.vn"
+                    autoFocus
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="password"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Mật khẩu</FormLabel>
+                <FormControl>
+                  <PasswordInput
+                    autoComplete="current-password"
+                    placeholder="••••••••"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {/* Ghi nhớ + Quên mật khẩu trên cùng một hàng: link phụ, không cạnh
+              tranh với nút "Đăng nhập" đặc màu thương hiệu bên dưới. */}
+          <div className="flex items-center justify-between gap-3">
+            <label className="flex items-center gap-2 text-sm text-slate">
+              <input
+                type="checkbox"
+                className="size-4 rounded border-line-strong accent-brand"
+                checked={remember}
+                onChange={(e) => setRemember(e.target.checked)}
               />
-            </span>
-            <div className="leading-tight">
-              <p className="text-base font-semibold text-ink">Thiên Đức</p>
-              <p className="text-xs text-slate">Hệ thống quản trị</p>
-            </div>
+              Ghi nhớ đăng nhập
+            </label>
+            <Link
+              to={FORGOT_PASSWORD_PATH}
+              className="rounded-sm text-sm font-medium text-brand transition-colors hover:text-brand-dark hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
+            >
+              Quên mật khẩu?
+            </Link>
           </div>
 
-          <h1 className="text-2xl font-bold text-ink sm:text-3xl">
-            Đăng nhập hệ thống quản trị
-          </h1>
-          <p className="mt-2 text-sm text-slate">
-            Chào mừng trở lại! Đăng nhập để quản lý dự án, tin tức và nội dung
-            website Thiên Đức.
-          </p>
+          <Button
+            type="submit"
+            className="h-11 w-full"
+            disabled={submitting}
+          >
+            {submitting ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : (
+              <LogIn className="size-4" />
+            )}
+            {submitting ? "Đang đăng nhập..." : "Đăng nhập"}
+          </Button>
+        </form>
+      </Form>
 
-          <Form {...form}>
-            <form
-              onSubmit={form.handleSubmit(onSubmit)}
-              className="mt-8 space-y-4"
-              noValidate
-            >
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="email"
-                        autoComplete="username"
-                        placeholder="ban@thienduc.vn"
-                        autoFocus
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Mật khẩu</FormLabel>
-                    <FormControl>
-                      <PasswordInput
-                        autoComplete="current-password"
-                        placeholder="••••••••"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <label className="flex items-center gap-2 text-sm text-slate">
-                <input
-                  type="checkbox"
-                  className="size-4 rounded border-line-strong accent-brand"
-                  checked={remember}
-                  onChange={(e) => setRemember(e.target.checked)}
-                />
-                Ghi nhớ đăng nhập
-              </label>
-
-              <Button type="submit" className="w-full" disabled={submitting}>
-                {submitting ? (
-                  <Loader2 className="size-4 animate-spin" />
-                ) : (
-                  <LogIn className="size-4" />
-                )}
-                {submitting ? "Đang đăng nhập..." : "Đăng nhập"}
-              </Button>
-            </form>
-          </Form>
-
-          <p className="mt-8 text-center text-xs text-slate">
-            Chưa có tài khoản? Vui lòng liên hệ Super Admin để được cấp quyền
-            truy cập.
-          </p>
-        </div>
-      </div>
-
-      {/* ---- Cột ảnh (ẩn trên mobile) ---- */}
-      <div className="relative hidden lg:block">
-        <img
-          src="/images/login-hero.jpg"
-          alt="Phối cảnh tổng thể Khu đô thị Hưng Phú — Thiên Đức"
-          className="absolute inset-0 h-full w-full object-cover"
-        />
-        {/* Lớp phủ màu thương hiệu */}
-        <div className="absolute inset-0 bg-linear-to-t from-ink/85 via-ink/25 to-transparent" />
-        <div className="absolute inset-0 bg-brand/10 mix-blend-multiply" />
-
-        {/* Nội dung trên ảnh */}
-        <div className="absolute inset-x-0 bottom-0 p-12 text-white">
-          <span className="inline-block rounded-full bg-gold px-3 py-1 text-xs font-semibold text-ink">
-            Dự án tiêu biểu
-          </span>
-          <h2 className="mt-4 max-w-md text-3xl font-bold leading-tight">
-            Khu đô thị Hưng Phú
-          </h2>
-          <p className="mt-2 max-w-md text-sm text-white/80">
-            Kiến tạo không gian sống hiện đại, hạ tầng đồng bộ tại TP. Thủ Đức
-          </p>
-        </div>
-      </div>
-    </div>
+      <p className="mt-8 text-center text-xs text-slate">
+        Chưa có tài khoản? Vui lòng liên hệ Super Admin để được cấp quyền truy
+        cập.
+      </p>
+    </AuthLayout>
   );
 }
