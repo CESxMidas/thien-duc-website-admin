@@ -124,9 +124,7 @@ export function ProjectContentTab({ project }: { project: ProjectDetail }) {
           <h3 className="font-display text-sm font-semibold text-ink">
             Mô tả tổng quan
           </h3>
-          <p className="text-xs text-slate">
-            Đoạn mô tả dài hiện ở khối “Tổng quan” trang chi tiết dự án.
-          </p>
+        
         </div>
         <BilingualField
           multiline
@@ -147,9 +145,7 @@ export function ProjectContentTab({ project }: { project: ProjectDetail }) {
             <h3 className="font-display text-sm font-semibold text-ink">
               Điểm nổi bật
             </h3>
-            <p className="text-xs text-slate">
-              Gạch đầu dòng hiện ở trang chi tiết dự án.
-            </p>
+            
           </div>
           <Button
             type="button"
@@ -211,10 +207,7 @@ export function ProjectContentTab({ project }: { project: ProjectDetail }) {
             <h3 className="font-display text-sm font-semibold text-ink">
               Thông số nhanh
             </h3>
-            <p className="text-xs text-slate">
-              Cặp nhãn – giá trị song ngữ (VI/EN), ví dụ “Tổng diện tích – 11,25
-              ha”. Chấm vàng trên nút EN = chưa có bản dịch.
-            </p>
+            
           </div>
           <Button
             type="button"

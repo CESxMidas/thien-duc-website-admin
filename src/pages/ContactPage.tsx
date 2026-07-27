@@ -78,7 +78,7 @@ export function ContactPage() {
     <div>
       <PageHeader
         title="Liên hệ"
-        description="Danh sách các form liên hệ từ website, bao gồm thông tin khách hàng và nội dung họ gửi. Bạn có thể xem chi tiết, thay đổi trạng thái xử lý, và thêm ghi chú nội bộ."
+        description="Danh sách các form liên hệ từ website, bao gồm thông tin khách hàng và nội dung."
       />
 
       <div className="mb-4 flex flex-wrap gap-2">

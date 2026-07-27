@@ -136,7 +136,7 @@ export function PagesPage() {
     <div>
       <PageHeader
         title="Trang nội dung"
-        description="Nội dung trang tĩnh: giới thiệu, liên hệ. Website công khai chỉ đọc trang đã đăng."
+        description="Nội dung trang tĩnh (giới thiệu, liên hệ, chính sách, v.v.)"
         actions={
           <PageFormDialog
             trigger={

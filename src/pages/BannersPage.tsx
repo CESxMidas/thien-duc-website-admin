@@ -173,7 +173,7 @@ export function BannersPage() {
     <div>
       <PageHeader
         title="Banner trang chủ"
-        description="Thứ tự trong bảng là thứ tự chạy trên trang chủ."
+        description="Banner hiển thị trên trang chủ."
         actions={
           <BannerFormDialog
             trigger={
