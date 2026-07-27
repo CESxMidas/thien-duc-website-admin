@@ -24,3 +24,12 @@ dist-ssr
 .env
 .env.*
 !.env.example
+
+# Playwright E2E artifacts
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+
+# Coverage
+/coverage/

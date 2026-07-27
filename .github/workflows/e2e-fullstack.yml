@@ -1,0 +1,110 @@
+name: E2E Full-stack (Playwright)
+
+# Chạy toàn bộ E2E trình duyệt (Admin + Frontend + Backend) trên một runner.
+# Playwright (host tại repo admin) tự dựng cả 3 server qua webServer. DB là
+# PostgreSQL 17 dùng-một-lần với TÊN thien_duc_test (khớp cầu chì an toàn của
+# seed-e2e + globalSetup). Mọi secret là GIÁ TRỊ GIẢ; không Resend/Cloudinary/
+# Sentry/DB production. Không kích hoạt deploy.
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: thien_duc_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      CI: '1'
+
+    steps:
+      # Ba repo checkout thành thư mục anh em (Playwright config trỏ ../<repo>).
+      # Cross-repo cần token có quyền đọc (secrets.WORKSPACE_TOKEN) nếu là private.
+      - uses: actions/checkout@v4
+        with:
+          path: thien-duc-website-admin
+      - uses: actions/checkout@v4
+        with:
+          repository: CESxMidas/thien-duc-website-backend
+          token: ${{ secrets.WORKSPACE_TOKEN || github.token }}
+          path: thien-duc-website-backend
+      - uses: actions/checkout@v4
+        with:
+          repository: CESxMidas/thien-duc-website-frontend
+          token: ${{ secrets.WORKSPACE_TOKEN || github.token }}
+          path: thien-duc-website-frontend
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # .env GIẢ cho CI (không commit trong repo). Backend .env cấp DATABASE_URL +
+      # mật khẩu seed cho globalSetup; Playwright webServer bơm MAIL_FAKE_TRANSPORT=1.
+      - name: Ghi .env giả cho CI
+        run: |
+          cat > thien-duc-website-backend/.env <<'EOF'
+          NODE_ENV=test
+          PORT=3001
+          DATABASE_URL=postgresql://postgres:postgres@localhost:5432/thien_duc_test?sslmode=disable
+          ADMIN_APP_URL=http://localhost:5174
+          FRONTEND_URL=http://localhost:3000
+          CORS_ORIGIN=http://localhost:3000,http://localhost:5174
+          JWT_ACCESS_SECRET=ci-fake-access-secret-thien-duc-minimum-32-characters
+          JWT_ACCESS_EXPIRES_IN=15m
+          JWT_REFRESH_SECRET=ci-fake-refresh-secret-thien-duc-minimum-32-characters
+          JWT_REFRESH_EXPIRES_IN=7d
+          ADMIN_EMAIL=admin-e2e@test.local
+          ADMIN_PASSWORD=CiTestPassword123!
+          SUPER_ADMIN_EMAIL=superadmin@test.local
+          SUPER_ADMIN_PASSWORD=CiTestPassword123!
+          RESEND_API_KEY=
+          MAIL_FROM=Thien Duc CI <no-reply@test.local>
+          CONTACT_NOTIFY_TO=receiver@test.local
+          CLOUDINARY_CLOUD_NAME=
+          CLOUDINARY_API_KEY=
+          CLOUDINARY_API_SECRET=
+          SENTRY_DSN=
+          EOF
+          printf 'VITE_API_URL=http://localhost:3001/api\nVITE_PUBLIC_SITE_URL=http://localhost:3000\nVITE_SENTRY_DSN=\n' > thien-duc-website-admin/.env
+          printf 'NEXT_PUBLIC_API_URL=http://localhost:3001/api\nNEXT_PUBLIC_SITE_URL=http://localhost:3000\nNEXT_PUBLIC_SENTRY_DSN=\n' > thien-duc-website-frontend/.env
+
+      - name: Cài dependencies (backend + admin + frontend)
+        run: |
+          (cd thien-duc-website-backend && npm ci)
+          (cd thien-duc-website-admin && npm ci)
+          (cd thien-duc-website-frontend && npm ci)
+
+      - name: Cài Playwright Chromium
+        run: cd thien-duc-website-admin && npx playwright install --with-deps chromium
+
+      # globalSetup của Playwright tự chạy prisma migrate deploy + db seed (cầu chì
+      # DB), rồi webServer dựng backend/admin/frontend, rồi chạy toàn bộ spec + axe.
+      - name: Chạy E2E full-stack
+        run: cd thien-duc-website-admin && npm run test:e2e
+
+      - name: Tải Playwright report + trace (khi lỗi)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            thien-duc-website-admin/playwright-report
+            thien-duc-website-admin/test-results
+          retention-days: 7
