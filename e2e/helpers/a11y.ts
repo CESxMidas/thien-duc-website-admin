@@ -12,10 +12,16 @@ import { expect, type Page } from '@playwright/test';
 export async function expectNoSeriousA11y(
   page: Page,
   label: string,
+  /**
+   * Bộ chọn CSS giới hạn phạm vi quét (tuỳ chọn). Dùng khi spec chỉ chịu trách
+   * nhiệm cho một khối cụ thể — vẫn giữ NGUYÊN bộ rule wcag2a/wcag2aa, không
+   * tắt/hạ mức rule nào; chỉ thu hẹp vùng DOM được kiểm.
+   */
+  include?: string,
 ): Promise<void> {
-  const results = await new AxeBuilder({ page })
-    .withTags(['wcag2a', 'wcag2aa'])
-    .analyze();
+  let builder = new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']);
+  if (include) builder = builder.include(include);
+  const results = await builder.analyze();
   const blocking = results.violations.filter(
     (v) => v.impact === 'serious' || v.impact === 'critical',
   );
