@@ -13,5 +13,9 @@ export default defineConfig({
   },
   server: {
     port: 5174,
+    // Cổng CỨNG: mặc định Vite thấy 5174 bận thì im lặng nhảy sang 5175, còn
+    // Playwright/CI vẫn thăm dò 5174 → chờ mãi rồi báo timeout mà không nói vì
+    // sao. Thà fail ngay với "port is already in use" còn hơn treo.
+    strictPort: true,
   },
 });

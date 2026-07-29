@@ -1,5 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
-import { seedAccounts, uniqueE2eEmail } from '../helpers/config';
+import { API_URL, seedAccounts, uniqueE2eEmail } from '../helpers/config';
 import {
   apiLogin,
   authedPost,
@@ -77,7 +77,7 @@ test.describe('§12 — Quyền riêng tư token (lời mời + đặt lại)', 
     });
     await clearOutbox();
     await fetch(
-      `${process.env.E2E_API_URL ?? 'http://localhost:3001/api'}/auth/forgot-password`,
+      `${API_URL}/auth/forgot-password`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

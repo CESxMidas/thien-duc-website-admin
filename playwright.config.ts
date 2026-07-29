@@ -42,11 +42,16 @@ export default defineConfig({
   webServer: [
     {
       // Backend NestJS trên 3001 — env test, transport email giả, tắt dịch vụ ngoài.
+      // `GET /api` là endpoint không cần đăng nhập, trả 200, không phụ thuộc dữ
+      // liệu đã seed và không redirect → đúng chuẩn URL sẵn sàng.
       command: 'npm run start',
       cwd: BACKEND_DIR,
       url: `${API_URL}`,
       timeout: 120_000,
-      reuseExistingServer: false,
+      // Ở CI, workflow đã tự dựng và kiểm sẵn sàng từng service TRƯỚC (xem
+      // `e2e-fullstack.yml`) để lỗi khởi động lộ ra theo từng bước có log riêng.
+      // Cho phép dùng lại tiến trình đó thay vì dựng chồng lên cổng đang bận.
+      reuseExistingServer: isCI,
       stdout: 'pipe',
       stderr: 'pipe',
       env: {
@@ -63,27 +68,58 @@ export default defineConfig({
         CONTACT_NOTIFY_TO: 'receiver@test.local',
         ADMIN_APP_URL: ADMIN_URL,
         FRONTEND_URL,
+        // Origin của trình duyệt giờ là 127.0.0.1 (xem `helpers/config.ts`), nên
+        // CORS phải cho phép đúng hai origin đó. Ghi ở đây thay vì bắt mọi máy
+        // dev sửa `.env` — và `.env` cục bộ mới chỉ liệt kê `localhost`.
+        CORS_ORIGIN: `${FRONTEND_URL},${ADMIN_URL}`,
       },
     },
     {
       // Admin SPA (Vite) trên 5174 — .env đã trỏ VITE_API_URL về backend cục bộ.
-      command: 'npm run dev',
+      // Ghi rõ host + cổng + `--strictPort`: không để Vite âm thầm nhảy 5175
+      // trong khi Playwright vẫn chờ ở 5174.
+      command: 'npm run dev -- --host 127.0.0.1 --port 5174 --strictPort',
       cwd: ADMIN_DIR,
       url: ADMIN_URL,
       timeout: 120_000,
-      reuseExistingServer: !isCI,
+      // Dùng lại được ở CẢ HAI môi trường: ở CI vì workflow đã dựng sẵn và kiểm
+      // sức khỏe từng service; ở máy dev vì `npm run dev` đang chạy không gây
+      // hại gì. Khác backend — backend luôn dựng mới để chắc chắn dùng transport
+      // email GIẢ, không lỡ gửi mail thật qua một tiến trình dev sẵn có.
+      reuseExistingServer: true,
       stdout: 'pipe',
       stderr: 'pipe',
+      env: {
+        // Trang admin chạy ở origin 127.0.0.1 nên phải gọi API cũng bằng
+        // 127.0.0.1, nếu không sẽ thành cross-origin và bị CORS chặn.
+        VITE_API_URL: API_URL,
+        VITE_PUBLIC_SITE_URL: FRONTEND_URL,
+        VITE_SENTRY_DSN: '',
+      },
     },
     {
       // Frontend public (Next.js) trên 3000. Dùng `next dev` để không prerender
-      // lúc build (tránh phụ thuộc backend khi build). URL health = trang liên hệ
-      // (tĩnh, không cần backend) để vừa kiểm sẵn sàng vừa "làm nóng" route.
-      command: 'npm run dev',
+      // lúc build (tránh phụ thuộc backend khi build).
+      //
+      // CỐ Ý KHÔNG truyền `--hostname`. Mặc định `next dev` đã bind `0.0.0.0`,
+      // tức là nhận cả 127.0.0.1 — thăm dò bằng IPv4 vẫn tới nơi.
+      // ĐỪNG thêm `--hostname 127.0.0.1`: đã đo được ở Next 16, cờ đó làm
+      // `NextResponse.rewrite` trong `src/proxy.ts` biến thành **redirect**, gây
+      // vòng lặp 308 vô tận `/` → `/vi` → `/` (mọi trang hỏng, ERR_TOO_MANY_
+      // REDIRECTS). Bỏ cờ đi thì `/`, `/lien-he`, `/en` đều trả 200, 0 redirect.
+      //
+      // URL sẵn sàng CỐ Ý là một trang thật: nó vừa kiểm sẵn sàng vừa **làm
+      // nóng** `[locale]/layout.tsx` (Tailwind + `next/font/google`). Nếu chỉ
+      // chờ `/api/health` — rẻ hơn nhưng không biên dịch trang nào — thì test
+      // đầu tiên điều hướng sẽ phải trả toàn bộ chi phí biên dịch và dễ vượt
+      // `expect` timeout trên máy nguội (đo được: 43→12 test đỏ vì lý do này).
+      // `/lien-he` tĩnh, không cần backend, trả 200 và KHÔNG redirect.
+      // `/api/health` vẫn tồn tại và được workflow CI dùng cho readiness check.
+      command: 'npm run dev -- --port 3000',
       cwd: FRONTEND_DIR,
       url: `${FRONTEND_URL}/lien-he`,
       timeout: 180_000,
-      reuseExistingServer: !isCI,
+      reuseExistingServer: true,
       stdout: 'pipe',
       stderr: 'pipe',
       env: {

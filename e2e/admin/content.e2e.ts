@@ -174,9 +174,11 @@ test.describe('§11 — Nội dung công khai (frontend)', () => {
       expect(url).not.toContain('onrender.com');
       expect(url).not.toContain('vercel.app');
     }
-    // Canonical/site URL dùng localhost (NEXT_PUBLIC_SITE_URL), không phải vercel.
+    // Canonical/site URL trỏ về host cục bộ (NEXT_PUBLIC_SITE_URL), không phải
+    // vercel. Lấy host từ chính hằng số dùng chung thay vì gõ cứng "localhost":
+    // E2E đã chuyển sang 127.0.0.1 để tránh phân giải IPv6 ở CI.
     const head = await page.locator('head').innerHTML();
-    expect(head).toContain('localhost:3000');
+    expect(head).toContain(new URL(FRONTEND_URL).host);
     expect(head).not.toContain('vercel.app');
   });
 });

@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import {
+  API_URL,
   FRONTEND_URL,
   seedAccounts,
   uniqueE2eEmail,
@@ -47,7 +48,7 @@ test.beforeAll(async () => {
 
   // Link đặt lại mật khẩu — lấy từ outbox giả.
   await clearOutbox();
-  await fetch(`${process.env.E2E_API_URL ?? 'http://localhost:3001/api'}/auth/forgot-password`, {
+  await fetch(`${API_URL}/auth/forgot-password`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email: resetUser }),

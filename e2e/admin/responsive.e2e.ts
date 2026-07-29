@@ -1,5 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 import {
+  API_URL,
   FRONTEND_URL,
   seedAccounts,
   uniqueE2eEmail,
@@ -52,7 +53,7 @@ test.beforeAll(async () => {
     .url!;
   await clearOutbox();
   await fetch(
-    `${process.env.E2E_API_URL ?? 'http://localhost:3001/api'}/auth/forgot-password`,
+    `${API_URL}/auth/forgot-password`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

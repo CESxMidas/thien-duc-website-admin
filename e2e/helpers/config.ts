@@ -1,10 +1,19 @@
 import { backendEnv } from './backend-env';
 
-/** URL dịch vụ E2E — LUÔN cục bộ. Cấm mọi URL production. */
-export const ADMIN_URL = process.env.E2E_ADMIN_URL ?? 'http://localhost:5174';
+/**
+ * URL dịch vụ E2E — LUÔN cục bộ. Cấm mọi URL production.
+ *
+ * Dùng `127.0.0.1` chứ KHÔNG dùng `localhost`: trên máy CI, `localhost` phân
+ * giải ra `::1` (IPv6) trước, trong khi `next dev` bind mặc định `0.0.0.0` (chỉ
+ * IPv4) và Vite bind `127.0.0.1`. Log `DEBUG=pw:webserver` cho thấy mọi lượt
+ * thăm dò đều bắt đầu bằng `connect ECONNREFUSED ::1:<port>`; trên Linux không
+ * dual-stack, nó sẽ ECONNREFUSED mãi cho tới khi hết hạn chờ webServer. Ghi
+ * thẳng IPv4 thì không còn phụ thuộc vào thứ tự phân giải DNS của từng máy.
+ */
+export const ADMIN_URL = process.env.E2E_ADMIN_URL ?? 'http://127.0.0.1:5174';
 export const FRONTEND_URL =
-  process.env.E2E_FRONTEND_URL ?? 'http://localhost:3000';
-export const API_URL = process.env.E2E_API_URL ?? 'http://localhost:3001/api';
+  process.env.E2E_FRONTEND_URL ?? 'http://127.0.0.1:3000';
+export const API_URL = process.env.E2E_API_URL ?? 'http://127.0.0.1:3001/api';
 
 for (const url of [ADMIN_URL, FRONTEND_URL, API_URL]) {
   if (/render\.com|vercel\.app|onrender\.com/i.test(url)) {

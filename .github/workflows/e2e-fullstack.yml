@@ -62,10 +62,10 @@ jobs:
           cat > thien-duc-website-backend/.env <<'EOF'
           NODE_ENV=test
           PORT=3001
-          DATABASE_URL=postgresql://postgres:postgres@localhost:5432/thien_duc_test?sslmode=disable
-          ADMIN_APP_URL=http://localhost:5174
-          FRONTEND_URL=http://localhost:3000
-          CORS_ORIGIN=http://localhost:3000,http://localhost:5174
+          DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:5432/thien_duc_test?sslmode=disable
+          ADMIN_APP_URL=http://127.0.0.1:5174
+          FRONTEND_URL=http://127.0.0.1:3000
+          CORS_ORIGIN=http://127.0.0.1:3000,http://127.0.0.1:5174
           JWT_ACCESS_SECRET=ci-fake-access-secret-thien-duc-minimum-32-characters
           JWT_ACCESS_EXPIRES_IN=15m
           JWT_REFRESH_SECRET=ci-fake-refresh-secret-thien-duc-minimum-32-characters
@@ -82,8 +82,8 @@ jobs:
           CLOUDINARY_API_SECRET=
           SENTRY_DSN=
           EOF
-          printf 'VITE_API_URL=http://localhost:3001/api\nVITE_PUBLIC_SITE_URL=http://localhost:3000\nVITE_SENTRY_DSN=\n' > thien-duc-website-admin/.env
-          printf 'NEXT_PUBLIC_API_URL=http://localhost:3001/api\nNEXT_PUBLIC_SITE_URL=http://localhost:3000\nNEXT_PUBLIC_SENTRY_DSN=\n' > thien-duc-website-frontend/.env
+          printf 'VITE_API_URL=http://127.0.0.1:3001/api\nVITE_PUBLIC_SITE_URL=http://127.0.0.1:3000\nVITE_SENTRY_DSN=\n' > thien-duc-website-admin/.env
+          printf 'NEXT_PUBLIC_API_URL=http://127.0.0.1:3001/api\nNEXT_PUBLIC_SITE_URL=http://127.0.0.1:3000\nNEXT_PUBLIC_SENTRY_DSN=\n' > thien-duc-website-frontend/.env
 
       - name: Cài dependencies (backend + admin + frontend)
         run: |
@@ -94,10 +94,155 @@ jobs:
       - name: Cài Playwright Chromium
         run: cd thien-duc-website-admin && npx playwright install --with-deps chromium
 
-      # globalSetup của Playwright tự chạy prisma migrate deploy + db seed (cầu chì
-      # DB), rồi webServer dựng backend/admin/frontend, rồi chạy toàn bộ spec + axe.
+      # ---------------------------------------------------------------------
+      # Chuẩn bị DB thành các BƯỚC RIÊNG. globalSetup của Playwright vẫn chạy
+      # lại (idempotent), nhưng tách ra đây thì lỗi prisma hiện đúng bước của nó
+      # thay vì bị chôn trong log webServer.
+      # ---------------------------------------------------------------------
+      - name: Postgres sẵn sàng (kiểm có giới hạn)
+        run: |
+          for i in $(seq 1 30); do
+            if pg_isready -h 127.0.0.1 -p 5432 -U postgres >/dev/null 2>&1; then
+              echo "PostgreSQL ready on port 5432 (sau ${i}s)"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "PostgreSQL unavailable on port 5432"
+          exit 1
+
+      - name: Prisma validate / generate / migrate / seed
+        working-directory: thien-duc-website-backend
+        run: |
+          npx prisma validate
+          npx prisma generate
+          npx prisma migrate deploy
+          npx prisma db seed
+
+      # seed-e2e.js gán CỨNG vai trò ADMIN cho ADMIN_EMAIL và SUPER_ADMIN cho
+      # SUPER_ADMIN_EMAIL, nhánh ON CONFLICT có `role = EXCLUDED.role` nên chạy
+      # lại vẫn đúng vai trò. Vẫn kiểm lại ở đây: CI backend từng đỏ vì tài khoản
+      # bootstrap bị seed thành SUPER_ADMIN. CHỈ in vai trò, không in mật khẩu.
+      - name: Kiểm vai trò tài khoản bootstrap phải là ADMIN
+        env:
+          PGPASSWORD: postgres
+        run: |
+          ROLE=$(psql -h 127.0.0.1 -U postgres -d thien_duc_test -tAc \
+            "SELECT role FROM users WHERE email = 'admin-e2e@test.local'")
+          echo "bootstrap role = ${ROLE:-<không tìm thấy>}"
+          if [ "$ROLE" != "ADMIN" ]; then
+            echo "Expected bootstrap E2E account role ADMIN. Check seed-e2e.js upsert."
+            exit 1
+          fi
+
+      # ---------------------------------------------------------------------
+      # Dựng 3 service TRƯỚC Playwright, mỗi service một log riêng. Nhờ vậy khi
+      # hỏng ta biết NGAY service nào và đọc được lỗi khởi động thật, thay vì chỉ
+      # thấy "Timed out waiting 180000ms from config.webServer".
+      # Playwright chạy sau với reuseExistingServer=true ở CI nên dùng lại đúng
+      # các tiến trình này.
+      # ---------------------------------------------------------------------
+      - name: Khởi động Backend (3001)
+        working-directory: thien-duc-website-backend
+        env:
+          NODE_ENV: test
+          MAIL_FAKE_TRANSPORT: '1'
+          RESEND_API_KEY: ''
+          CLOUDINARY_CLOUD_NAME: ''
+          CLOUDINARY_API_KEY: ''
+          CLOUDINARY_API_SECRET: ''
+          SENTRY_DSN: ''
+        run: npm run start > "$GITHUB_WORKSPACE/backend.log" 2>&1 &
+
+      - name: Khởi động Admin (5174)
+        working-directory: thien-duc-website-admin
+        run: npm run dev -- --host 127.0.0.1 --port 5174 --strictPort > "$GITHUB_WORKSPACE/admin.log" 2>&1 &
+
+      - name: Khởi động Frontend (3000)
+        working-directory: thien-duc-website-frontend
+        env:
+          NEXT_PUBLIC_API_URL: http://127.0.0.1:3001/api
+          NEXT_PUBLIC_SITE_URL: http://127.0.0.1:3000
+          NEXT_PUBLIC_SENTRY_DSN: ''
+        # KHÔNG truyền `--hostname`: mặc định `next dev` bind 0.0.0.0 (nhận cả
+        # 127.0.0.1). Thêm `--hostname 127.0.0.1` sẽ làm rewrite locale trong
+        # `src/proxy.ts` biến thành redirect → vòng lặp 308 vô tận trên mọi trang.
+        run: npm run dev -- --port 3000 > "$GITHUB_WORKSPACE/frontend.log" 2>&1 &
+
+      # Vòng lặp thử lại có giới hạn — KHÔNG sleep cố định, KHÔNG `|| true`,
+      # KHÔNG continue-on-error. Hỏng service nào thì in log của đúng service đó.
+      - name: Backend sẵn sàng (http://127.0.0.1:3001/api)
+        run: |
+          for i in $(seq 1 120); do
+            if curl -fsS -o /dev/null http://127.0.0.1:3001/api; then
+              echo "Backend ready on port 3001 (sau ${i}s)"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "Backend unavailable on port 3001"
+          echo "--- backend.log ---"
+          cat "$GITHUB_WORKSPACE/backend.log"
+          exit 1
+
+      - name: Admin sẵn sàng (http://127.0.0.1:5174/)
+        run: |
+          for i in $(seq 1 120); do
+            if curl -fsS -o /dev/null http://127.0.0.1:5174/; then
+              echo "Admin ready on port 5174 (sau ${i}s)"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "Admin unavailable on port 5174"
+          echo "--- admin.log ---"
+          cat "$GITHUB_WORKSPACE/admin.log"
+          exit 1
+
+      - name: Frontend sẵn sàng (http://127.0.0.1:3000/api/health)
+        run: |
+          for i in $(seq 1 180); do
+            if curl -fsS -o /dev/null http://127.0.0.1:3000/api/health; then
+              echo "Frontend ready on port 3000 (sau ${i}s)"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "Frontend unavailable on port 3000"
+          echo "--- frontend.log ---"
+          cat "$GITHUB_WORKSPACE/frontend.log"
+          exit 1
+
+      # Làm nóng một trang thật: lần biên dịch đầu của `next dev` kéo theo layout
+      # + Tailwind + next/font/google (có gọi mạng). Trả tiền ở đây, có log rõ,
+      # thay vì để nó ăn vào hạn chờ 30s của test đầu tiên.
+      - name: Làm nóng trang chủ frontend
+        run: |
+          for i in $(seq 1 180); do
+            if curl -fsS -o /dev/null http://127.0.0.1:3000/; then
+              echo "Frontend home compiled (sau ${i}s)"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "Frontend home never compiled on port 3000"
+          echo "--- frontend.log ---"
+          cat "$GITHUB_WORKSPACE/frontend.log"
+          exit 1
+
       - name: Chạy E2E full-stack
-        run: cd thien-duc-website-admin && npm run test:e2e
+        working-directory: thien-duc-website-admin
+        env:
+          DEBUG: pw:webserver
+        run: npm run test:e2e
+
+      - name: Log các service (khi lỗi)
+        if: failure()
+        run: |
+          for f in backend admin frontend; do
+            echo "=================== $f.log ==================="
+            cat "$GITHUB_WORKSPACE/$f.log" || echo "(không có log $f)"
+          done
 
       - name: Tải Playwright report + trace (khi lỗi)
         if: failure()

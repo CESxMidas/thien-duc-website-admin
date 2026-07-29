@@ -2,7 +2,7 @@ import { execSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { test, expect, type Page } from '@playwright/test';
-import { FRONTEND_URL, seedAccounts } from '../helpers/config';
+import { API_URL, FRONTEND_URL, seedAccounts } from '../helpers/config';
 import { assertSafeDatabase, backendEnv, BACKEND_DIR } from '../helpers/backend-env';
 import { apiLogin, authedGet, authedPatch, publicGet } from '../helpers/api';
 import { expectNoSeriousA11y } from '../helpers/a11y';
@@ -171,7 +171,7 @@ test.describe('§15 — Nội dung banner: API công khai', () => {
 
   test('không token thì không đọc/ghi được route quản trị banner', async () => {
     const res = await fetch(
-      `${process.env.E2E_API_URL ?? 'http://localhost:3001/api'}/banners/admin`,
+      `${API_URL}/banners/admin`,
     );
     expect(res.status).toBe(401);
   });
