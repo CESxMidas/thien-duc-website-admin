@@ -20,7 +20,12 @@ import {
 } from "@/components/ui/form";
 import { useCreatePage, useUpdatePage } from "@/lib/api/queries";
 import { resolveApiError } from "@/lib/api-error-message";
-import { toBilingualValue, type BilingualValue } from "@/lib/bilingual";
+import { toBilingualValue } from "@/lib/bilingual";
+import {
+  longFormContentSchema,
+  paragraphsToText,
+  toParagraphPayload,
+} from "@/lib/long-form-content";
 import type { StaticPage } from "@/types";
 
 const pageSchema = z.object({
@@ -33,10 +38,7 @@ const pageSchema = z.object({
     vi: z.string().trim().min(3, "Tiêu đề tối thiểu 3 ký tự."),
     en: z.string().trim(),
   }),
-  content: z.object({
-    vi: z.string().trim().min(1, "Cần ít nhất một đoạn nội dung."),
-    en: z.string().trim(),
-  }),
+  content: longFormContentSchema(1, "Cần ít nhất một đoạn nội dung."),
 });
 
 type PageFormValues = z.infer<typeof pageSchema>;
@@ -47,39 +49,13 @@ interface PageFormDialogProps {
   page?: StaticPage;
 }
 
-function splitParagraphs(text: string): string[] {
-  return text
-    .split(/\n\s*\n/)
-    .map((paragraph) => paragraph.trim())
-    .filter(Boolean);
-}
-
-function paragraphsToText(page: StaticPage | undefined, lang: "vi" | "en") {
-  return (page?.content ?? [])
-    .map((item) => item[lang] ?? "")
-    .join("\n\n")
-    .trim();
-}
-
-/** Ghép đoạn VI–EN theo vị trí; lệch số đoạn thì để trống chứ không cắt bớt. */
-function toParagraphPayload(content: BilingualValue) {
-  const vi = splitParagraphs(content.vi);
-  const en = splitParagraphs(content.en);
-  const length = Math.max(vi.length, en.length);
-
-  return Array.from({ length }, (_, index) => ({
-    vi: vi[index] ?? "",
-    ...(en[index] && { en: en[index] }),
-  }));
-}
-
 function toFormValues(page?: StaticPage): PageFormValues {
   return {
     slug: page?.slug ?? "",
     title: toBilingualValue(page?.title),
     content: {
-      vi: paragraphsToText(page, "vi"),
-      en: paragraphsToText(page, "en"),
+      vi: paragraphsToText(page?.content, "vi"),
+      en: paragraphsToText(page?.content, "en"),
     },
   };
 }

@@ -34,11 +34,12 @@ import { ImagePickerField } from "@/components/ui/ImagePickerField";
 import { useAuth } from "@/context/AuthContext";
 import { canBypassApproval } from "@/lib/roles";
 import { resolveApiError } from "@/lib/api-error-message";
+import { toBilingualPayload, toBilingualValue } from "@/lib/bilingual";
 import {
-  toBilingualPayload,
-  toBilingualValue,
-  type BilingualValue,
-} from "@/lib/bilingual";
+  longFormContentSchema,
+  paragraphsToText,
+  toParagraphPayload,
+} from "@/lib/long-form-content";
 import type { NewsPost } from "@/types";
 
 /** Giá trị Select không nhận chuỗi rỗng, nên "không chuyên mục" cần một token. */
@@ -59,7 +60,9 @@ const newsSchema = z.object({
     .min(3, "Slug tối thiểu 3 ký tự.")
     .regex(/^[a-z0-9-]+$/, "Chỉ gồm chữ thường, số và dấu gạch ngang."),
   summary: bilingual(10, "Tóm tắt tối thiểu 10 ký tự."),
-  content: z.object({ vi: z.string(), en: z.string() }),
+  // Nội dung bài không bắt buộc (bài có thể chỉ có tóm tắt), nhưng mỗi đoạn
+  // phải nằm trong trần độ dài mà backend chấp nhận.
+  content: longFormContentSchema(),
   categoryId: z.string(),
   author: z.string().trim(),
   image: z.string().trim(),
@@ -74,45 +77,14 @@ interface NewsFormDialogProps {
   post?: NewsPost;
 }
 
-/** Mảng đoạn văn ↔ textarea: mỗi đoạn cách nhau một dòng trống. */
-function splitParagraphs(text: string): string[] {
-  return text
-    .split(/\n\s*\n/)
-    .map((paragraph) => paragraph.trim())
-    .filter(Boolean);
-}
-
-function paragraphsToText(post: NewsPost | undefined, lang: "vi" | "en") {
-  return (post?.content ?? [])
-    .map((item) => item[lang] ?? "")
-    .join("\n\n")
-    .trim();
-}
-
-/**
- * Ghép đoạn VI với đoạn EN **theo vị trí**: đoạn 1 tiếng Việt đi với đoạn 1
- * tiếng Anh. Nếu hai bên lệch số đoạn, phần thiếu để trống thay vì bị cắt mất —
- * mất chữ âm thầm còn tệ hơn một đoạn trống nhìn thấy được.
- */
-function toParagraphPayload(content: BilingualValue) {
-  const vi = splitParagraphs(content.vi);
-  const en = splitParagraphs(content.en);
-  const length = Math.max(vi.length, en.length);
-
-  return Array.from({ length }, (_, index) => ({
-    vi: vi[index] ?? "",
-    ...(en[index] && { en: en[index] }),
-  }));
-}
-
 function toFormValues(post?: NewsPost): NewsFormValues {
   return {
     title: toBilingualValue(post?.title),
     slug: post?.slug ?? "",
     summary: toBilingualValue(post?.summary),
     content: {
-      vi: paragraphsToText(post, "vi"),
-      en: paragraphsToText(post, "en"),
+      vi: paragraphsToText(post?.content, "vi"),
+      en: paragraphsToText(post?.content, "en"),
     },
     categoryId: post?.categoryId ?? NO_CATEGORY,
     author: post?.author ?? "",
