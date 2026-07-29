@@ -6,6 +6,7 @@ import { API_URL, FRONTEND_URL, seedAccounts } from '../helpers/config';
 import { assertSafeDatabase, backendEnv, BACKEND_DIR } from '../helpers/backend-env';
 import { apiLogin, authedGet, authedPatch, publicGet } from '../helpers/api';
 import { expectNoSeriousA11y } from '../helpers/a11y';
+import { collectOverflow } from '../helpers/layout';
 
 /**
  * THIEN-DUC-BANNER-CONTENT-IMPLEMENTATION-M1 — nội dung banner trang chủ
@@ -256,14 +257,47 @@ test.describe('§15 — Trang chủ hiển thị banner', () => {
     // Slide kế tiếp lấy từ API thay vì giả định là `seeded[1]` — DB cục bộ dùng
     // chung với các spec khác nên thứ tự thực tế mới là nguồn đối chiếu đúng.
     const live = await publicBanners();
+    expect(live.length, 'cần ≥ 2 banner để kiểm chuyển slide').toBeGreaterThan(1);
+
     await gotoFE(page, '/');
     const banner = page.getByRole('region', { name: /banner/i }).first();
+    /** Nút chấm tròn của slide thứ `index` (0-based) — nhãn a11y đánh số từ 1. */
+    const dot = (index: number) =>
+      banner.getByRole('button', { name: `Chuyển tới banner ${index + 1}` });
+
     await expect(
       banner.getByRole('heading', { level: 1, name: live[0].title.vi }),
     ).toBeVisible();
 
-    await banner.getByRole('button', { name: 'Chuyển tới banner 1' }).focus();
+    // CỔNG HYDRATE — mấu chốt của bản sửa chập chờn.
+    //
+    // `h1` hiện ra ngay từ HTML server render, TRƯỚC khi React gắn `onKeyDown`
+    // lên `<section>`. Bản cũ bấm phím ngay sau khi thấy `h1` nên trên máy chậm
+    // (runner CI) phím rơi vào khoảng trống đó, không handler nào nhận → slide
+    // đứng yên → không tìm thấy tiêu đề slide 2.
+    //
+    // HTML server luôn render thanh tiến trình autoplay (state khởi tạo
+    // `reducedMotion = false`). Effect phía client đọc `matchMedia` — mà spec đã
+    // ép `prefers-reduced-motion: reduce` ở `beforeEach` — rồi tắt autoplay,
+    // thanh tiến trình biến mất. Thanh này biến mất là BẰNG CHỨNG effect đã
+    // chạy, tức component đã hydrate và bàn phím đã có người nhận. Đây cũng là
+    // lúc autoplay chắc chắn TẮT, nên không có chuyện tự nhảy slide chen ngang.
+    // Chờ theo điều kiện, không phải `waitForTimeout`.
+    await expect(page.locator('.banner-progress')).toHaveCount(0);
+
+    // Điểm xuất phát tất định: slide 0 đang hiện.
+    await expect(dot(0)).toHaveAttribute('aria-current', 'true');
+
+    // Tiêu điểm nằm đúng trên điều khiển của carousel trước khi bấm phím.
+    await dot(0).focus();
+    await expect(dot(0)).toBeFocused();
+
     await page.keyboard.press('ArrowRight');
+
+    // Chỉ số slide đổi hẳn sang 1 (trạng thái, không phải hiệu ứng) rồi mới
+    // khẳng định nội dung — không phụ thuộc thời lượng animation mờ chồng.
+    await expect(dot(1)).toHaveAttribute('aria-current', 'true');
+    await expect(dot(0)).toHaveAttribute('aria-current', 'false');
     await expect(
       banner.getByRole('heading', { level: 1, name: live[1].title.vi }),
     ).toBeVisible();
@@ -343,15 +377,19 @@ for (const vp of VIEWPORTS) {
         banner.getByRole('link', { name: seeded[0].ctaLabel.vi }),
       ).toBeVisible();
 
-      // Không tràn ngang toàn trang.
-      const overflow = await page.evaluate(() => ({
-        scroll: document.documentElement.scrollWidth,
-        inner: window.innerWidth,
-      }));
+      // Không tràn ngang toàn trang. Ngưỡng giữ nguyên; `collectOverflow` chờ
+      // bố cục ổn định rồi mới đo và kèm theo phần tử gây tràn để log đọc được.
+      const overflow = await collectOverflow(page);
       expect(
-        overflow.scroll,
-        `[${vp.name}] tràn ngang ${overflow.scroll} > ${overflow.inner}`,
-      ).toBeLessThanOrEqual(overflow.inner + 1);
+        overflow.scrollWidth,
+        `[${vp.name}] tràn ngang ${overflow.scrollWidth} > ${overflow.innerWidth}` +
+          ` — thủ phạm: ${
+            overflow.offenders
+              .filter((o) => !o.clippedBy)
+              .map((o) => `${o.selector} (+${o.overflowPx}px)`)
+              .join(' | ') || 'không xác định'
+          }`,
+      ).toBeLessThanOrEqual(overflow.innerWidth + 1);
 
       // Khối chữ nằm trọn trong viewport theo chiều ngang.
       const box = (await heading.boundingBox())!;

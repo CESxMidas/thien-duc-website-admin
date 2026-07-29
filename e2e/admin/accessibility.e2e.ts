@@ -109,6 +109,106 @@ test.describe('§13 — Kiểm thử accessibility (axe)', () => {
     await expectNoSeriousA11y(page, 'admin-users');
   });
 
+  /**
+   * Chốt chặn hồi quy cho ĐÚNG huy hiệu "Đang hoạt động" — vi phạm đã làm CI đỏ.
+   *
+   * Cặp cũ `text-green-700` / `bg-green-50` chỉ đạt 4.723:1, sát ngưỡng 4.5:1
+   * cho chữ 12px; cộng thêm hiệu ứng mờ dần của hàng bảng, axe đo ra 3.86–4.47:1
+   * tuỳ lần chạy. Test này đo thẳng token màu (không phụ thuộc thời điểm quét)
+   * và đòi biên an toàn 6:1 — cao hơn hẳn mức tối thiểu, để lần sau ai đổi màu
+   * về mức "vừa đủ đậu" là đỏ ngay.
+   */
+  test('Admin: huy hiệu "Đang hoạt động" đạt tương phản dư biên (hồi quy)', async ({
+    page,
+  }) => {
+    await uiLogin(page, seed.superAdmin.email, seed.superAdmin.password);
+    await expectLoggedIn(page);
+    await page.goto('/tai-khoan');
+    // Chọn ĐÚNG phần tử huy hiệu (`data-slot="badge"`), không phải ô chứa nó.
+    const badge = page
+      .locator('[data-slot="badge"]', { hasText: 'Đang hoạt động' })
+      .first();
+    await expect(badge).toBeVisible();
+
+    const measured = await badge.evaluate((el) => {
+      const parse = (value: string): [number, number, number] => {
+        const nums = value.match(/[\d.]+/g) ?? [];
+        return [Number(nums[0]), Number(nums[1]), Number(nums[2])];
+      };
+      const luminance = ([r, g, b]: [number, number, number]) => {
+        const channel = (v: number) => {
+          const s = v / 255;
+          return s <= 0.04045 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
+        };
+        return (
+          0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b)
+        );
+      };
+      const ratio = (a: string, b: string) => {
+        const [hi, lo] = [luminance(parse(a)), luminance(parse(b))].sort(
+          (x, y) => y - x,
+        );
+        return (hi + 0.05) / (lo + 0.05);
+      };
+      /** Nền hiển thị thực: đi ngược lên tổ tiên tới màu đầu tiên không trong suốt. */
+      const opaqueBackground = (node: Element | null): string => {
+        let cursor: Element | null = node;
+        while (cursor) {
+          const bg = getComputedStyle(cursor).backgroundColor;
+          const alpha = bg.startsWith('rgba') ? Number(bg.match(/[\d.]+/g)![3]) : 1;
+          if (alpha > 0) return bg;
+          cursor = cursor.parentElement;
+        }
+        return 'rgb(255, 255, 255)';
+      };
+
+      const style = getComputedStyle(el);
+      const surface = opaqueBackground(el);
+      const pageSurface = opaqueBackground(el.parentElement);
+      return {
+        classes: el.className,
+        color: style.color,
+        background: surface,
+        borderColor: style.borderTopColor,
+        fontSizePx: parseFloat(style.fontSize),
+        // Huy hiệu là nhãn tĩnh: không được có transition màu (nguồn gây nội suy).
+        transitionDuration: style.transitionDuration,
+        runningAnimations: el.getAnimations().length,
+        textRatio: ratio(style.color, surface),
+        borderVsSurfaceRatio: ratio(style.borderTopColor, surface),
+        borderVsPageRatio: ratio(style.borderTopColor, pageSurface),
+      };
+    });
+
+    // Chữ 12px → WCAG AA đòi 4.5:1. Đòi 6:1 để có biên, không "vừa đủ đậu".
+    expect(
+      measured.textRatio,
+      `tương phản chữ huy hiệu "Đang hoạt động" = ${measured.textRatio.toFixed(3)}:1 ` +
+        `(chữ ${measured.color} trên nền ${measured.background}, cỡ ${measured.fontSizePx}px)`,
+    ).toBeGreaterThanOrEqual(6);
+
+    // Viền là thành phần phi văn bản → WCAG 1.4.11 đòi 3:1, kiểm cả với nền
+    // huy hiệu lẫn nền trang phía sau để đường viền thực sự nhìn thấy được.
+    expect(
+      measured.borderVsSurfaceRatio,
+      `viền/nền huy hiệu = ${measured.borderVsSurfaceRatio.toFixed(3)}:1 (viền ${measured.borderColor})`,
+    ).toBeGreaterThanOrEqual(3);
+    expect(
+      measured.borderVsPageRatio,
+      `viền/nền trang = ${measured.borderVsPageRatio.toFixed(3)}:1`,
+    ).toBeGreaterThanOrEqual(3);
+
+    // Không tăng cỡ chữ để né ngưỡng: huy hiệu vẫn là chữ nhỏ (< 18.66px).
+    expect(measured.fontSizePx).toBeLessThan(18.66);
+
+    // Không còn `transition-colors` trên huy hiệu tĩnh → không có khoảng thời
+    // gian màu bị nội suy để axe đo trúng.
+    expect(
+      measured.transitionDuration,
+      `huy hiệu vẫn còn transition (${measured.transitionDuration}) — màu sẽ bị nội suy`,
+    ).toBe('0s');
+  });
+
   test('Admin: modal thêm tài khoản bẫy focus + Escape đóng', async ({
     page,
   }) => {

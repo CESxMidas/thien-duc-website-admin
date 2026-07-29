@@ -1,10 +1,11 @@
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect } from '@playwright/test';
 import {
   API_URL,
   FRONTEND_URL,
   seedAccounts,
   uniqueE2eEmail,
 } from '../helpers/config';
+import { expectNoHorizontalOverflow } from '../helpers/layout';
 import {
   apiLogin,
   authedPost,
@@ -69,17 +70,9 @@ test.afterAll(async () => {
   await deleteTestUsers();
 });
 
-/** Không tràn ngang: bề rộng cuộn không vượt quá viewport (cho phép lệch 1px). */
-async function expectNoHorizontalOverflow(page: Page, label: string) {
-  const overflow = await page.evaluate(() => {
-    const el = document.documentElement;
-    return { scroll: el.scrollWidth, inner: window.innerWidth };
-  });
-  expect(
-    overflow.scroll,
-    `[${label}] tràn ngang: scrollWidth ${overflow.scroll} > innerWidth ${overflow.inner}`,
-  ).toBeLessThanOrEqual(overflow.inner + 1);
-}
+// `expectNoHorizontalOverflow` chuyển sang `helpers/layout.ts`: cùng ngưỡng
+// (scrollWidth ≤ innerWidth + 1px) nhưng chờ bố cục ổn định trước khi đo và in
+// ra ĐÚNG phần tử gây tràn khi đỏ, thay vì chỉ hai con số.
 
 for (const vp of VIEWPORTS) {
   test.describe(`§14 — Responsive @ ${vp.name} (${vp.width}x${vp.height})`, () => {

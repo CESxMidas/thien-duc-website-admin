@@ -16,11 +16,15 @@ export function StatCard({
   to: string;
   accent?: "brand" | "amber" | "blue" | "green";
 }) {
+  // Cùng token ngữ nghĩa với Badge (`--color-status-*`, xem `src/index.css`):
+  // ô icon và huy hiệu trạng thái là một hệ màu, sửa một chỗ. Cặp cũ
+  // `text-green-700` trên `bg-green-100` chỉ đạt 4.497:1 — dưới ngưỡng AA nếu
+  // sau này ô này có chữ; cặp mới đạt ≥ 7:1.
   const accentBg: Record<string, string> = {
     brand: "bg-brand/10 text-brand",
-    amber: "bg-amber-100 text-amber-700",
-    blue: "bg-blue-100 text-blue-700",
-    green: "bg-green-100 text-green-700",
+    amber: "bg-status-warning-surface text-status-warning-fg",
+    blue: "bg-status-info-surface text-status-info-fg",
+    green: "bg-status-success-surface text-status-success-fg",
   };
 
   return (

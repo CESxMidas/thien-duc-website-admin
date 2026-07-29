@@ -29,6 +29,42 @@
   /* Viền đậm hơn cho ô nhập liệu, nút outline — cần rõ hơn đường kẻ trang trí. */
   --color-line-strong: #cfc2a6;
 
+  /* ---- Huy hiệu trạng thái (Badge) -------------------------------------
+     Token NGỮ NGHĨA cho từng sắc thái trạng thái, thay cho bảng màu mặc định
+     của Tailwind. Lý do đổi (A11Y-CONTRAST-M3):
+
+     Cặp cũ `text-green-700` trên `bg-green-50` chỉ đạt **4.723:1** — sát ngưỡng
+     4.5:1 của WCAG AA cho chữ 12px. Hàng bảng có hiệu ứng `.row-in` (mờ dần
+     opacity 0→1), nên axe quét trúng lúc đang nội suy màu và đo ra 3.86 – 4.47:1
+     → CI đỏ chập chờn. Cặp mới đạt **7.0 – 8.6:1**, dư biên rộng nên dù có sai
+     số làm tròn hay pha màu vẫn không rơi xuống dưới ngưỡng.
+
+     Viền cũng được làm đậm để đạt ≥ 3:1 (WCAG 1.4.11) so với CẢ nền huy hiệu,
+     nền thẻ trắng và nền trang `canvas` — trước đây `border-green-200` chỉ đạt
+     1.21:1 trên nền trắng, tức gần như vô hình.
+
+     Tỉ lệ chữ/nền: neutral 8.62 · warning 6.99 · success 7.80 · info 7.52 ·
+     danger 7.33. Viền/nền huy hiệu: 3.23 · 3.51 · 3.08 · 3.44 · 3.92. */
+  --color-status-neutral-fg: #42403c;
+  --color-status-neutral-surface: #eeeae1;
+  --color-status-neutral-border: #8a8073;
+
+  --color-status-warning-fg: #7a4405;
+  --color-status-warning-surface: #fbf0da;
+  --color-status-warning-border: #a9761f;
+
+  --color-status-success-fg: #15532f;
+  --color-status-success-surface: #e4f1e6;
+  --color-status-success-border: #5f9273;
+
+  --color-status-info-fg: #1b4a8a;
+  --color-status-info-surface: #e7eefa;
+  --color-status-info-border: #5b80ba;
+
+  --color-status-danger-fg: #96181d;
+  --color-status-danger-surface: #fbe9e7;
+  --color-status-danger-border: #b45b57;
+
   /* "Inter Variable" là tên family do @fontsource-variable/inter đăng ký
      (import trong main.tsx). Giữ "Inter" phía sau cho máy đã cài sẵn Inter. */
   --font-sans: "Inter Variable", "Inter", ui-sans-serif, system-ui,
