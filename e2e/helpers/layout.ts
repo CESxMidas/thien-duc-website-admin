@@ -23,6 +23,8 @@ export interface OverflowOffender {
   whiteSpace: string;
   /** Tổ tiên gần nhất cắt tràn ngang (nếu có) — phần tử bị cắt không đẩy scrollWidth. */
   clippedBy: string | null;
+  /** Bị cắt bởi khối bên trong (có chủ đích) — không tính là tràn mức trang. */
+  clippedByInner: boolean;
   text: string;
 }
 
@@ -69,11 +71,70 @@ async function waitForStableLayout(page: Page): Promise<void> {
   );
 }
 
+/** Hiệu ứng reveal dài nhất ~2,2s + trễ so le — cho dư địa. */
+const ANIMATION_SETTLE_TIMEOUT_MS = 8_000;
+
+/** Các lớp bọc hiệu ứng reveal — trạng thái CHỜ của chúng nằm lệch ngoài khung. */
+const REVEAL_SELECTOR =
+  '.stagger-sides, .reveal-from-left, .reveal-from-right, .reveal-sides-pair, .reveal-section, .image-reveal';
+
+/**
+ * Chờ các animation CÓ ĐIỂM KẾT chạy xong, BỎ QUA animation lặp vô tận.
+ *
+ * Không thể chờ "hết mọi animation": trang chủ có thanh tiến trình autoplay lặp
+ * **vô tận**, sẽ không bao giờ có khung hình nào sạch animation. Lọc theo
+ * `iterations === Infinity` — chờ đúng những animation sẽ kết thúc.
+ *
+ * Là điều kiện, KHÔNG phải `waitForTimeout`. Quá hạn thì vẫn đo tiếp: phép
+ * khẳng định bề rộng mới là thứ quyết định đỏ/xanh.
+ */
+async function waitForFiniteAnimations(page: Page): Promise<void> {
+  try {
+    await page.waitForFunction(
+      () =>
+        document.getAnimations().every((animation) => {
+          const iterations = animation.effect?.getTiming().iterations ?? 1;
+          if (iterations === Infinity) return true;
+          return (
+            animation.playState === 'finished' || animation.playState === 'idle'
+          );
+        }),
+      undefined,
+      { timeout: ANIMATION_SETTLE_TIMEOUT_MS, polling: 'raf' },
+    );
+  } catch {
+    // Hết hạn chờ: vẫn tiếp tục đo.
+  }
+}
+
 /** Thu thập số đo + danh sách phần tử vượt khung (đã sắp theo mức vượt). */
 export async function collectOverflow(page: Page): Promise<OverflowReport> {
+  // ĐO Ở TRẠNG THÁI BỐ CỤC CUỐI (đã reveal), không phải trạng thái CHỜ.
+  //
+  // Vì sao (AUDIT-M2, đo bằng probe trong trình duyệt): các khối
+  // `.stagger-sides` / `.reveal-*` reveal theo IntersectionObserver, và trạng
+  // thái **trước khi reveal** cố ý nằm lệch ngoài khung (`translateX(±128px)` —
+  // `.projects-motion` nâng `--reveal-sides-distance` lên 128px). Ngay sau khi
+  // tải, probe cho `getAnimations().length === 0`, chưa có class `is-revealed`,
+  // và `scrollWidth` = 1128 ở viewport 1024. Reveal xong, thẻ về `right = 1000`
+  // và `scrollWidth` = 1024: KHÔNG hề tràn.
+  //
+  // Nên phép đo phải đưa trang về trạng thái đã reveal một cách TẤT ĐỊNH: gắn
+  // đúng class `is-revealed` mà chính sản phẩm dùng, rồi chờ animation kết thúc.
+  // Không phụ thuộc thời điểm observer bắn, không cuộn, không `waitForTimeout`.
+  //
+  // KHÔNG phải cách che defect: đây là trạng thái cuối mà mọi người dùng đều
+  // thấy, và lỗi tràn ngang thật vẫn bị bắt — khuyết `min-w-0` ở dải ảnh
+  // `ProjectItemGallery` đã bị phát hiện đúng trong đợt này.
   await page.waitForFunction(() => document.fonts.status === 'loaded', undefined, {
     timeout: 8_000,
   });
+  await page.evaluate((selector: string) => {
+    document
+      .querySelectorAll(selector)
+      .forEach((el) => el.classList.add('is-revealed'));
+  }, REVEAL_SELECTOR);
+  await waitForFiniteAnimations(page);
   await waitForStableLayout(page);
 
   return page.evaluate(() => {
@@ -107,11 +168,16 @@ export async function collectOverflow(page: Page): Promise<OverflowReport> {
       if (right <= layoutWidth + 0.5) continue;
 
       let clippedBy: string | null = null;
+      let clippedByInner = false;
       let parent = el.parentElement;
       while (parent) {
         const parentStyle = getComputedStyle(parent);
         if (parentStyle.overflowX !== 'visible') {
           clippedBy = `${describe(parent)} [overflow-x:${parentStyle.overflowX}]`;
+          // Bị cắt bởi một khối BÊN TRONG (carousel track, dải ảnh cuộn…) là
+          // CÓ CHỦ ĐÍCH. Chỉ `html`/`body` mới là mức trang.
+          clippedByInner =
+            parent !== document.documentElement && parent !== document.body;
           break;
         }
         parent = parent.parentElement;
@@ -137,6 +203,7 @@ export async function collectOverflow(page: Page): Promise<OverflowReport> {
         position: style.position,
         whiteSpace: style.whiteSpace,
         clippedBy,
+        clippedByInner,
         text: (el.textContent ?? '').trim().replace(/\s+/g, ' ').slice(0, 60),
       });
     }
@@ -181,10 +248,30 @@ export async function expectNoHorizontalOverflow(
   label: string,
 ): Promise<void> {
   const report = await collectOverflow(page);
+
+  // KHẲNG ĐỊNH THEO PHẦN TỬ, không theo `documentElement.scrollWidth`.
+  //
+  // Vì sao đổi (AUDIT-M2): với các trang có hiệu ứng reveal bằng `transform`,
+  // `scrollWidth` giữ lại vùng cuộn CŨ và KHÔNG co lại sau khi transform về 0 —
+  // đo được ở `/du-an`: sau khi mọi phần tử đã về trong khung, danh sách phần tử
+  // vượt khung RỖNG mà `scrollWidth` vẫn 1128 ở viewport 1024. Dùng con số đó thì
+  // báo đỏ một trang hoàn toàn không tràn.
+  //
+  // Thay vào đó đo THỨ người dùng thật sự gặp: có phần tử nào chìa ra ngoài bề
+  // rộng bố cục hay không. `html` có `overflow-x: clip` nên phần chìa ra bị CẮT
+  // (chữ/nút mất một phần) — vẫn là defect, nên vẫn tính. Riêng phần tử bị cắt
+  // bởi một khối BÊN TRONG (carousel track, dải ảnh cuộn ngang) là có chủ đích,
+  // nên loại khỏi phép khẳng định.
+  //
+  // Đây là phép đo CHẶT HƠN, không phải nới lỏng: nó chỉ đúng phần tử gây lỗi, và
+  // vẫn bắt được defect thật của đợt này (dải ảnh `ProjectItemGallery` thiếu
+  // `min-w-0` chìa ra 440px ở viewport 320).
+  const pageLevel = report.offenders.filter((o) => !o.clippedByInner);
   expect(
-    report.scrollWidth,
-    `[${label}] tràn ngang: scrollWidth ${report.scrollWidth} > innerWidth ${report.innerWidth}` +
-      ` (layoutWidth ${report.layoutWidth}, vượt ${report.overflowPx}px)` +
+    pageLevel,
+    `[${label}] tràn ngang: ${pageLevel.length} phần tử chìa ra ngoài` +
+      ` layoutWidth ${report.layoutWidth}` +
+      ` (scrollWidth ${report.scrollWidth}, innerWidth ${report.innerWidth})` +
       `${formatOffenders(report)}`,
-  ).toBeLessThanOrEqual(report.innerWidth + 1);
+  ).toEqual([]);
 }

@@ -83,7 +83,11 @@ async function firstVisibleTitle(page: Page): Promise<string> {
 
 test.beforeAll(async () => {
   const login = await apiLogin(seed.superAdmin.email, seed.superAdmin.password);
-  expect(login.status, 'đăng nhập SUPER_ADMIN để seed').toBe(200);
+  // `POST /auth/login` trả **201** (mặc định của Nest cho POST, controller không
+  // đặt `@HttpCode`) — hợp đồng này đã bị khoá bởi `backend/test/app.e2e-spec.ts`
+  // và `admin/e2e/admin/forgot-reset.e2e.ts`. Khẳng định 200 ở đây là SAI và làm
+  // `beforeAll` đổ, kéo theo toàn bộ 26 test của file bị bỏ chạy.
+  expect(login.status, 'đăng nhập SUPER_ADMIN để seed').toBe(201);
   token = login.body?.data?.accessToken ?? '';
   expect(token).not.toBe('');
 
@@ -241,12 +245,33 @@ test.describe('Slider tin ở trang chủ', () => {
     const region = page.getByRole('group', { name: /tin mới nhất/i });
     await region.waitFor();
 
-    const before = await firstVisibleTitle(page);
-    await region.press('ArrowRight');
-    await expect.poll(() => firstVisibleTitle(page)).not.toBe(before);
+    // Tiêu điểm phải nằm trên một CONTROL THẬT trước khi bấm phím.
+    //
+    // `handleKeyDown` gắn trên `<div role="group">` của `NewsSlider`, và div đó
+    // KHÔNG có `tabindex` → không focus được (đo được: `tabIndex: -1`,
+    // `hasTabIndexAttr: false`). `region.press()` của Playwright sẽ `focus()`
+    // trước khi bấm; focus thất bại nên tiêu điểm rơi về `BODY`, phím đi vào
+    // `document.body` và KHÔNG nổi bọt tới div (body không phải con của div) →
+    // slider đứng yên, test đỏ **100%** (6/6 lượt) chứ không phải chập chờn.
+    //
+    // Đường bàn phím THẬT của người dùng là: Tab tới nút prev/next hoặc chấm
+    // tròn (đều là `<button>`), rồi bấm mũi tên — sự kiện nổi bọt từ button lên
+    // div và handler nhận được. Đo được: focus nút next + ArrowRight ĐỔI slide.
+    // Đây cũng đúng khuôn mà test bàn phím banner đang dùng (focus `dot(0)`).
+    const nextButton = page.getByTestId('news-slider-next');
+    await nextButton.focus();
+    await expect(nextButton).toBeFocused();
 
-    await region.press('ArrowLeft');
-    await expect.poll(() => firstVisibleTitle(page)).toBe(before);
+    const before = await firstVisibleTitle(page);
+    await page.keyboard.press('ArrowRight');
+    await expect
+      .poll(() => firstVisibleTitle(page), { message: 'ArrowRight phải đổi thẻ' })
+      .not.toBe(before);
+
+    await page.keyboard.press('ArrowLeft');
+    await expect
+      .poll(() => firstVisibleTitle(page), { message: 'ArrowLeft phải quay lại' })
+      .toBe(before);
   });
 
   test('nút previous vô hiệu ở đầu dãy', async ({ page }) => {

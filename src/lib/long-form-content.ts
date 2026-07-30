@@ -14,6 +14,19 @@ import type { BilingualValue } from "@/lib/bilingual";
  */
 export const MAX_LONG_TEXT_LENGTH = 100_000;
 
+/**
+ * Trần **số đoạn** của `content[]`, khớp `MAX_CONTENT_BLOCKS` ở
+ * `backend/src/common/dto/content-blocks.ts`.
+ *
+ * Backend nay chặn mảng quá nhiều phần tử (AUDIT-M2 / D6). Kiểm luôn ở Admin để
+ * biên tập viên thấy lỗi tại chỗ thay vì nhận 400 sau khi bấm Lưu. **Không** đặt
+ * thấp hơn backend — thấp hơn là tự chặn nội dung mà API vẫn nhận.
+ *
+ * Con số 500 lấy từ dữ liệu thật: bài dài nhất trong 18 bài nhập từ website hiện
+ * hữu của công ty có 48 đoạn, nên 500 là ~10 lần dư địa.
+ */
+export const MAX_CONTENT_BLOCKS = 500;
+
 /** Mảng đoạn văn ↔ textarea: mỗi đoạn cách nhau một dòng trống. */
 export function splitParagraphs(text: string): string[] {
   return text
@@ -65,14 +78,21 @@ export function longestParagraphLength(text: string): number {
  * dưới trần vẫn hợp lệ, còn một đoạn duy nhất 100.001 ký tự thì không.
  */
 function paragraphLimit(lang: "vi" | "en") {
+  const label = lang === "vi" ? "tiếng Việt" : "tiếng Anh";
   return (value: string, ctx: z.RefinementCtx) => {
     const longest = longestParagraphLength(value);
     if (longest > MAX_LONG_TEXT_LENGTH) {
       ctx.addIssue({
         code: "custom",
-        message: `Mỗi đoạn ${
-          lang === "vi" ? "tiếng Việt" : "tiếng Anh"
-        } tối đa ${MAX_LONG_TEXT_LENGTH.toLocaleString("vi-VN")} ký tự (đoạn dài nhất đang ${longest.toLocaleString("vi-VN")}). Tách đoạn bằng một dòng trống.`,
+        message: `Mỗi đoạn ${label} tối đa ${MAX_LONG_TEXT_LENGTH.toLocaleString("vi-VN")} ký tự (đoạn dài nhất đang ${longest.toLocaleString("vi-VN")}). Tách đoạn bằng một dòng trống.`,
+      });
+    }
+    // Trần SỐ đoạn — khớp `MAX_CONTENT_BLOCKS` của backend (AUDIT-M2 / D6).
+    const blocks = splitParagraphs(value).length;
+    if (blocks > MAX_CONTENT_BLOCKS) {
+      ctx.addIssue({
+        code: "custom",
+        message: `Nội dung ${label} tối đa ${MAX_CONTENT_BLOCKS.toLocaleString("vi-VN")} đoạn (đang ${blocks.toLocaleString("vi-VN")} đoạn).`,
       });
     }
   };

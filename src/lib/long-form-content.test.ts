@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  MAX_CONTENT_BLOCKS,
   MAX_LONG_TEXT_LENGTH,
   longFormContentSchema,
   longestParagraphLength,
@@ -132,5 +133,46 @@ describe("không cắt chữ khi đi qua form (task 8)", () => {
   it("paragraphsToText chịu được content null từ API", () => {
     expect(paragraphsToText(null, "vi")).toBe("");
     expect(paragraphsToText(undefined, "en")).toBe("");
+  });
+});
+
+describe("AUDIT-M2 — trần SỐ đoạn content[] (khớp backend MAX_CONTENT_BLOCKS)", () => {
+  const schema = longFormContentSchema();
+  const paragraphs = (n: number) =>
+    Array.from({ length: n }, (_, i) => `Doan ${i + 1}`).join("\n\n");
+
+  it("trần Admin phải BẰNG trần backend (500) — không được đặt thấp hơn", () => {
+    expect(MAX_CONTENT_BLOCKS).toBe(500);
+  });
+
+  it("đúng trần (500 đoạn) hợp lệ", () => {
+    const result = schema.safeParse({
+      vi: paragraphs(MAX_CONTENT_BLOCKS),
+      en: "",
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("trần + 1 (501 đoạn) bị chặn tại chỗ, không đợi API trả 400", () => {
+    const result = schema.safeParse({
+      vi: paragraphs(MAX_CONTENT_BLOCKS + 1),
+      en: "",
+    });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(JSON.stringify(result.error.issues)).toContain("501");
+    }
+  });
+
+  it("ô tiếng Anh cũng bị áp trần số đoạn", () => {
+    const result = schema.safeParse({
+      vi: "Mot doan",
+      en: paragraphs(MAX_CONTENT_BLOCKS + 1),
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("số đoạn bình thường (48 — bài dài nhất thật) vẫn hợp lệ", () => {
+    expect(schema.safeParse({ vi: paragraphs(48), en: "" }).success).toBe(true);
   });
 });
