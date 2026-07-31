@@ -49,7 +49,6 @@ vi.mock("@/lib/api/queries", () => {
   return {
     useUsers: () => ({ data: usersData, isLoading: false }),
     useUser: hook,
-    useCreateUser: hook,
     useCreateUserInvitation: hook,
     useUpdateUser: hook,
     useDeactivateUser: hook,

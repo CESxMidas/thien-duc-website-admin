@@ -416,11 +416,11 @@ function useUsersMutation<TArgs, TResult>(
   });
 }
 
-export function useCreateUser() {
-  return useUsersMutation(usersApi.createUser);
-}
-
-/** Tạo tài khoản qua lời mời (luồng chuẩn — không mật khẩu). */
+/**
+ * Tạo tài khoản qua lời mời — lối cấp tài khoản DUY NHẤT.
+ * CMS-RETIRE-DIRECT-USER-CREATE-M1: `useCreateUser()` (POST /users, kèm mật
+ * khẩu do quản trị viên đặt) đã bị gỡ cùng route backend.
+ */
 export function useCreateUserInvitation() {
   return useUsersMutation(usersApi.createUserInvitation);
 }

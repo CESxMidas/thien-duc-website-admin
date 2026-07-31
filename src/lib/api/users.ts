@@ -1,6 +1,5 @@
 // Service quản lý tài khoản — nối API thật của backend NestJS:
 //   GET    /users        -> AdminUser[]        (ADMIN, SUPER_ADMIN)
-//   POST   /users        -> AdminUser          (chỉ SUPER_ADMIN)
 //   PATCH  /users/:id    -> AdminUser          (chỉ SUPER_ADMIN)
 //   DELETE /users/:id    -> { deactivated }    (chỉ SUPER_ADMIN — khóa mềm)
 //
@@ -20,13 +19,6 @@ import type {
   ProfilePayload,
   Role,
 } from "@/types";
-
-export interface CreateUserInput {
-  name: string;
-  email: string;
-  password: string;
-  role: Role;
-}
 
 /**
  * Mọi field đều tùy chọn. KHÔNG có `password`: SUPER_ADMIN không được đặt mật
@@ -49,15 +41,11 @@ export function getUser(id: string): Promise<AdminUserDetail> {
   return apiFetch<AdminUserDetail>(`/users/${id}`);
 }
 
-export function createUser(input: CreateUserInput): Promise<AdminUser> {
-  return apiFetch<AdminUser>("/users", {
-    method: "POST",
-    body: JSON.stringify(input),
-  });
-}
-
 /* -------------------------------------------------------------------------
-   Lời mời thiết lập tài khoản (luồng chuẩn thay cho tạo trực tiếp có mật khẩu)
+   Lời mời thiết lập tài khoản — lối cấp tài khoản DUY NHẤT.
+   CMS-RETIRE-DIRECT-USER-CREATE-M1: `createUser()` gọi `POST /users` (tạo
+   trực tiếp kèm mật khẩu) đã bị gỡ khỏi client cùng lúc route backend bị gỡ.
+   Đừng thêm lại — quản trị viên không đặt mật khẩu cho người khác.
    POST /users/invitations          -> { user, invitation }   (SUPER_ADMIN)
    POST /users/:id/resend-invitation -> AccountInvitationMeta  (SUPER_ADMIN)
    POST /users/:id/revoke-invitation -> { revoked }            (SUPER_ADMIN)

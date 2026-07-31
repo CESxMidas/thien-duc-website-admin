@@ -41,7 +41,7 @@ vi.mock("@/lib/api/queries", () => {
     "useUpdateProjectStatus", "useDeleteProject", "useCreateProjectItem",
     "useUpdateProjectItem", "useDeleteProjectItem", "useAddGalleryImage",
     "useDeleteGalleryImage", "useReorderGallery",
-    "useUsers", "useUser", "useCreateUser", "useUpdateUser",
+    "useUsers", "useUser", "useCreateUserInvitation", "useUpdateUser",
     "useDeactivateUser", "useReactivateUser",
     "useMyProfile", "useUpdateMyProfile", "useProfileRequests",
     "useReviewProfileRequest",
