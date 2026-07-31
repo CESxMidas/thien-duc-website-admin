@@ -1,7 +1,7 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
+import { newsSchema, type NewsFormValues } from "./news-schema";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 
@@ -36,7 +36,6 @@ import { canBypassApproval } from "@/lib/roles";
 import { resolveApiError } from "@/lib/api-error-message";
 import { toBilingualPayload, toBilingualValue } from "@/lib/bilingual";
 import {
-  longFormContentSchema,
   paragraphsToText,
   toParagraphPayload,
 } from "@/lib/long-form-content";
@@ -44,32 +43,6 @@ import type { NewsPost } from "@/types";
 
 /** Giá trị Select không nhận chuỗi rỗng, nên "không chuyên mục" cần một token. */
 const NO_CATEGORY = "none";
-
-/** Bản dịch tiếng Anh không bắt buộc ở form — xem `BilingualField`. */
-const bilingual = (minVi: number, message: string) =>
-  z.object({
-    vi: z.string().trim().min(minVi, message),
-    en: z.string().trim(),
-  });
-
-const newsSchema = z.object({
-  title: bilingual(3, "Tiêu đề tối thiểu 3 ký tự."),
-  slug: z
-    .string()
-    .trim()
-    .min(3, "Slug tối thiểu 3 ký tự.")
-    .regex(/^[a-z0-9-]+$/, "Chỉ gồm chữ thường, số và dấu gạch ngang."),
-  summary: bilingual(10, "Tóm tắt tối thiểu 10 ký tự."),
-  // Nội dung bài không bắt buộc (bài có thể chỉ có tóm tắt), nhưng mỗi đoạn
-  // phải nằm trong trần độ dài mà backend chấp nhận.
-  content: longFormContentSchema(),
-  categoryId: z.string(),
-  author: z.string().trim(),
-  image: z.string().trim(),
-  eventDate: z.string().trim(),
-});
-
-type NewsFormValues = z.infer<typeof newsSchema>;
 
 interface NewsFormDialogProps {
   trigger: ReactNode;

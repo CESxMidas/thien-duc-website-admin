@@ -252,7 +252,12 @@ describe("BannersPage — nội dung banner đã seed", () => {
     await user.click(within(dialog).getByRole("button", { name: "Lưu thay đổi" }));
 
     expect(
-      await within(dialog).findByText("Đường dẫn nội bộ, bắt đầu bằng “/”."),
+      await within(dialog).findByText(
+        // Thông điệp mở rộng cùng lúc `href` chuyển sang dùng hàng rào
+        // `isSafeInternalPath` (khớp `@IsSafeInternalPath` của backend): ngoài
+        // "phải bắt đầu bằng /" nay còn chặn `//host` và mọi scheme.
+        "Đường dẫn nội bộ, bắt đầu bằng “/” (không nhận scheme hay “//host”).",
+      ),
     ).toBeInTheDocument();
     expect(updateBanner).not.toHaveBeenCalled();
   });

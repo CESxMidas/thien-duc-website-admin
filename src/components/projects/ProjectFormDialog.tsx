@@ -1,7 +1,7 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
+import { projectSchema, type ProjectFormValues } from "./project-schema";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 
@@ -37,36 +37,7 @@ import type { Project, ProjectStatus } from "@/types";
  * Việt trước rồi bổ sung sau. Song ngữ là điều kiện go-live (câu 19) nên chỗ
  * thiếu được đánh dấu bằng chấm vàng trong `BilingualField`, không chặn lưu.
  */
-const bilingual = (minVi: number, message: string) =>
-  z.object({
-    vi: z.string().trim().min(minVi, message),
-    en: z.string().trim(),
-  });
-
-/** Song ngữ không bắt buộc (location/category) — VI có thể để trống. */
-const optionalBilingual = z.object({
-  vi: z.string().trim(),
-  en: z.string().trim(),
-});
-
 // Schema kiểm tra dữ liệu bằng Zod (mục 2.5 — "Form: React Hook Form + Zod").
-const projectSchema = z.object({
-  title: bilingual(3, "Tên dự án tối thiểu 3 ký tự."),
-  slug: z
-    .string()
-    .trim()
-    .min(3, "Slug tối thiểu 3 ký tự.")
-    .regex(/^[a-z0-9-]+$/, "Chỉ gồm chữ thường, số và dấu gạch ngang."),
-  summary: bilingual(10, "Mô tả ngắn tối thiểu 10 ký tự."),
-  location: optionalBilingual,
-  category: optionalBilingual,
-  // Ảnh đại diện (thẻ danh sách + hero trang chi tiết). Không bắt buộc nhưng
-  // thiếu thì trang công khai hiện ô trống — nên khuyến khích nhập.
-  image: z.string().trim(),
-  status: z.enum(["DA_BAN_GIAO", "DANG_THI_CONG", "CHUAN_BI_KHOI_CONG"]),
-});
-
-type ProjectFormValues = z.infer<typeof projectSchema>;
 
 const statusOptions = Object.keys(projectStatusLabel) as ProjectStatus[];
 

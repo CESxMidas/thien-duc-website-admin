@@ -1,7 +1,7 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
+import { pageSchema, type PageFormValues } from "./page-schema";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 
@@ -22,26 +22,10 @@ import { useCreatePage, useUpdatePage } from "@/lib/api/queries";
 import { resolveApiError } from "@/lib/api-error-message";
 import { toBilingualValue } from "@/lib/bilingual";
 import {
-  longFormContentSchema,
   paragraphsToText,
   toParagraphPayload,
 } from "@/lib/long-form-content";
 import type { StaticPage } from "@/types";
-
-const pageSchema = z.object({
-  slug: z
-    .string()
-    .trim()
-    .min(3, "Slug tối thiểu 3 ký tự.")
-    .regex(/^[a-z0-9-]+$/, "Chỉ gồm chữ thường, số và dấu gạch ngang."),
-  title: z.object({
-    vi: z.string().trim().min(3, "Tiêu đề tối thiểu 3 ký tự."),
-    en: z.string().trim(),
-  }),
-  content: longFormContentSchema(1, "Cần ít nhất một đoạn nội dung."),
-});
-
-type PageFormValues = z.infer<typeof pageSchema>;
 
 interface PageFormDialogProps {
   trigger: ReactNode;

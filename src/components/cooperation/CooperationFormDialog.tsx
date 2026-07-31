@@ -1,7 +1,7 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
+import { cooperationSchema, type CooperationFormValues } from "./cooperation-schema";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 
@@ -25,24 +25,6 @@ import {
 import { resolveApiError } from "@/lib/api-error-message";
 import { toBilingualPayload, toBilingualValue } from "@/lib/bilingual";
 import type { CooperationProject } from "@/types";
-
-const requiredBilingual = (min: number, message: string) =>
-  z.object({
-    vi: z.string().trim().min(min, message),
-    en: z.string().trim(),
-  });
-
-const cooperationSchema = z.object({
-  name: requiredBilingual(2, "Cần tên dự án hợp tác."),
-  location: requiredBilingual(1, "Cần địa điểm."),
-  role: requiredBilingual(1, "Cần vai trò của Thiên Đức."),
-  partner: requiredBilingual(1, "Cần tên đối tác."),
-  scale: requiredBilingual(1, "Cần thông tin quy mô."),
-  status: requiredBilingual(1, "Cần trạng thái dự án."),
-  image: z.string().trim(),
-});
-
-type CooperationFormValues = z.infer<typeof cooperationSchema>;
 
 interface CooperationFormDialogProps {
   trigger: ReactNode;

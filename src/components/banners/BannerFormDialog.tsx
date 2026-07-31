@@ -1,7 +1,7 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
+import { bannerSchema, type BannerFormValues } from "./banner-schema";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 
@@ -23,30 +23,6 @@ import { useCreateBanner, useUpdateBanner } from "@/lib/api/queries";
 import { resolveApiError } from "@/lib/api-error-message";
 import { toBilingualPayload, toBilingualValue } from "@/lib/bilingual";
 import type { Banner } from "@/types";
-
-const optionalBilingual = z.object({
-  vi: z.string().trim(),
-  en: z.string().trim(),
-});
-
-const bannerSchema = z.object({
-  image: z.string().trim().min(1, "Cần URL ảnh banner."),
-  href: z
-    .string()
-    .trim()
-    .min(1, "Cần đường dẫn đích.")
-    .startsWith("/", "Đường dẫn nội bộ, bắt đầu bằng “/”."),
-  title: z.object({
-    vi: z.string().trim().min(3, "Tiêu đề tối thiểu 3 ký tự."),
-    en: z.string().trim(),
-  }),
-  eyebrow: optionalBilingual,
-  subtitle: optionalBilingual,
-  ctaLabel: optionalBilingual,
-  objectPosition: z.string().trim(),
-});
-
-type BannerFormValues = z.infer<typeof bannerSchema>;
 
 interface BannerFormDialogProps {
   trigger: ReactNode;

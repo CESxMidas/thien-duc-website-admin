@@ -1,7 +1,7 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
+import { userSchema, type UserFormValues } from "./user-schema";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 
@@ -38,17 +38,6 @@ const roleOptions = Object.keys(roleLabel) as Role[];
 // KHÔNG có field mật khẩu ở cả tạo mới lẫn sửa: người dùng tự đặt mật khẩu qua
 // email lời mời, và tự đổi qua luồng quên mật khẩu. SUPER_ADMIN không chọn,
 // không thấy, không gửi mật khẩu vĩnh viễn của tài khoản khác.
-const formSchema = z.object({
-  name: z.string().trim().min(2, "Họ tên tối thiểu 2 ký tự."),
-  email: z
-    .string()
-    .trim()
-    .min(1, "Vui lòng nhập email.")
-    .email("Email không đúng định dạng."),
-  role: z.enum(["EDITOR", "ADMIN", "SUPER_ADMIN"]),
-});
-
-type UserFormValues = z.infer<typeof formSchema>;
 
 interface UserFormDialogProps {
   trigger: ReactNode;
@@ -68,7 +57,7 @@ export function UserFormDialog({ trigger, user }: UserFormDialogProps) {
   const isSelf = isEdit && user.id === currentUser?.id;
 
   const form = useForm<UserFormValues>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(userSchema),
     defaultValues: {
       name: user?.name ?? "",
       email: user?.email ?? "",
