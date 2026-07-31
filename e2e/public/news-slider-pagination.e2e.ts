@@ -2,6 +2,7 @@ import { test, expect, type Page } from '@playwright/test';
 import { API_URL, FRONTEND_URL, seedAccounts } from '../helpers/config';
 import { apiLogin, authedPatch, authedPost } from '../helpers/api';
 import { expectNoSeriousA11y } from '../helpers/a11y';
+import { waitForAppHydration } from '../helpers/hydration';
 import { expectNoHorizontalOverflow } from '../helpers/layout';
 
 /**
@@ -202,6 +203,12 @@ test.describe('Slider tin ở trang chủ', () => {
     await page.goto(`${FRONTEND_URL}/`);
     await page.locator('[data-testid="news-slider-track"]').waitFor();
 
+    // CỔNG HYDRATE — nút next chỉ có `onClick` sau khi React hydrate. Bấm sớm
+    // hơn thì cú bấm rơi vào khoảng trống, slider đứng yên và `expect.poll`
+    // dưới đây hết hạn 10 giây. Đã tái hiện tất định bằng CDP CPU throttling
+    // 20×: không có dòng này thì test đỏ 100%, có thì xanh.
+    await waitForAppHydration(page);
+
     expect(await visibleSlideCount(page)).toBe(3);
     const before = await firstVisibleTitle(page);
 
@@ -209,6 +216,9 @@ test.describe('Slider tin ở trang chủ', () => {
     await expect
       .poll(() => firstVisibleTitle(page), { message: 'thẻ đầu phải đổi' })
       .not.toBe(before);
+    // Trạng thái nút là bằng chứng thứ hai, độc lập với nội dung thẻ: rời khỏi
+    // vị trí đầu thì `previous` phải bật.
+    await expect(page.getByTestId('news-slider-previous')).toBeEnabled();
     expect(await visibleSlideCount(page)).toBe(3);
 
     // Không có thẻ nào hiện hai lần trong khung.
@@ -244,6 +254,8 @@ test.describe('Slider tin ở trang chủ', () => {
     await page.goto(`${FRONTEND_URL}/`);
     const region = page.getByRole('group', { name: /tin mới nhất/i });
     await region.waitFor();
+    // Cùng lý do như test trên: bàn phím chỉ được nhận sau khi hydrate xong.
+    await waitForAppHydration(page);
 
     // Tiêu điểm phải nằm trên một CONTROL THẬT trước khi bấm phím.
     //
@@ -288,14 +300,27 @@ test.describe('Slider tin ở trang chủ', () => {
     await page.goto(`${FRONTEND_URL}/`);
     await page.locator('[data-testid="news-slider-track"]').waitFor();
 
+    // Bấm trước khi hydrate xong thì `next/link` chưa chặn được sự kiện: điều
+    // hướng hoặc không xảy ra, hoặc bị router xử lý lại lần hai. Chờ hydrate,
+    // rồi chờ ĐÚNG URL lấy từ chính `href` của thẻ — không chờ một mẫu chung
+    // `/tin-tuc/.+` vốn khớp cả bài khác.
+    await waitForAppHydration(page);
+
     const card = page
       .locator('[data-testid="news-slide"][data-visible="true"]')
       .first()
       .getByRole('link');
     const title = await firstVisibleTitle(page);
-    await card.click();
+    const href = await card.getAttribute('href');
+    expect(href, 'thẻ tin phải là link thật').toMatch(/^\/tin-tuc\/.+/);
 
-    await page.waitForURL(/\/tin-tuc\/.+/);
+    await card.click();
+    // `waitUntil: 'commit'` vì điều hướng sau khi hydrate là chuyển trang phía
+    // client (không có sự kiện `load` mới) — chờ `load` sẽ treo tới hết hạn.
+    // So theo `pathname` để không phụ thuộc neo/tham số phụ đính kèm.
+    await page.waitForURL((url) => url.pathname === href, {
+      waitUntil: 'commit',
+    });
     await expect(page.getByRole('heading', { level: 1 })).toContainText(title);
   });
 
@@ -325,6 +350,7 @@ test.describe('Phân trang /tin-tuc', () => {
   }) => {
     await page.setViewportSize(VIEWPORT.desktop);
     await page.goto(`${FRONTEND_URL}/tin-tuc`);
+    await waitForAppHydration(page);
 
     const firstPageTitles = await page.locator('main h2').allTextContents();
 
@@ -352,8 +378,18 @@ test.describe('Phân trang /tin-tuc', () => {
   test('Back của trình duyệt quay lại trang 1', async ({ page }) => {
     await page.setViewportSize(VIEWPORT.desktop);
     await page.goto(`${FRONTEND_URL}/tin-tuc`);
+    // Trang 1 phải hydrate và render xong TRƯỚC khi bấm: bấm trong lúc chưa
+    // hydrate thì trình duyệt điều hướng cứng, còn router (vừa hydrate xong)
+    // có thể xử lý lại đúng cú bấm đó → hai mục lịch sử cho cùng `?page=2`,
+    // nên MỘT lần `goBack()` không quay về được trang 1.
+    await waitForAppHydration(page);
+    await expect(page.locator('[aria-current="page"]')).toHaveText('1');
+
     await page.getByTestId('pagination-next').click();
     await page.waitForURL(/[?&]page=2/);
+    // Chốt trang 2 đã render xong rồi mới Back — Back khi mục lịch sử chưa ổn
+    // định là nguồn chập chờn thứ hai.
+    await expect(page.locator('[aria-current="page"]')).toHaveText('2');
 
     await page.goBack();
     await page.waitForURL((url) => !url.search.includes('page=2'));
@@ -363,6 +399,7 @@ test.describe('Phân trang /tin-tuc', () => {
   test('Previous quay lại trang trước', async ({ page }) => {
     await page.setViewportSize(VIEWPORT.desktop);
     await page.goto(`${FRONTEND_URL}/tin-tuc?page=2`);
+    await waitForAppHydration(page);
 
     await page.getByTestId('pagination-previous').click();
     await page.waitForURL((url) => !url.search.includes('page=2'));
@@ -400,13 +437,22 @@ test.describe('Phân trang /tin-tuc', () => {
   test('bản tiếng Anh: nội dung và phân trang đều tiếng Anh', async ({ page }) => {
     await page.setViewportSize(VIEWPORT.desktop);
     await page.goto(`${FRONTEND_URL}/en/tin-tuc`);
+    await waitForAppHydration(page);
 
     await expect(
       page.getByRole('navigation', { name: 'News pagination' }),
     ).toBeVisible();
+    // Bản EN đã ổn định ở trang 1 rồi mới bấm sang trang 2.
+    await expect(page.locator('[aria-current="page"]')).toHaveText('1');
 
     await page.getByTestId('pagination-next').click();
-    await page.waitForURL(/\/en\/tin-tuc\?page=2/);
+    // Chờ ĐÚNG đường dẫn + tham số của bản EN. So bằng `pathname`/`searchParams`
+    // chứ không so chuỗi nguyên: link phân trang có kèm neo `#danh-sach-tin`,
+    // so chuỗi nguyên sẽ không bao giờ khớp (đã đo: hết hạn 15 giây).
+    await page.waitForURL(
+      (url) =>
+        url.pathname === '/en/tin-tuc' && url.searchParams.get('page') === '2',
+    );
     await expect(page.locator('[aria-current="page"]')).toHaveText('2');
     await expect(page.locator('main')).toContainText(`E2E ${RUN_ID} article`);
   });
@@ -417,6 +463,7 @@ test.describe('Phân trang /tin-tuc', () => {
 
     await expect(page.getByTestId('news-pagination')).toBeVisible();
     await expectNoHorizontalOverflow(page, '/tin-tuc mobile');
+    await waitForAppHydration(page);
 
     await page.getByTestId('pagination-next').click();
     await page.waitForURL(/[?&]page=2/);

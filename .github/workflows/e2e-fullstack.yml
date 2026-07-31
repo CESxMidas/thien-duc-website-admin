@@ -37,21 +37,21 @@ jobs:
     steps:
       # Ba repo checkout thành thư mục anh em (Playwright config trỏ ../<repo>).
       # Cross-repo cần token có quyền đọc (secrets.WORKSPACE_TOKEN) nếu là private.
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           path: thien-duc-website-admin
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           repository: CESxMidas/thien-duc-website-backend
           token: ${{ secrets.WORKSPACE_TOKEN || github.token }}
           path: thien-duc-website-backend
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           repository: CESxMidas/thien-duc-website-frontend
           token: ${{ secrets.WORKSPACE_TOKEN || github.token }}
           path: thien-duc-website-frontend
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
 
@@ -246,7 +246,7 @@ jobs:
 
       - name: Tải Playwright report + trace (khi lỗi)
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: playwright-report
           path: |
