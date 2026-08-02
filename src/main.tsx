@@ -24,6 +24,11 @@ if (sentryDsn) {
     environment: import.meta.env.MODE,
     tracesSampleRate: 0,
     sendDefaultPii: false,
+    // Release do `vite.config.ts` chèn lúc build (backlog §6 "Sentry source map
+    // upload"). PHẢI khớp release mà `@sentry/vite-plugin` gắn cho source map
+    // đã upload — cả hai cùng gọi `resolveSentryRelease`, nên không thể lệch.
+    // `null` (không suy được SHA) → bỏ hẳn field, KHÔNG bịa chuỗi.
+    ...(__SENTRY_RELEASE__ ? { release: __SENTRY_RELEASE__ } : {}),
   });
 }
 
