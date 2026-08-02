@@ -253,3 +253,25 @@ jobs:
             thien-duc-website-admin/playwright-report
             thien-duc-website-admin/test-results
           retention-days: 7
+
+      # Log ba service dưới dạng ARTIFACT, không chỉ `cat` vào log job.
+      #
+      # Vì sao cần: đọc log job đòi quyền truy cập repo, còn artifact tải được
+      # riêng — khi điều tra 404 của route chi tiết, thứ quyết định là backend
+      # CÓ nhận `GET /api/news/<slug>` hay không và trả mã gì. Bước `cat` ở trên
+      # vẫn giữ nguyên (tiện đọc nhanh), bước này chỉ thêm đường lấy file.
+      #
+      # CHỈ ba file .log là stdout/stderr của service. KHÔNG đóng gói `.env`,
+      # không dump CSDL, không thư mục nào khác. Credential trong job này là giá
+      # trị GIẢ do bước "Ghi .env giả cho CI" sinh ra, không phải secret thật.
+      - name: Tải log service (khi lỗi)
+        if: failure()
+        uses: actions/upload-artifact@v5
+        with:
+          name: service-logs
+          path: |
+            backend.log
+            frontend.log
+            admin.log
+          retention-days: 7
+          if-no-files-found: warn

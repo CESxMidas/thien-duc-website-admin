@@ -4,6 +4,10 @@ import { apiLogin, authedPatch, authedPost } from '../helpers/api';
 import { expectNoSeriousA11y } from '../helpers/a11y';
 import { waitForAppHydration } from '../helpers/hydration';
 import { expectNoHorizontalOverflow } from '../helpers/layout';
+import {
+  assertPublicApiSees,
+  reportCurrentPage,
+} from '../helpers/detail-route-probe';
 
 /**
  * THIEN-DUC-NEWS-SLIDER-AND-PAGINATION-M1 — slider tin ở trang chủ và phân
@@ -314,6 +318,12 @@ test.describe('Slider tin ở trang chủ', () => {
     const href = await card.getAttribute('href');
     expect(href, 'thẻ tin phải là link thật').toMatch(/^\/tin-tuc\/.+/);
 
+    // CHẨN ĐOÁN: slug lấy từ chính `href` của thẻ. Hỏi backend public TRƯỚC khi
+    // bấm — nếu backend đã 200 mà sau khi bấm vẫn ra trang 404 thì lỗi chắc
+    // chắn nằm ở tầng fetch/cache/render của Next (lớp B), không phải dữ liệu.
+    const clickedSlug = href!.replace(/^\/tin-tuc\//, '');
+    await assertPublicApiSees(`/news/${clickedSlug}`, 'news slider — bấm thẻ');
+
     await card.click();
     // `waitUntil: 'commit'` vì điều hướng sau khi hydrate là chuyển trang phía
     // client (không có sự kiện `load` mới) — chờ `load` sẽ treo tới hết hạn.
@@ -321,6 +331,7 @@ test.describe('Slider tin ở trang chủ', () => {
     await page.waitForURL((url) => url.pathname === href, {
       waitUntil: 'commit',
     });
+    await reportCurrentPage(page, 'news slider — sau khi bấm thẻ');
     await expect(page.getByRole('heading', { level: 1 })).toContainText(title);
   });
 

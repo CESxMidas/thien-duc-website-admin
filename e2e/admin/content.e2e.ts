@@ -7,6 +7,7 @@ import {
   authedPost,
   publicGet,
 } from '../helpers/api';
+import { probeDetailRoute } from '../helpers/detail-route-probe';
 
 const seed = seedAccounts();
 const stamp = `${Date.now().toString(36)}`;
@@ -130,7 +131,16 @@ test.describe('§11 — Nội dung công khai (frontend)', () => {
     expect((await publicGet(`/news/${newsSlug}`)).status).toBe(200);
 
     // Frontend: trang chi tiết hiển thị tiêu đề (render on-demand dev, dữ liệu mới).
-    const pubDetail = await gotoFE(page, `/tin-tuc/${newsSlug}`);
+    //
+    // CHẨN ĐOÁN: khẳng định lại backend public NGAY TRƯỚC khi điều hướng, rồi ghi
+    // lại status/finalUrl/h1/số khối JSON-LD của frontend. Trước đây khi đỏ chỉ
+    // biết "frontend 404" mà không biết backend còn thấy bài hay không, nên không
+    // phân biệt được lớp A/C (lỗi backend) với lớp B (cache/render của Next).
+    const pubDetail = await probeDetailRoute(page, {
+      apiPath: `/news/${newsSlug}`,
+      frontendPath: `/tin-tuc/${newsSlug}`,
+      label: 'news DRAFT→PUBLISHED',
+    });
     expect(pubDetail!.status()).toBe(200);
     await expect(page.getByText(NEWS_TITLE).first()).toBeVisible();
   });

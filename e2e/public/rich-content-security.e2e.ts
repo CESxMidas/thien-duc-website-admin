@@ -1,6 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
-import { API_URL, FRONTEND_URL, seedAccounts } from '../helpers/config';
+import { API_URL, seedAccounts } from '../helpers/config';
 import { apiLogin, authedPost } from '../helpers/api';
+import { probeDetailRoute } from '../helpers/detail-route-probe';
 
 /**
  * AUDIT-M2 — nội dung do CMS nhập KHÔNG được thực thi trên trang công khai.
@@ -89,8 +90,13 @@ test.describe('§M2 — nội dung độc hại không thực thi trên trang c�
       const errors: string[] = [];
       page.on('pageerror', (error) => errors.push(error.message));
 
-      await page.goto(`${FRONTEND_URL}${locale}/tin-tuc/${slug}`, {
-        waitUntil: 'domcontentloaded',
+      // CHẨN ĐOÁN: bài này do SUPER_ADMIN tạo nên PHẢI là PUBLISHED ngay. Hỏi
+      // backend public trước, rồi mới mở frontend — nếu backend 404 thì lỗi nằm
+      // ở khâu tạo/đăng (lớp A/C), không phải ở sanitizer.
+      await probeDetailRoute(page, {
+        apiPath: `/news/${slug}`,
+        frontendPath: `${locale}/tin-tuc/${slug}`,
+        label: `rich-content ${label} payload`,
       });
 
       // 1) Payload KHÔNG chạy: không biến toàn cục, không dialog.
@@ -143,8 +149,12 @@ test.describe('§M2 — nội dung độc hại không thực thi trên trang c�
     test(`${label}: mọi khối JSON-LD vẫn là JSON hợp lệ (không bị phá bởi </script>)`, async ({
       page,
     }) => {
-      await page.goto(`${FRONTEND_URL}${locale}/tin-tuc/${slug}`, {
-        waitUntil: 'domcontentloaded',
+      // CHẨN ĐOÁN: 0 khối JSON-LD nghĩa là layout `[locale]` không render (trang
+      // 404 toàn cục của Next), KHÔNG phải lỗi escape JSON-LD — probe ghi rõ.
+      await probeDetailRoute(page, {
+        apiPath: `/news/${slug}`,
+        frontendPath: `${locale}/tin-tuc/${slug}`,
+        label: `rich-content ${label} JSON-LD`,
       });
 
       const blocks = await page

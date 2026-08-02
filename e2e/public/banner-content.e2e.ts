@@ -5,6 +5,10 @@ import { test, expect, type Page } from '@playwright/test';
 import { API_URL, FRONTEND_URL, seedAccounts } from '../helpers/config';
 import { assertSafeDatabase, backendEnv, BACKEND_DIR } from '../helpers/backend-env';
 import { apiLogin, authedGet, authedPatch, publicGet } from '../helpers/api';
+import {
+  assertPublicApiSees,
+  gotoAndReport,
+} from '../helpers/detail-route-probe';
 import { expectNoSeriousA11y } from '../helpers/a11y';
 import { collectOverflow } from '../helpers/layout';
 
@@ -337,9 +341,26 @@ test.describe('§15 — Trang chủ hiển thị banner', () => {
 test.describe('§15 — Route CTA của banner có thật', () => {
   test('mọi href banner mở được ở cả VI và EN', async ({ page }) => {
     for (const banner of seeded) {
-      const vi = await gotoFE(page, banner.href);
+      // CHẨN ĐOÁN: hai banner trỏ vào route động `/du-an/:slug`. Dự án được seed
+      // trong `beforeAll` của chính spec này, tức là dữ liệu TẠO RA TRONG LÚC
+      // CHẠY — đúng nhóm với các route chi tiết đang đỏ. Hỏi backend public
+      // trước để tách "seed chưa vào / không PUBLISHED" (lớp A) khỏi
+      // "backend thấy nhưng Next vẫn 404" (lớp B).
+      const projectSlug = banner.href.match(/^\/du-an\/([^/]+)/)?.[1];
+      if (projectSlug) {
+        await assertPublicApiSees(
+          `/projects/${projectSlug}`,
+          `banner CTA ${banner.href}`,
+        );
+      }
+
+      const vi = await gotoAndReport(page, banner.href, `banner CTA VI ${banner.href}`);
       expect(vi!.status(), `CTA VI ${banner.href}`).toBeLessThan(400);
-      const en = await gotoFE(page, `/en${banner.href}`);
+      const en = await gotoAndReport(
+        page,
+        `/en${banner.href}`,
+        `banner CTA EN /en${banner.href}`,
+      );
       expect(en!.status(), `CTA EN /en${banner.href}`).toBeLessThan(400);
     }
   });
