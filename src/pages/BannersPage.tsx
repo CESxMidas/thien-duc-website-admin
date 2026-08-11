@@ -13,6 +13,7 @@ import {
   useUpdateBanner,
 } from "@/lib/api/queries";
 import { resolveApiError } from "@/lib/api-error-message";
+import { resolveAssetUrl } from "@/lib/asset-url";
 import { formatDateTime } from "@/lib/labels";
 import type { Banner } from "@/types";
 
@@ -106,7 +107,7 @@ export function BannersPage() {
           <div className="size-12 shrink-0 overflow-hidden rounded-md bg-cream">
             {banner.image ? (
               <img
-                src={banner.image}
+                src={resolveAssetUrl(banner.image)}
                 alt=""
                 loading="lazy"
                 className="size-full object-cover"
