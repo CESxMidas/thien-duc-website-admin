@@ -29,7 +29,8 @@ vi.mock("@/lib/api/queries", () => {
   });
   const names = [
     "useLeads", "useUpdateLead",
-    "useNews", "useNewsCategories", "useCreateNews", "useUpdateNews",
+    "useNews", "useNewsCategories", "useNewsCategoriesForAdmin",
+    "useCreateNews", "useUpdateNews",
     "useUpdateNewsStatus", "useDeleteNews", "useUpdateNewsCategory",
     "usePages", "useCreatePage", "useUpdatePage", "useUpdatePageStatus",
     "useBanners", "useCreateBanner", "useUpdateBanner", "useReorderBanners",

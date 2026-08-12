@@ -17,6 +17,7 @@ export const queryKeys = {
   projects: ["projects"] as const,
   news: ["news"] as const,
   newsCategories: ["news", "categories"] as const,
+  newsCategoriesAdmin: ["news", "categories", "admin"] as const,
   pages: ["pages"] as const,
   banners: ["banners"] as const,
   cooperation: ["cooperation"] as const,
@@ -68,7 +69,7 @@ export function useNewsCategories() {
 
 /**
  * `queryKeys.news` là tiền tố của `queryKeys.newsCategories`, nên một lần
- * invalidate làm mới cả bài viết lẫn chuyên mục — `_count.posts` của chuyên mục
+ * invalidate làm mới cả bài viết lẫn chuyên mục — số bài của chuyên mục
  * đổi mỗi khi thêm/xóa bài.
  */
 function useNewsMutation<TArgs, TResult>(fn: (args: TArgs) => Promise<TResult>) {
@@ -110,6 +111,28 @@ export function useUpdateNewsCategory() {
     ({ slug, data }: { slug: string; data: newsApi.UpdateNewsCategoryInput }) =>
       newsApi.updateNewsCategory(slug, data),
   );
+}
+
+/**
+ * Danh sách chuyên mục cho màn quản lý — khoá riêng (`newsCategoriesAdmin`) vì
+ * hình dạng dữ liệu khác route công khai (có thêm `totalCount`). Dùng chung khoá
+ * sẽ khiến một màn ghi đè cache của màn kia bằng dữ liệu thiếu field.
+ *
+ * Khoá vẫn bắt đầu bằng `["news"]` nên `useNewsMutation` invalidate được cả hai.
+ */
+export function useNewsCategoriesForAdmin() {
+  return useQuery({
+    queryKey: queryKeys.newsCategoriesAdmin,
+    queryFn: newsApi.listNewsCategoriesForAdmin,
+  });
+}
+
+export function useCreateNewsCategory() {
+  return useNewsMutation(newsApi.createNewsCategory);
+}
+
+export function useDeleteNewsCategory() {
+  return useNewsMutation(newsApi.deleteNewsCategory);
 }
 
 /* -------------------------------------------------------------------------

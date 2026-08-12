@@ -134,13 +134,23 @@ export interface ProjectDetail extends Omit<Project, "_count"> {
   galleryImages: ProjectGalleryImage[];
 }
 
-/** Chuyên mục tin (`news_categories`). `_count` chỉ có ở `GET /news/categories`. */
+/**
+ * Chuyên mục tin (`news_categories`).
+ *
+ * `publishedCount` có ở CẢ route công khai lẫn route admin — website dùng nó để
+ * ẩn chuyên mục chưa có bài đã đăng khỏi bộ lọc.
+ *
+ * `totalCount` CHỈ có ở `GET /news/categories/admin`: nó gộp cả bài nháp và bài
+ * chờ duyệt, là thông tin nội bộ và không được lộ ra route công khai. Admin cần
+ * nó để biết chuyên mục có xóa được không.
+ */
 export interface NewsCategory {
   id: string;
   slug: string;
   name: Bilingual;
   order: number;
-  _count?: { posts: number };
+  publishedCount: number;
+  totalCount?: number;
 }
 
 /**

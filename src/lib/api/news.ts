@@ -6,10 +6,11 @@
 //   PATCH  /news/:slug/status   -> NewsPost     (duyệt — ADMIN trở lên)
 //   DELETE /news/:slug          -> { deleted }  (ADMIN trở lên)
 //
-//   GET    /news/categories           -> NewsCategory[] (công khai, kèm _count)
+//   GET    /news/categories           -> NewsCategory[] (công khai, chỉ publishedCount)
+//   GET    /news/categories/admin     -> NewsCategory[] (kèm totalCount)
 //   POST   /news/categories           -> NewsCategory
-//   PATCH  /news/categories/:slug     -> NewsCategory
-//   DELETE /news/categories/:slug     -> { deleted }
+//   PATCH  /news/categories/:slug     -> NewsCategory   (KHÔNG sửa được slug)
+//   DELETE /news/categories/:slug     -> { deleted }    (409 nếu còn bài)
 //
 // Lưu ý: `GET /news` (không có `/admin`) chỉ trả bài đã đăng — dùng cho trang
 // công khai. Admin CMS luôn phải gọi `/news/admin`, nếu không sẽ không thấy bài
@@ -72,6 +73,40 @@ export function deleteNews(slug: string): Promise<{ deleted: boolean }> {
 
 export function listNewsCategories(): Promise<NewsCategory[]> {
   return apiFetch<NewsCategory[]>("/news/categories");
+}
+
+/**
+ * Danh sách cho màn quản lý chuyên mục — kèm `totalCount`.
+ *
+ * Bắt buộc dùng route `/admin`: route công khai cố ý KHÔNG trả tổng số bài (nó
+ * gộp cả bài nháp), nên Admin không thể suy ra con số quyết định "có xóa được
+ * không" từ đó.
+ */
+export function listNewsCategoriesForAdmin(): Promise<NewsCategory[]> {
+  return apiFetch<NewsCategory[]>("/news/categories/admin");
+}
+
+export interface CreateNewsCategoryInput {
+  slug: string;
+  name: Bilingual;
+  order?: number;
+}
+
+export function createNewsCategory(
+  input: CreateNewsCategoryInput,
+): Promise<NewsCategory> {
+  return apiFetch<NewsCategory>("/news/categories", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+}
+
+/** 409 `CATEGORY_IN_USE` nếu chuyên mục còn bài viết (mọi trạng thái). */
+export function deleteNewsCategory(slug: string): Promise<{ deleted: boolean }> {
+  return apiFetch<{ deleted: boolean }>(
+    `/news/categories/${encodeURIComponent(slug)}`,
+    { method: "DELETE" },
+  );
 }
 
 /**

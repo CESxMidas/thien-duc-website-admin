@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { Loader2, Pencil, Plus, Send, Tags, Trash2, Undo2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -8,12 +9,11 @@ import { Badge } from "@/components/ui/badge";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { DataTable, type Column } from "@/components/ui/DataTable";
 import { NewsFormDialog } from "@/components/news/NewsFormDialog";
-import { NewsCategoryManagerDialog } from "@/components/news/NewsCategoryManagerDialog";
 import { useAuth } from "@/context/AuthContext";
 import {
   useDeleteNews,
   useNews,
-  useNewsCategories,
+  useNewsCategoriesForAdmin,
   useUpdateNewsStatus,
 } from "@/lib/api/queries";
 import { resolveApiError } from "@/lib/api-error-message";
@@ -30,7 +30,7 @@ export function NewsPage() {
   const canApprove = user?.role === "ADMIN" || user?.role === "SUPER_ADMIN";
 
   const { data: news = [], isLoading } = useNews();
-  const { data: categories = [] } = useNewsCategories();
+  const { data: categories = [] } = useNewsCategoriesForAdmin();
   const updateStatus = useUpdateNewsStatus();
   const removeNews = useDeleteNews();
 
@@ -177,13 +177,14 @@ export function NewsPage() {
         }
         actions={
           <div className="flex gap-2">
-            <NewsCategoryManagerDialog
-              trigger={
-                <Button variant="outline">
-                  <Tags className="size-4" /> Chuyên mục
-                </Button>
-              }
-            />
+            {/* Quản lý chuyên mục là một TRANG riêng (`/tin-tuc/chuyen-muc`),
+                không phải modal: màn đó cần hộp thoại xác nhận xóa, mà đặt
+                Dialog trong Dialog làm focus và phím ESC nhập nhằng. */}
+            <Button variant="outline" asChild>
+              <Link to="/tin-tuc/chuyen-muc">
+                <Tags className="size-4" /> Chuyên mục
+              </Link>
+            </Button>
             <NewsFormDialog
               trigger={
                 <Button>
@@ -203,8 +204,10 @@ export function NewsPage() {
               className="rounded-full border border-line px-3 py-1 text-xs font-medium text-slate"
             >
               {category.name.vi}
+              {/* Tổng số bài (gồm cả nháp) — chỉ có ở route admin. Route công
+                  khai cố ý không trả con số này. */}
               <span className="ml-1.5 text-slate/60">
-                {category._count?.posts ?? 0}
+                {category.totalCount ?? 0}
               </span>
             </span>
           ))}

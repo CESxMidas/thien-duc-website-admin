@@ -9,6 +9,7 @@ import { ResetPasswordPage } from "@/pages/ResetPasswordPage";
 import { DashboardPage } from "@/pages/DashboardPage";
 import { ProjectsPage } from "@/pages/ProjectsPage";
 import { NewsPage } from "@/pages/NewsPage";
+import { NewsCategoriesPage } from "@/pages/NewsCategoriesPage";
 import { PagesPage } from "@/pages/PagesPage";
 import { BannersPage } from "@/pages/BannersPage";
 import { CooperationPage } from "@/pages/CooperationPage";
@@ -42,6 +43,12 @@ export default function App() {
             <Route index element={<DashboardPage />} />
             <Route path="du-an" element={<ProjectsPage />} />
             <Route path="tin-tuc" element={<NewsPage />} />
+            {/* Trang con của Tin tức — cố ý KHÔNG thêm mục sidebar: 4 chuyên
+                mục không đáng một mục điều hướng cấp một. Vào từ trang Tin tức. */}
+            <Route
+              path="tin-tuc/chuyen-muc"
+              element={<NewsCategoriesPage />}
+            />
             <Route path="trang" element={<PagesPage />} />
             {/* Banner là nội dung trang chủ — chỉ Admin/Super Admin quản lý. */}
             <Route
