@@ -1,4 +1,5 @@
 import { useEffect, useState, type ReactNode } from "react";
+import { Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { newsSchema, type NewsFormValues } from "./news-schema";
@@ -42,7 +43,6 @@ import {
 import type { NewsPost } from "@/types";
 
 /** Giá trị Select không nhận chuỗi rỗng, nên "không chuyên mục" cần một token. */
-const NO_CATEGORY = "none";
 
 interface NewsFormDialogProps {
   trigger: ReactNode;
@@ -59,7 +59,9 @@ function toFormValues(post?: NewsPost): NewsFormValues {
       vi: paragraphsToText(post?.content, "vi"),
       en: paragraphsToText(post?.content, "en"),
     },
-    categoryId: post?.categoryId ?? NO_CATEGORY,
+    // Bài cũ chưa phân loại nạp vào là chuỗi rỗng: form mở bình thường,
+    // nhưng schema buộc chọn chuyên mục trước khi lưu.
+    categoryId: post?.categoryId ?? "",
     author: post?.author ?? "",
     image: post?.image ?? "",
     // `<input type="date">` chỉ nhận `YYYY-MM-DD`, backend trả ISO đầy đủ.
@@ -77,6 +79,7 @@ export function NewsFormDialog({ trigger, post }: NewsFormDialogProps) {
   const createNews = useCreateNews();
   const updateNews = useUpdateNews();
   const { data: categories = [] } = useNewsCategories();
+  const hasCategories = categories.length > 0;
 
   const form = useForm<NewsFormValues>({
     resolver: zodResolver(newsSchema),
@@ -93,9 +96,7 @@ export function NewsFormDialog({ trigger, post }: NewsFormDialogProps) {
       title: toBilingualPayload(values.title),
       summary: toBilingualPayload(values.summary),
       content: toParagraphPayload(values.content),
-      // Chuỗi rỗng = không nhập; backend nhận `undefined` thay vì "".
-      categoryId:
-        values.categoryId === NO_CATEGORY ? undefined : values.categoryId,
+      categoryId: values.categoryId,
       author: values.author || undefined,
       image: values.image || undefined,
       eventDate: values.eventDate || undefined,
@@ -273,14 +274,22 @@ export function NewsFormDialog({ trigger, post }: NewsFormDialogProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Chuyên mục</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
+                  {/* Cố ý KHÔNG có mục "Chưa phân loại": bài không chuyên mục
+                      không xuất hiện ở trang danh mục nào cả. Cũng KHÔNG cho
+                      tạo chuyên mục ngay tại đây — việc đó vượt qua phân quyền
+                      (EDITOR sẽ tạo được chuyên mục mà không nhìn thấy toàn
+                      cảnh) và tạo đồng bộ trạng thái giữa hai form. */}
+                  <Select
+                    onValueChange={field.onChange}
+                    value={field.value}
+                    disabled={!hasCategories}
+                  >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue />
+                        <SelectValue placeholder="Chọn chuyên mục" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value={NO_CATEGORY}>Chưa phân loại</SelectItem>
                       {categories.map((category) => (
                         <SelectItem key={category.id} value={category.id}>
                           {category.name.vi}
@@ -288,6 +297,18 @@ export function NewsFormDialog({ trigger, post }: NewsFormDialogProps) {
                       ))}
                     </SelectContent>
                   </Select>
+                  {hasCategories ? null : (
+                    <FormDescription>
+                      Chưa có chuyên mục nào.{" "}
+                      <Link
+                        to="/tin-tuc/chuyen-muc"
+                        className="font-medium text-brand underline underline-offset-2"
+                      >
+                        Tạo chuyên mục
+                      </Link>{" "}
+                      trước khi viết bài.
+                    </FormDescription>
+                  )}
                   <FormMessage />
                 </FormItem>
               )}

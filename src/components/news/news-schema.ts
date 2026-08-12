@@ -29,8 +29,20 @@ export const newsSchema = z.object({
   // Nội dung bài không bắt buộc (bài có thể chỉ có tóm tắt), nhưng mỗi đoạn
   // phải nằm trong trần độ dài mà backend chấp nhận.
   content: longFormContentSchema(),
+  /**
+   * Chuyên mục **bắt buộc ở form Admin**, trong khi API vẫn để tuỳ chọn
+   * (`categoryId String?`) để không phá hợp đồng với consumer cũ.
+   *
+   * Bài không có chuyên mục không xuất hiện ở bất kỳ trang danh mục nào — mất
+   * một đường vào nội dung. Ràng buộc ở tầng form là cách siết mà **không** cần
+   * migration và **không** làm hỏng bài cũ: dữ liệu hiện tại đã 100% có chuyên
+   * mục, và bài cũ thiếu chuyên mục vẫn mở được form, chỉ là phải chọn trước
+   * khi lưu.
+   */
   categoryId: z
     .string()
+    .trim()
+    .min(1, "Hãy chọn chuyên mục cho bài viết.")
     .max(MAX_CATEGORY_ID_LENGTH, `Tối đa ${MAX_CATEGORY_ID_LENGTH} ký tự.`),
   author: z
     .string()

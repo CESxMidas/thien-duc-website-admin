@@ -76,7 +76,9 @@ const validNews = {
   slug: "tieu-de-bai-viet",
   summary: bilingual("Tóm tắt đủ dài cho bài viết này."),
   content: bilingual(""),
-  categoryId: "",
+  // Chuyên mục bắt buộc ở form Admin (API vẫn để tuỳ chọn) — bài không có
+  // chuyên mục không xuất hiện ở trang danh mục nào cả.
+  categoryId: "cat-1",
   author: "",
   image: "",
   eventDate: "",
