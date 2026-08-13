@@ -1,5 +1,6 @@
 // Nhãn tiếng Việt + kiểu hiển thị cho các enum backend.
 
+import type { PublicationState } from "@/lib/news-schedule";
 import type {
   ContentStatus,
   LeadStatus,
@@ -19,6 +20,35 @@ export const contentStatusLabel: Record<ContentStatus, string> = {
 export const contentStatusTone: Record<ContentStatus, BadgeTone> = {
   DRAFT: "gray",
   PENDING: "amber",
+  PUBLISHED: "green",
+};
+
+/**
+ * Nhãn cho trạng thái xuất bản **suy ra** của tin tức (xem `news-schedule.ts`).
+ * Ba giá trị đầu trùng `contentStatusLabel`; hai giá trị sau chỉ tồn tại ở tầng
+ * hiển thị vì lịch đăng không có enum riêng trong DB.
+ */
+export const publicationStateLabel: Record<PublicationState, string> = {
+  DRAFT: "Nháp",
+  PENDING: "Chờ duyệt",
+  SCHEDULED: "Đã lên lịch",
+  DUE: "Đã đến giờ đăng",
+  PUBLISHED: "Đã đăng",
+};
+
+/**
+ * Sắc thái huy hiệu — dùng lại đúng token đã có, không thêm màu mới.
+ *
+ * `DUE` lấy sắc cảnh báo chứ không phải xanh lá: bài ĐANG hiển thị công khai
+ * (vị từ Batch 2) nhưng dữ liệu chưa được reconciler đồng bộ, nên nó là một
+ * trạng thái quá độ cần chú ý, không phải trạng thái ổn định. Nhãn chữ mới là
+ * thứ phân biệt chính — màu chỉ hỗ trợ, không mang thông tin riêng.
+ */
+export const publicationStateTone: Record<PublicationState, BadgeTone> = {
+  DRAFT: "gray",
+  PENDING: "amber",
+  SCHEDULED: "blue",
+  DUE: "amber",
   PUBLISHED: "green",
 };
 

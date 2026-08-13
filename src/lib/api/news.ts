@@ -4,6 +4,8 @@
 //   POST   /news                -> NewsPost     (EDITOR trở lên)
 //   PATCH  /news/:slug          -> NewsPost
 //   PATCH  /news/:slug/status   -> NewsPost     (duyệt — ADMIN trở lên)
+//   PATCH  /news/:slug/schedule -> NewsPost     (đặt/đổi lịch — ADMIN trở lên)
+//   DELETE /news/:slug/schedule -> NewsPost     (huỷ lịch chưa tới hạn)
 //   DELETE /news/:slug          -> { deleted }  (ADMIN trở lên)
 //
 //   GET    /news/categories           -> NewsCategory[] (công khai, chỉ publishedCount)
@@ -29,7 +31,10 @@ export interface CreateNewsPostInput {
   image?: string;
   /** ISO date, vd `2021-03-31`. */
   eventDate?: string;
-  scheduledAt?: string;
+  // CỐ Ý không có `scheduledAt`: backend đã gỡ field này khỏi DTO nội dung
+  // (chốt bảo mật — EDITOR sửa được bài nhưng không được uỷ quyền đăng trong
+  // tương lai) và `forbidNonWhitelisted` sẽ trả 400 nếu payload có nó. Đặt lịch
+  // đi qua route lệnh riêng bên dưới.
 }
 
 export type UpdateNewsPostInput = Partial<CreateNewsPostInput>;
@@ -62,6 +67,41 @@ export function updateNewsStatus(
   return apiFetch<NewsPost>(`/news/${encodeURIComponent(slug)}/status`, {
     method: "PATCH",
     body: JSON.stringify({ status }),
+  });
+}
+
+/**
+ * Đặt hoặc đổi lịch đăng — route LỆNH riêng, chốt ADMIN trở lên.
+ *
+ * `scheduledAt` bắt buộc là instant ISO-8601 **kèm múi giờ tường minh**
+ * (`2026-08-20T08:00:00+07:00`). Chuỗi trần không có offset bị backend từ chối
+ * 400 vì nó được diễn giải theo múi giờ tiến trình — dùng
+ * `composeVietnamInstant()` để dựng, đừng dùng `new Date(...).toISOString()`
+ * trên giá trị của ô nhập.
+ *
+ * Backend ghi nguyên tử `status = PENDING`, `scheduledAt` và `publishedAt` cùng
+ * bằng mốc đã hẹn, nên response trả về đủ để UI vẽ lại trạng thái "Đã lên lịch".
+ */
+export function scheduleNewsPublication(
+  slug: string,
+  scheduledAt: string,
+): Promise<NewsPost> {
+  return apiFetch<NewsPost>(`/news/${encodeURIComponent(slug)}/schedule`, {
+    method: "PATCH",
+    body: JSON.stringify({ scheduledAt }),
+  });
+}
+
+/**
+ * Huỷ lịch đăng CHƯA tới hạn — bài về `DRAFT`, xoá cả `scheduledAt` lẫn
+ * `publishedAt` (mốc chưa bao giờ thành sự thật).
+ *
+ * 409 nếu lịch đã qua giờ: khi đó bài đang hiển thị công khai và việc cần làm
+ * là "Trả về nháp", không phải huỷ lịch.
+ */
+export function cancelNewsPublication(slug: string): Promise<NewsPost> {
+  return apiFetch<NewsPost>(`/news/${encodeURIComponent(slug)}/schedule`, {
+    method: "DELETE",
   });
 }
 

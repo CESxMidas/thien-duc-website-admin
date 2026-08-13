@@ -98,6 +98,23 @@ export function useUpdateNewsStatus() {
   );
 }
 
+/**
+ * Đặt / đổi lịch đăng. Dùng chung `useNewsMutation` nên sau khi thành công,
+ * danh sách tin (và chuyên mục, vì cùng tiền tố khoá) được làm mới — hàng vừa
+ * đặt lịch hiện ngay huy hiệu "Đã lên lịch" với mốc mới.
+ */
+export function useScheduleNewsPublication() {
+  return useNewsMutation(
+    ({ slug, scheduledAt }: { slug: string; scheduledAt: string }) =>
+      newsApi.scheduleNewsPublication(slug, scheduledAt),
+  );
+}
+
+/** Huỷ lịch đăng chưa tới hạn — bài về nháp, mốc lịch biến mất khỏi danh sách. */
+export function useCancelNewsPublication() {
+  return useNewsMutation(newsApi.cancelNewsPublication);
+}
+
 export function useDeleteNews() {
   return useNewsMutation(newsApi.deleteNews);
 }
