@@ -71,6 +71,8 @@ vi.mock("@/lib/api/queries", () => {
     useNewsCategories: () => ({ data: categoryList.current, isLoading: false }),
     useCreateNews: mutation(createNews),
     useUpdateNews: mutation(updateNews),
+    useUpdateNewsStatus: mutation(async () => {}),
+    useScheduleNewsPublication: mutation(async () => {}),
     useMedia: () => ({ data: [], isLoading: false }),
     useUploadMedia: mutation(async () => {}),
   };
@@ -127,9 +129,9 @@ describe("NewsFormDialog — chuyên mục bắt buộc", () => {
       within(dialog).getAllByRole("textbox", { name: "Tiếng Việt" })[0],
       "Tiêu đề bài mới",
     );
-    await user.click(
-      within(dialog).getByRole("button", { name: /Lưu|Tạo|Đăng/ }),
-    );
+    // Nút chính của form tạo (ADMIN): lưu bài ở dạng nháp. Các nút phụ
+    // ("Đăng ngay", "Đặt lịch") có lối đi riêng, khoá ở NewsFormCreateFlow.
+    await user.click(within(dialog).getByRole("button", { name: "Lưu nháp" }));
 
     expect(
       await within(dialog).findByText("Hãy chọn chuyên mục cho bài viết."),

@@ -1,10 +1,10 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { newsSchema, type NewsFormValues } from "./news-schema";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+import { CalendarClock, Loader2, Send } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,12 +28,17 @@ import {
 import {
   useCreateNews,
   useNewsCategories,
+  useScheduleNewsPublication,
   useUpdateNews,
+  useUpdateNewsStatus,
 } from "@/lib/api/queries";
+import { SchedulePublishDialog } from "@/components/content/SchedulePublishDialog";
+import { canScheduleRole } from "@/lib/news-schedule";
+import { formatVietnamSentence } from "@/lib/vietnam-time";
+import { contentStatusActions } from "@/lib/content-status-actions";
 import { BilingualField } from "@/components/ui/BilingualField";
 import { ImagePickerField } from "@/components/ui/ImagePickerField";
 import { useAuth } from "@/context/AuthContext";
-import { canBypassApproval } from "@/lib/roles";
 import { resolveApiError } from "@/lib/api-error-message";
 import { toBilingualPayload, toBilingualValue } from "@/lib/bilingual";
 import {
@@ -72,14 +77,37 @@ function toFormValues(post?: NewsPost): NewsFormValues {
 export function NewsFormDialog({ trigger, post }: NewsFormDialogProps) {
   const isEdit = post !== undefined;
   const { user } = useAuth();
-  // SUPER_ADMIN bỏ qua luồng duyệt: backend đăng bài ngay khi tạo, nên đừng hứa
-  // "lưu ở trạng thái nháp" gây hiểu là còn phải bấm duyệt.
-  const bypassesApproval = canBypassApproval(user);
   const [open, setOpen] = useState(false);
   const createNews = useCreateNews();
   const updateNews = useUpdateNews();
+  const updateStatus = useUpdateNewsStatus();
+  const schedulePublication = useScheduleNewsPublication();
   const { data: categories = [] } = useNewsCategories();
   const hasCategories = categories.length > 0;
+
+  // Bài mới có thể kết thúc ở nhiều đích khác nhau. Nội dung form giống hệt
+  // nhau, chỉ khác **lệnh chạy sau khi tạo** — xem `runCreate`.
+  //
+  // Bài mới của MỌI vai trò đều sinh ra ở `DRAFT` sạch (backend không còn tự
+  // đăng bài của SUPER_ADMIN), nên ADMIN và SUPER_ADMIN có cùng bộ thao tác.
+  const showSchedule = !isEdit && canScheduleRole(user?.role);
+  // Lệnh trạng thái đi kèm nút phụ: ADMIN/SUPER_ADMIN "Đăng ngay" (→ PUBLISHED),
+  // EDITOR "Gửi duyệt" (→ PENDING). Lấy từ ma trận dùng chung để nhãn và quyền
+  // không bị chép lại lần nữa.
+  const followUpAction = isEdit
+    ? null
+    : (contentStatusActions(user?.role, "DRAFT")[0] ?? null);
+
+  // Giá trị form đã qua validate, chờ người dùng chọn mốc giờ ở hộp thoại lịch.
+  // Có giá trị KHÔNG có nghĩa là đã tạo bài — mới chỉ là "sẵn sàng tạo".
+  const [pendingSchedule, setPendingSchedule] =
+    useState<NewsFormValues | null>(null);
+
+  // Cờ chạy chuỗi lệnh. `useState` để vẽ lại nút, `useRef` để chặn ngay trong
+  // cùng một tick — hai cú click liên tiếp xảy ra trước khi React kịp render
+  // lại, nút `disabled` một mình không cứu được.
+  const [running, setRunning] = useState(false);
+  const runningRef = useRef(false);
 
   const form = useForm<NewsFormValues>({
     resolver: zodResolver(newsSchema),
@@ -87,11 +115,14 @@ export function NewsFormDialog({ trigger, post }: NewsFormDialogProps) {
   });
 
   useEffect(() => {
-    if (open) form.reset(toFormValues(post));
+    if (open) {
+      form.reset(toFormValues(post));
+      setPendingSchedule(null);
+    }
   }, [open, post, form]);
 
-  async function onSubmit(values: NewsFormValues) {
-    const payload = {
+  function toPayload(values: NewsFormValues) {
+    return {
       slug: values.slug,
       title: toBilingualPayload(values.title),
       summary: toBilingualPayload(values.summary),
@@ -100,30 +131,127 @@ export function NewsFormDialog({ trigger, post }: NewsFormDialogProps) {
       author: values.author || undefined,
       image: values.image || undefined,
       eventDate: values.eventDate || undefined,
+      // KHÔNG có `scheduledAt` ở đây — xem `CreateNewsPostInput`. Lịch đăng đi
+      // qua lệnh riêng bên dưới.
     };
+  }
 
+  function closeAll() {
+    setPendingSchedule(null);
+    setOpen(false);
+  }
+
+  /**
+   * Tạo bài mới, rồi (tuỳ đích) chạy **một lệnh thứ hai** trên bài vừa tạo.
+   *
+   * Hai lệnh, không phải một: backend cố tình không nhận `scheduledAt` hay
+   * `status` trong DTO nội dung — đăng/hẹn giờ là lệnh xuất bản có phân quyền
+   * riêng. Người dùng chỉ thấy một thao tác, nhưng thứ tự dưới đây là bắt buộc.
+   *
+   * Slug dùng cho lệnh thứ hai LUÔN lấy từ response của bước tạo: backend có
+   * thể chuẩn hoá slug, nên slug trong form chỉ là đề nghị.
+   *
+   * Nếu bước hai hỏng: **bài đã tồn tại rồi**. Không xoá, không tạo lại, không
+   * giả vờ là tạo hỏng — đóng form (để không ai bấm tạo lần nữa thành bài trùng)
+   * và nói thẳng ra rằng bài đã lưu, việc còn thiếu làm lại được từ danh sách.
+   */
+  async function runCreate(
+    values: NewsFormValues,
+    outcome: "draft" | "status" | "schedule",
+    scheduledAt?: string,
+  ) {
+    if (runningRef.current) return;
+    runningRef.current = true;
+    setRunning(true);
+    const title = values.title.vi;
     try {
-      if (isEdit) {
-        await updateNews.mutateAsync({ slug: post.slug, data: payload });
-        toast.success("Đã lưu thay đổi.");
-      } else {
-        await createNews.mutateAsync(payload);
-        toast.success(`Đã tạo bài "${values.title.vi}".`);
+      let created;
+      try {
+        created = await createNews.mutateAsync(toPayload(values));
+      } catch (error) {
+        // Tạo hỏng: KHÔNG chạy lệnh thứ hai, giữ nguyên dữ liệu đang gõ để sửa
+        // rồi thử lại. Đóng hộp thoại lịch vì mốc giờ đã chọn không còn ngữ cảnh.
+        setPendingSchedule(null);
+        toast.error(
+          resolveApiError(error, "Không tạo được bài viết. Vui lòng thử lại."),
+        );
+        return;
       }
+
+      if (outcome === "schedule" && scheduledAt !== undefined) {
+        try {
+          await schedulePublication.mutateAsync({
+            slug: created.slug,
+            scheduledAt,
+          });
+          const when = formatVietnamSentence(scheduledAt);
+          toast.success(
+            when
+              ? `Đã tạo bài "${title}" và hẹn đăng vào ${when}.`
+              : `Đã tạo bài "${title}" và lên lịch đăng.`,
+          );
+        } catch (error) {
+          toast.error(
+            `Đã lưu bài "${title}" ở dạng nháp nhưng chưa đặt được lịch: ${resolveApiError(
+              error,
+              "không đặt được lịch đăng.",
+            )} Hãy dùng nút "Lên lịch" ở danh sách Tin tức để đặt lại.`,
+          );
+        }
+        closeAll();
+        return;
+      }
+
+      if (outcome !== "status" || followUpAction === null) {
+        toast.success(`Đã tạo bài "${title}".`);
+        closeAll();
+        return;
+      }
+
+      try {
+        await updateStatus.mutateAsync({
+          slug: created.slug,
+          status: followUpAction.to,
+        });
+        toast.success(
+          followUpAction.intent === "publish"
+            ? `Đã tạo và đăng bài "${title}".`
+            : `Đã tạo bài "${title}" và gửi duyệt.`,
+        );
+      } catch (error) {
+        toast.error(
+          `Đã lưu bài "${title}" ở dạng nháp nhưng chưa ${
+            followUpAction.intent === "publish" ? "đăng" : "gửi duyệt"
+          } được: ${resolveApiError(
+            error,
+            "không đổi được trạng thái.",
+          )} Hãy thử lại từ danh sách Tin tức.`,
+        );
+      }
+      closeAll();
+    } finally {
+      runningRef.current = false;
+      setRunning(false);
+    }
+  }
+
+  async function onSubmit(values: NewsFormValues) {
+    if (!isEdit) {
+      await runCreate(values, "draft");
+      return;
+    }
+    try {
+      await updateNews.mutateAsync({ slug: post.slug, data: toPayload(values) });
+      toast.success("Đã lưu thay đổi.");
       setOpen(false);
     } catch (error) {
       toast.error(
-        resolveApiError(
-          error,
-          isEdit
-            ? "Không lưu được thay đổi. Vui lòng thử lại."
-            : "Không tạo được bài viết. Vui lòng thử lại.",
-        ),
+        resolveApiError(error, "Không lưu được thay đổi. Vui lòng thử lại."),
       );
     }
   }
 
-  const submitting = form.formState.isSubmitting;
+  const submitting = form.formState.isSubmitting || running;
 
   const formId = "news-form";
 
@@ -131,15 +259,22 @@ export function NewsFormDialog({ trigger, post }: NewsFormDialogProps) {
     <Form {...form}>
       <SplitModal
         open={open}
-        onOpenChange={setOpen}
+        // Đang chạy chuỗi tạo → không cho đóng: đóng giữa chừng thì người dùng
+        // mất dấu bài vừa tạo và không biết lệnh thứ hai đã chạy hay chưa.
+        onOpenChange={(next) => {
+          if (running) return;
+          setOpen(next);
+        }}
         trigger={trigger}
         size="split-lg"
         title={isEdit ? "Sửa bài viết" : "Viết tin mới"}
         description={
           isEdit
             ? "Cập nhật nội dung bài. Trạng thái đăng đổi ở bảng danh sách."
-            : bypassesApproval
-              ? "Bài mới được đăng ngay khi tạo — không cần chờ duyệt."
+            : showSchedule
+              ? // Tạo bài KHÔNG còn ngầm là đăng bài, kể cả với SUPER_ADMIN —
+                // nên phải nói ra bài sẽ nằm ở đâu và đường nào đưa nó ra ngoài.
+                "Bài mới luôn được lưu ở dạng nháp. Chọn Đăng ngay hoặc Đặt lịch nếu muốn đưa bài ra website."
               : "Bài mới được lưu ở trạng thái nháp, gửi duyệt sau khi hoàn thiện."
         }
         media={
@@ -177,9 +312,40 @@ export function NewsFormDialog({ trigger, post }: NewsFormDialogProps) {
             >
               Hủy
             </Button>
+            {/* Đặt lịch KHÔNG tạo bài ngay: nó chỉ validate nội dung rồi mở hộp
+                thoại chọn giờ. Bài chỉ ra đời khi người dùng bấm xác nhận ở đó. */}
+            {showSchedule && (
+              <Button
+                type="button"
+                variant="outline"
+                disabled={submitting}
+                onClick={form.handleSubmit((values) => {
+                  setPendingSchedule(values);
+                })}
+              >
+                <CalendarClock className="size-4" />
+                Đặt lịch
+              </Button>
+            )}
+            {followUpAction && (
+              <Button
+                type="button"
+                variant="outline"
+                disabled={submitting}
+                onClick={form.handleSubmit((values) =>
+                  runCreate(values, "status"),
+                )}
+              >
+                <Send className="size-4" />
+                {followUpAction.label}
+              </Button>
+            )}
             <Button type="submit" form={formId} disabled={submitting}>
               {submitting && <Loader2 className="size-4 animate-spin" />}
-              {isEdit ? "Lưu thay đổi" : "Tạo bài viết"}
+              {/* Đứng cạnh "Đăng ngay" / "Đặt lịch", nút chính phải nói rõ nó
+                  khác gì: "Tạo bài viết" không cho biết bài sẽ nằm ở trạng thái
+                  nào, "Lưu nháp" thì có. */}
+              {isEdit ? "Lưu thay đổi" : "Lưu nháp"}
             </Button>
           </>
         }
@@ -346,6 +512,29 @@ export function NewsFormDialog({ trigger, post }: NewsFormDialogProps) {
 
         </form>
       </SplitModal>
+
+      {/* Hộp thoại chọn giờ dùng LẠI nguyên bản của luồng đặt lịch trên bảng
+          danh sách (cùng nhãn múi giờ, cùng ràng buộc 1 phút / 2 năm, cùng cảnh
+          báo "rất gần"). Nó nằm NGOÀI `SplitModal` nên hai modal là anh em
+          trong DOM, không lồng nhau: ESC đóng đúng lớp trên cùng và trả tiêu
+          điểm về form tạo, nội dung đang gõ còn nguyên. */}
+      {showSchedule && (
+        <SchedulePublishDialog
+          open={pendingSchedule !== null}
+          onOpenChange={(next) => {
+            if (running || next) return;
+            // Huỷ / ESC trước khi xác nhận: KHÔNG có lời gọi API nào cả, bài
+            // chưa từng được tạo. Chỉ quay lại form với dữ liệu còn nguyên.
+            setPendingSchedule(null);
+          }}
+          contentTitle={pendingSchedule?.title.vi ?? ""}
+          submitting={running}
+          onSubmit={(scheduledAt) => {
+            if (pendingSchedule === null) return;
+            void runCreate(pendingSchedule, "schedule", scheduledAt);
+          }}
+        />
+      )}
     </Form>
   );
 }

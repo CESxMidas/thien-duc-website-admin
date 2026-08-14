@@ -45,7 +45,13 @@ export const MAX_SCHEDULE_HORIZON_MS = 2 * 365 * 24 * 60 * 60 * 1000;
 /** Dưới ngưỡng này thì cảnh báo mềm "rất gần" — KHÔNG chặn gửi. */
 export const NEAR_SCHEDULE_WARNING_MS = 15 * 60 * 1000;
 
-/** Vai trò được đặt / đổi / huỷ lịch (khớp `@Roles(ADMIN, SUPER_ADMIN)`). */
+/**
+ * Vai trò được đặt / đổi / huỷ lịch (khớp `@Roles(ADMIN, SUPER_ADMIN)`).
+ *
+ * Dùng chung cho cả hàng trong bảng lẫn nút "Đặt lịch" ở form viết bài mới:
+ * bài mới của MỌI vai trò nay đều sinh ra ở `DRAFT` sạch (chưa từng công khai),
+ * nên điều kiện hẹn giờ của backend chỉ còn lại đúng vai trò.
+ */
 export function canScheduleRole(role?: Role | null): boolean {
   return role === "ADMIN" || role === "SUPER_ADMIN";
 }
