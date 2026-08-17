@@ -127,7 +127,7 @@ export function ProjectFormDialog({ trigger, project }: ProjectFormDialogProps) 
         description={
           isEdit
             ? "Thông tin cơ bản và ảnh chính. Thư viện ảnh con, hạng mục và nội dung chi tiết sửa ở modal chi tiết."
-            : "Điền thông tin cơ bản và chọn ảnh chính. Ảnh con, hạng mục và nội dung bổ sung sau khi tạo."
+            : "Điền thông tin cơ bản và chọn ảnh chính. Ảnh con, hạng mục và nội dung bổ sung sau khi tạo. Dự án mới ở trạng thái Nháp cho tới khi được đăng."
         }
         media={
           <MediaSection
