@@ -20,6 +20,7 @@
 
 import type { ContentStatus, Role } from "@/types";
 import type { SchedulableContent } from "@/lib/news-schedule";
+import type { SchedulableCooperationProject } from "@/lib/cooperation-schedule";
 import type { SchedulableProject } from "@/lib/project-schedule";
 
 /**
@@ -31,15 +32,16 @@ function canEditAnyState(role?: Role | null): boolean {
 }
 
 /**
- * Sửa được nội dung của Dự án hợp tác / Trang không?
+ * Sửa được nội dung của Trang không?
  *
- * Hai model này chưa có cột lịch sử xuất bản, nên không phân biệt được "nháp
- * chưa từng đăng" với "nháp đã từng đăng rồi gỡ xuống". Luật vì thế lấy đúng
- * phần chắc chắn: EDITOR sửa được nháp/chờ duyệt, không sửa được nội dung ĐANG
- * hiển thị công khai. Khớp `editorMayEditUnpublished` ở backend.
+ * Model này chưa có cột lịch sử xuất bản, nên không phân biệt được "nháp chưa
+ * từng đăng" với "nháp đã từng đăng rồi gỡ xuống". Luật vì thế lấy đúng phần
+ * chắc chắn: EDITOR sửa được nháp/chờ duyệt, không sửa được nội dung ĐANG hiển
+ * thị công khai. Khớp `editorMayEditUnpublished` ở backend.
  *
- * **Dự án đã tách khỏi hàm này từ Batch 9** — nó có lịch đăng nên cần luật chặt
- * hơn; xem `canEditProject`.
+ * **Dự án đã tách khỏi hàm này từ Batch 9** (xem `canEditProject`) và **Dự án
+ * hợp tác từ Batch 10** (xem `canEditCooperation`) — cả hai đã có lịch đăng nên
+ * cần luật chặt hơn.
  */
 export function canEditPublishableContent(
   role: Role | undefined | null,
@@ -64,6 +66,32 @@ export function canEditPublishableContent(
 export function canEditProject(
   role: Role | undefined | null,
   project: SchedulableProject,
+): boolean {
+  if (canEditAnyState(role)) return true;
+  if (role !== "EDITOR") return false;
+  if (project.publishedAt !== null) return false;
+  if (project.contentStatus === "DRAFT") return true;
+  return project.contentStatus === "PENDING" && project.scheduledAt === null;
+}
+
+/**
+ * Sửa được nội dung DỰ ÁN HỢP TÁC không? (Batch 10 — nay có lịch đăng.)
+ *
+ * Trước Batch 10 dự án hợp tác dùng chung `canEditPublishableContent`: chặn ở
+ * PUBLISHED, cho sửa mọi PENDING. Nay một bản ĐÃ ĐƯỢC LÊN LỊCH vẫn lưu là
+ * `PENDING`, nên luật cũ sẽ hiện nút "Sửa" cho một bản mà backend chắc chắn từ
+ * chối — và tệ hơn, nếu backend cũng còn luật cũ thì EDITOR sửa được bản sắp tự
+ * ra trang chủ.
+ *
+ * Luật khớp từng ca với bài viết và dự án, chỉ khác tên cột. Xem `canEditNews`
+ * cho lý do hàm này không cần `now`.
+ *
+ * Lưu ý: `project.status` của model này là TIẾN ĐỘ DỰ ÁN bằng chữ, không liên
+ * quan — nó vẫn sửa được bình thường ở các trạng thái được phép.
+ */
+export function canEditCooperation(
+  role: Role | undefined | null,
+  project: SchedulableCooperationProject,
 ): boolean {
   if (canEditAnyState(role)) return true;
   if (role !== "EDITOR") return false;

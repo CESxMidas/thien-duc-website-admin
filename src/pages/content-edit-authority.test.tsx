@@ -78,6 +78,9 @@ vi.mock("@/lib/api/queries", () => {
     "useCreateCooperationProject",
     "useUpdateCooperationProject",
     "useUpdateCooperationStatus",
+    // Batch 10 — màn Dự án hợp tác nay dùng thêm hai lệnh lịch.
+    "useScheduleCooperationPublication",
+    "useCancelCooperationPublication",
     "useReorderCooperationProjects",
     "useDeleteCooperationProject",
     "useUploadMedia",
@@ -189,6 +192,9 @@ const PROJECT_ROWS = [
 function makeCooperation(
   name: string,
   contentStatus: ContentStatus,
+  // Batch 10: hai cột mốc quyết định quyền sửa, nên fixture phải khai báo rõ
+  // thay vì để `undefined` — vị từ đọc `undefined !== null` và chặn nhầm.
+  schedule: { scheduledAt?: string | null; publishedAt?: string | null } = {},
 ): CooperationProject {
   const bilingual = { vi: "—" };
   return {
@@ -201,6 +207,8 @@ function makeCooperation(
     status: bilingual,
     image: null,
     contentStatus,
+    publishedAt: schedule.publishedAt ?? null,
+    scheduledAt: schedule.scheduledAt ?? null,
     order: 0,
     createdAt: PAST,
     updatedAt: PAST,
@@ -210,7 +218,8 @@ function makeCooperation(
 const COOPERATION_ROWS = [
   makeCooperation("Hợp tác nháp", "DRAFT"),
   makeCooperation("Hợp tác chờ duyệt", "PENDING"),
-  makeCooperation("Hợp tác đã đăng", "PUBLISHED"),
+  // Đã đăng thật → có mốc công khai (dữ liệu sau Batch 10).
+  makeCooperation("Hợp tác đã đăng", "PUBLISHED", { publishedAt: PAST }),
 ];
 
 function makeStaticPage(title: string, status: ContentStatus): StaticPage {

@@ -221,10 +221,19 @@ export interface CooperationProject {
   role: Bilingual;
   partner: Bilingual;
   scale: Bilingual;
+  /** TRẠNG THÁI MÔ TẢ BẰNG CHỮ (vd. "Đã bàn giao") — không phải bậc thang duyệt. */
   status: Bilingual;
   /** Ảnh phối cảnh (tùy chọn). */
   image: string | null;
+  /** Bậc thang duyệt: DRAFT → PENDING → PUBLISHED. */
   contentStatus: ContentStatus;
+  /**
+   * Mốc công khai LẦN ĐẦU và lịch hẹn đăng (Batch 10) — cùng ngữ nghĩa với
+   * `NewsPost` và `Project`. "Đã lên lịch" là trạng thái SUY RA từ
+   * `contentStatus` + `scheduledAt` + `publishedAt`, không phải giá trị lưu DB.
+   */
+  publishedAt: string | null;
+  scheduledAt: string | null;
   order: number;
   createdAt: string;
   updatedAt: string;

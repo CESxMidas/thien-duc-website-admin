@@ -71,6 +71,9 @@ vi.mock("@/lib/api/queries", () => {
     useCreateCooperationProject: mutation(createCooperation),
     useUpdateCooperationProject: mutation(async () => ({})),
     useUpdateCooperationStatus: mutation(updateCooperationStatus),
+    // Batch 10 — form Dự án hợp tác nay dùng thêm lệnh đặt lịch.
+    useScheduleCooperationPublication: mutation(async () => ({})),
+    useCancelCooperationPublication: mutation(async () => ({})),
     useCreatePage: mutation(createPage),
     useUpdatePage: mutation(async () => ({})),
     useUpdatePageStatus: mutation(updatePageStatus),
@@ -278,7 +281,7 @@ describe("Tạo dự án hợp tác — không kèm lệnh đăng", () => {
       );
 
       await fillCooperation(user);
-      await submit(/^Thêm dự án hợp tác$/);
+      await submit(/^Lưu nháp$/);
 
       expect(createCooperation).toHaveBeenCalledTimes(1);
       expectNoPublishCommand();
@@ -296,7 +299,7 @@ describe("Tạo dự án hợp tác — không kèm lệnh đăng", () => {
     );
 
     await fillCooperation(user);
-    await submit(/^Thêm dự án hợp tác$/);
+    await submit(/^Lưu nháp$/);
 
     const payload = createCooperation.mock.calls[0][0] as Record<
       string,

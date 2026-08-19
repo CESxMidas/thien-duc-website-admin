@@ -266,6 +266,23 @@ export function useUpdateCooperationStatus() {
   );
 }
 
+/**
+ * Đặt / đổi lịch đăng dự án hợp tác. Dùng chung `useCooperationMutation` nên sau
+ * khi thành công danh sách được làm mới — hàng vừa đặt lịch hiện ngay huy hiệu
+ * "Đã lên lịch" với mốc mới.
+ */
+export function useScheduleCooperationPublication() {
+  return useCooperationMutation(
+    ({ id, scheduledAt }: { id: string; scheduledAt: string }) =>
+      cooperationApi.scheduleCooperationPublication(id, scheduledAt),
+  );
+}
+
+/** Huỷ lịch chưa tới hạn — bản ghi về nháp, mốc lịch biến mất khỏi danh sách. */
+export function useCancelCooperationPublication() {
+  return useCooperationMutation(cooperationApi.cancelCooperationPublication);
+}
+
 export function useReorderCooperationProjects() {
   return useCooperationMutation(cooperationApi.reorderCooperationProjects);
 }

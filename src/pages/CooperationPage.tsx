@@ -3,6 +3,8 @@ import { toast } from "sonner";
 import {
   ArrowDown,
   ArrowUp,
+  CalendarClock,
+  CalendarX2,
   Handshake,
   Loader2,
   Pencil,
@@ -13,6 +15,7 @@ import {
 } from "lucide-react";
 
 import { CooperationFormDialog } from "@/components/cooperation/CooperationFormDialog";
+import { SchedulePublishDialog } from "@/components/content/SchedulePublishDialog";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { Button } from "@/components/ui/button";
@@ -20,16 +23,29 @@ import { Badge } from "@/components/ui/badge";
 import { DataTable, type Column } from "@/components/ui/DataTable";
 import { useAuth } from "@/context/AuthContext";
 import {
+  useCancelCooperationPublication,
   useCooperationProjects,
   useDeleteCooperationProject,
   useReorderCooperationProjects,
+  useScheduleCooperationPublication,
   useUpdateCooperationStatus,
 } from "@/lib/api/queries";
 import { resolveApiError } from "@/lib/api-error-message";
 import { resolveAssetUrl } from "@/lib/asset-url";
-import { canEditPublishableContent } from "@/lib/content-editing";
+import { canEditCooperation } from "@/lib/content-editing";
 import { contentStatusActions } from "@/lib/content-status-actions";
-import { contentStatusLabel, contentStatusTone, formatDateTime } from "@/lib/labels";
+import {
+  cooperationScheduleActions,
+  deriveCooperationPublicationState,
+  isActiveFutureCooperationSchedule,
+} from "@/lib/cooperation-schedule";
+import {
+  contentStatusLabel,
+  formatDateTime,
+  publicationStateLabel,
+  publicationStateTone,
+} from "@/lib/labels";
+import { formatVietnamDateTime } from "@/lib/vietnam-time";
 import type { ContentStatus, CooperationProject } from "@/types";
 
 /** Đổi chỗ hai phần tử, trả mảng mới — không sửa mảng gốc của React Query. */
@@ -48,12 +64,32 @@ export function CooperationPage() {
   const { user } = useAuth();
   const reorder = useReorderCooperationProjects();
   const updateStatus = useUpdateCooperationStatus();
+  const schedulePublication = useScheduleCooperationPublication();
+  const cancelPublication = useCancelCooperationPublication();
   const deleteProject = useDeleteCooperationProject();
   const [busyId, setBusyId] = useState<string | null>(null);
   const [toDelete, setToDelete] = useState<CooperationProject | null>(null);
+  const [scheduleTarget, setScheduleTarget] =
+    useState<CooperationProject | null>(null);
+  const [scheduleError, setScheduleError] = useState<string | null>(null);
 
   // Duyệt/đăng và xóa chỉ dành cho ADMIN trở lên (backend cũng chặn).
   const canManage = user?.role === "ADMIN" || user?.role === "SUPER_ADMIN";
+
+  // Đồng hồ MÁY, chỉ để chọn nhãn và ẩn nút chắc chắn bị từ chối — backend mới
+  // là nơi quyết định bản ghi có công khai hay không (xem `cooperation-schedule.ts`).
+  const now = new Date();
+
+  /**
+   * `order` là thứ tự các thẻ chạy ở trang chủ, nên đổi thứ tự **là** đổi nội
+   * dung công khai. Backend (Batch 10) chỉ cho biên tập viên sắp xếp khi MỌI bản
+   * ghi còn trong khâu biên tập — lệnh reorder ghi lại `order` của cả danh sách
+   * nên không thể xét riêng một hàng. Ẩn nút ở đây cho khớp, để không ai bấm vào
+   * một thao tác chắc chắn trả 403; backend vẫn là nơi chốt.
+   */
+  const canReorder = projects.every((project) =>
+    canEditCooperation(user?.role, project),
+  );
 
   async function move(index: number, direction: -1 | 1) {
     const target = index + direction;
@@ -79,6 +115,42 @@ export function CooperationPage() {
       toast.success(`Đã chuyển sang "${contentStatusLabel[status]}".`);
     } catch (error) {
       toast.error(resolveApiError(error, "Không đổi được trạng thái."));
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  async function handleSchedule(scheduledAt: string) {
+    if (!scheduleTarget) return;
+    const isReschedule = isActiveFutureCooperationSchedule(scheduleTarget, now);
+    setScheduleError(null);
+    try {
+      await schedulePublication.mutateAsync({
+        id: scheduleTarget.id,
+        scheduledAt,
+      });
+      toast.success(isReschedule ? "Đã đổi lịch đăng." : "Đã lên lịch đăng.");
+      setScheduleTarget(null);
+    } catch (error) {
+      // Lỗi nghiệp vụ (400 quá gần/quá xa, 409 đã từng đăng) hiện NGAY trong
+      // hộp thoại: người dùng còn nguyên giá trị vừa nhập để sửa lại.
+      setScheduleError(resolveApiError(error, "Không đặt được lịch đăng."));
+    }
+  }
+
+  /**
+   * Huỷ lịch — KHÔNG hỏi lại. Quy ước hiện có của CMS: hộp thoại xác nhận chỉ
+   * dành cho thao tác không hoàn tác được (xóa dự án); các thao tác đổi trạng
+   * thái thực hiện thẳng. Huỷ lịch cùng loại với chúng — bản ghi về nháp và đặt
+   * lại lịch được ngay.
+   */
+  async function handleCancelSchedule(project: CooperationProject) {
+    setBusyId(project.id);
+    try {
+      await cancelPublication.mutateAsync(project.id);
+      toast.success("Đã huỷ lịch đăng. Dự án hợp tác trở về nháp.");
+    } catch (error) {
+      toast.error(resolveApiError(error, "Không huỷ được lịch đăng."));
     } finally {
       setBusyId(null);
     }
@@ -112,7 +184,12 @@ export function CooperationPage() {
               <button
                 type="button"
                 aria-label="Đưa lên trên"
-                disabled={index === 0 || busy}
+                disabled={index === 0 || busy || !canReorder}
+                title={
+                  canReorder
+                    ? undefined
+                    : "Danh sách có dự án đã đăng hoặc đã lên lịch — chỉ quản trị viên đổi được thứ tự."
+                }
                 onClick={() => void move(index, -1)}
                 className="text-slate transition hover:text-brand disabled:opacity-30"
               >
@@ -121,7 +198,12 @@ export function CooperationPage() {
               <button
                 type="button"
                 aria-label="Đưa xuống dưới"
-                disabled={index === projects.length - 1 || busy}
+                disabled={index === projects.length - 1 || busy || !canReorder}
+                title={
+                  canReorder
+                    ? undefined
+                    : "Danh sách có dự án đã đăng hoặc đã lên lịch — chỉ quản trị viên đổi được thứ tự."
+                }
                 onClick={() => void move(index, 1)}
                 className="text-slate transition hover:text-brand disabled:opacity-30"
               >
@@ -171,12 +253,35 @@ export function CooperationPage() {
       ),
     },
     {
+      // Huy hiệu XUẤT BẢN. Cột "Tiến độ" bên dưới là `status` (chữ mô tả) — hai
+      // khái niệm khác nhau nên cố ý tách thành hai cột, không gộp một chỗ.
       key: "contentStatus",
-      header: "Trạng thái",
+      header: "Xuất bản",
+      render: (project) => {
+        const state = deriveCooperationPublicationState(project, now);
+        const scheduledLabel = project.scheduledAt
+          ? formatVietnamDateTime(project.scheduledAt)
+          : null;
+        return (
+          <div className="grid gap-0.5">
+            <Badge variant={publicationStateTone[state]}>
+              {publicationStateLabel[state]}
+            </Badge>
+            {state === "SCHEDULED" && scheduledLabel ? (
+              <p className="text-xs text-slate">{scheduledLabel}</p>
+            ) : null}
+          </div>
+        );
+      },
+    },
+    {
+      // `status` = TIẾN ĐỘ dự án bằng chữ ("Đã bàn giao"). Không phải trạng thái
+      // xuất bản — để cạnh nhau mà không nói rõ là mời gọi nhầm lẫn.
+      key: "status",
+      header: "Tiến độ",
+      hideOnMobile: true,
       render: (project) => (
-        <Badge variant={contentStatusTone[project.contentStatus]}>
-          {contentStatusLabel[project.contentStatus]}
-        </Badge>
+        <span className="text-sm text-slate">{project.status.vi}</span>
       ),
     },
     {
@@ -201,8 +306,18 @@ export function CooperationPage() {
           {busyId === project.id && (
             <Loader2 className="size-3.5 animate-spin text-slate" />
           )}
-          {contentStatusActions(user?.role, project.contentStatus).map(
-            (action) => (
+          {contentStatusActions(user?.role, project.contentStatus)
+            // Ở trạng thái "Đã lên lịch", "Trả về nháp" và "Huỷ lịch" cho ra
+            // CÙNG một kết quả (DRAFT, xoá cả hai mốc). Giữ lại nút nói đúng
+            // việc đang làm; ở mọi trạng thái khác "Trả về nháp" vẫn như trước.
+            .filter(
+              (action) =>
+                !(
+                  deriveCooperationPublicationState(project, now) ===
+                    "SCHEDULED" && action.intent === "revert"
+                ),
+            )
+            .map((action) => (
               <Button
                 key={action.to}
                 // Đăng/duyệt là nút đậm; gửi duyệt/trả nháp là ghost.
@@ -218,13 +333,57 @@ export function CooperationPage() {
                 {(action.intent === "submit" ||
                   action.intent === "publish") && <Send className="size-4" />}
                 {action.intent === "revert" && <Undo2 className="size-4" />}
-                {action.label}
+                {/* Đang hẹn giờ: "Duyệt & đăng" thành "Đăng ngay" — vẫn đi qua
+                    route `status` như cũ, backend chuyển mốc công khai về hiện
+                    tại và xoá lịch. */}
+                {deriveCooperationPublicationState(project, now) ===
+                  "SCHEDULED" && action.intent === "approve"
+                  ? "Đăng ngay"
+                  : action.label}
               </Button>
-            ),
-          )}
-          {/* EDITOR không sửa được dự án ĐANG hiển thị ở trang chủ — backend
-              trả 403, nên không hiện nút. ADMIN trở lên giữ nguyên quyền sửa. */}
-          {canEditPublishableContent(user?.role, project.contentStatus) && (
+            ))}
+
+          {(() => {
+            const schedule = cooperationScheduleActions(
+              user?.role,
+              project,
+              now,
+            );
+            return (
+              <>
+                {(schedule.schedule || schedule.reschedule) && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    disabled={busyId === project.id}
+                    onClick={() => {
+                      setScheduleError(null);
+                      setScheduleTarget(project);
+                    }}
+                  >
+                    <CalendarClock className="size-4" />
+                    {schedule.reschedule ? "Đổi lịch" : "Lên lịch"}
+                  </Button>
+                )}
+                {schedule.cancel && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    disabled={busyId === project.id}
+                    onClick={() => void handleCancelSchedule(project)}
+                  >
+                    <CalendarX2 className="size-4" />
+                    Huỷ lịch
+                  </Button>
+                )}
+              </>
+            );
+          })()}
+
+          {/* EDITOR mất quyền sửa từ lúc dự án hợp tác được hẹn giờ hoặc đã từng
+              công khai — backend trả 403, nên không hiện nút. ADMIN trở lên giữ
+              nguyên quyền sửa. */}
+          {canEditCooperation(user?.role, project) && (
             <CooperationFormDialog
               project={project}
               trigger={
@@ -280,6 +439,28 @@ export function CooperationPage() {
       ) : (
         <DataTable columns={columns} rows={projects} loading={isLoading} />
       )}
+
+      {/* Dùng lại đúng hộp thoại của Tin tức/Dự án — cùng ràng buộc giờ Việt
+          Nam, cùng hai ngưỡng 1 phút / 2 năm. Không dựng UI ngày giờ thứ hai. */}
+      <SchedulePublishDialog
+        open={scheduleTarget !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setScheduleTarget(null);
+            setScheduleError(null);
+          }
+        }}
+        contentTitle={scheduleTarget?.name.vi ?? ""}
+        currentScheduledAt={
+          scheduleTarget &&
+          isActiveFutureCooperationSchedule(scheduleTarget, now)
+            ? scheduleTarget.scheduledAt
+            : null
+        }
+        submitting={schedulePublication.isPending}
+        errorMessage={scheduleError}
+        onSubmit={(scheduledAt) => void handleSchedule(scheduledAt)}
+      />
 
       <ConfirmDialog
         open={toDelete !== null}

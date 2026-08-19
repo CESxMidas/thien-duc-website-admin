@@ -5,6 +5,8 @@
 //   PATCH  /cooperation/reorder    -> CooperationProject[]   (ghi lại `order`)
 //   PATCH  /cooperation/:id        -> CooperationProject
 //   PATCH  /cooperation/:id/status -> CooperationProject     (ADMIN trở lên)
+//   PATCH  /cooperation/:id/schedule -> CooperationProject   (đặt/đổi lịch — ADMIN trở lên)
+//   DELETE /cooperation/:id/schedule -> CooperationProject   (huỷ lịch chưa tới hạn)
 //   DELETE /cooperation/:id        -> { deleted }            (ADMIN trở lên)
 //
 // `GET /cooperation` công khai chỉ trả bản PUBLISHED — Admin CMS dùng `/admin`.
@@ -20,8 +22,10 @@ export interface CreateCooperationInput {
   scale: Bilingual;
   status: Bilingual;
   image?: string;
-  contentStatus?: ContentStatus;
   order?: number;
+  // KHÔNG có `contentStatus`, `scheduledAt`, `publishedAt`: backend đã gỡ ba
+  // field này khỏi DTO nội dung và `forbidNonWhitelisted` trả 400 nếu gửi lên.
+  // Đăng và hẹn giờ là lệnh riêng, có phân quyền riêng.
 }
 
 export type UpdateCooperationInput = Partial<CreateCooperationInput>;
@@ -70,6 +74,45 @@ export function reorderCooperationProjects(
     method: "PATCH",
     body: JSON.stringify({ cooperationProjectIds: ids }),
   });
+}
+
+/**
+ * Đặt / đổi lịch đăng — lệnh RIÊNG, không đi qua `PATCH /cooperation/:id`.
+ *
+ * `scheduledAt` bắt buộc là instant ISO-8601 **kèm múi giờ tường minh**
+ * (`2026-08-20T08:00:00+07:00`). Backend từ chối chuỗi không có offset: nó phụ
+ * thuộc múi giờ máy chủ, mà đây là field quyết định *khi nào nội dung ra công
+ * khai*.
+ *
+ * Backend ghi nguyên tử `contentStatus = PENDING`, `scheduledAt` và
+ * `publishedAt` cùng bằng mốc đã hẹn, KHÔNG chạm `status` (chữ mô tả). Chỉ dành
+ * cho lần công khai ĐẦU TIÊN — bản đã/từng đăng trả 409.
+ *
+ * Đây cũng là cách **duyệt bằng lịch** một bản do biên tập viên gửi lên.
+ */
+export function scheduleCooperationPublication(
+  id: string,
+  scheduledAt: string,
+): Promise<CooperationProject> {
+  return apiFetch<CooperationProject>(
+    `/cooperation/${encodeURIComponent(id)}/schedule`,
+    { method: "PATCH", body: JSON.stringify({ scheduledAt }) },
+  );
+}
+
+/**
+ * Huỷ lịch đăng CHƯA tới hạn — bản ghi về `DRAFT`, xoá cả `scheduledAt` lẫn
+ * `publishedAt` (mốc chưa từng thành sự thật), tức thu hồi luôn phê duyệt. Lịch
+ * đã qua giờ trả 409: khi đó dự án hợp tác đang hiển thị công khai, việc cần làm
+ * là "Trả về nháp".
+ */
+export function cancelCooperationPublication(
+  id: string,
+): Promise<CooperationProject> {
+  return apiFetch<CooperationProject>(
+    `/cooperation/${encodeURIComponent(id)}/schedule`,
+    { method: "DELETE" },
+  );
 }
 
 export function deleteCooperationProject(
