@@ -361,6 +361,23 @@ export function useUpdateProjectStatus() {
   );
 }
 
+/**
+ * Đặt / đổi lịch đăng dự án. Dùng chung `useProjectsMutation` nên sau khi thành
+ * công, danh sách dự án (và chi tiết, vì cùng tiền tố khoá) được làm mới — hàng
+ * vừa đặt lịch hiện ngay huy hiệu "Đã lên lịch" với mốc mới.
+ */
+export function useScheduleProjectPublication() {
+  return useProjectsMutation(
+    ({ slug, scheduledAt }: { slug: string; scheduledAt: string }) =>
+      projectsApi.scheduleProjectPublication(slug, scheduledAt),
+  );
+}
+
+/** Huỷ lịch đăng chưa tới hạn — dự án về nháp, mốc lịch biến mất khỏi danh sách. */
+export function useCancelProjectPublication() {
+  return useProjectsMutation(projectsApi.cancelProjectPublication);
+}
+
 export function useDeleteProject() {
   return useProjectsMutation(projectsApi.deleteProject);
 }

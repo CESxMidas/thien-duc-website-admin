@@ -36,7 +36,7 @@ import {
 } from "@/lib/api/queries";
 import { resolveApiError } from "@/lib/api-error-message";
 import { resolveAssetUrl } from "@/lib/asset-url";
-import { canEditPublishableContent } from "@/lib/content-editing";
+import { canEditProject } from "@/lib/content-editing";
 import type { ProjectDetail, ProjectGalleryImage } from "@/types";
 
 /** Giá trị Select cho "ảnh của cả dự án" — Radix không nhận value rỗng. */
@@ -83,7 +83,7 @@ export function ProjectGalleryTab({ project }: { project: ProjectDetail }) {
   // Ảnh thư viện — kể cả THỨ TỰ của chúng — là nội dung công khai của dự án cha,
   // nên quyền sửa thừa hưởng luật của cha: EDITOR mất quyền khi dự án đã xuất
   // bản (backend trả 403 trên thêm / sửa / xóa / sắp xếp). Vẫn cho xem ảnh.
-  const canEdit = canEditPublishableContent(user?.role, project.contentStatus);
+  const canEdit = canEditProject(user?.role, project);
 
   const [url, setUrl] = useState("");
   const [caption, setCaption] = useState("");

@@ -20,6 +20,7 @@
 
 import type { ContentStatus, Role } from "@/types";
 import type { SchedulableContent } from "@/lib/news-schedule";
+import type { SchedulableProject } from "@/lib/project-schedule";
 
 /**
  * Vai trò sửa được nội dung ở MỌI trạng thái. Đây là luồng đính chính của quản
@@ -30,12 +31,15 @@ function canEditAnyState(role?: Role | null): boolean {
 }
 
 /**
- * Sửa được nội dung của Dự án / Dự án hợp tác / Trang không?
+ * Sửa được nội dung của Dự án hợp tác / Trang không?
  *
- * Ba model này chưa có cột lịch sử xuất bản, nên không phân biệt được "nháp chưa
- * từng đăng" với "nháp đã từng đăng rồi gỡ xuống". Luật vì thế lấy đúng phần
- * chắc chắn: EDITOR sửa được nháp/chờ duyệt, không sửa được nội dung ĐANG hiển
- * thị công khai. Khớp `editorMayEditUnpublished` ở backend.
+ * Hai model này chưa có cột lịch sử xuất bản, nên không phân biệt được "nháp
+ * chưa từng đăng" với "nháp đã từng đăng rồi gỡ xuống". Luật vì thế lấy đúng
+ * phần chắc chắn: EDITOR sửa được nháp/chờ duyệt, không sửa được nội dung ĐANG
+ * hiển thị công khai. Khớp `editorMayEditUnpublished` ở backend.
+ *
+ * **Dự án đã tách khỏi hàm này từ Batch 9** — nó có lịch đăng nên cần luật chặt
+ * hơn; xem `canEditProject`.
  */
 export function canEditPublishableContent(
   role: Role | undefined | null,
@@ -44,6 +48,28 @@ export function canEditPublishableContent(
   if (canEditAnyState(role)) return true;
   if (role !== "EDITOR") return false;
   return status === "DRAFT" || status === "PENDING";
+}
+
+/**
+ * Sửa được nội dung DỰ ÁN không? (Batch 9 — dự án nay có lịch đăng.)
+ *
+ * Trước Batch 9 dự án dùng chung `canEditPublishableContent`: chặn ở PUBLISHED,
+ * cho sửa mọi PENDING. Nay một dự án ĐÃ ĐƯỢC LÊN LỊCH vẫn lưu là `PENDING`, nên
+ * luật cũ sẽ hiện nút "Sửa" cho một dự án mà backend chắc chắn từ chối — và tệ
+ * hơn, nếu backend cũng còn luật cũ thì EDITOR sửa được bản sắp tự ra công khai.
+ *
+ * Luật khớp từng ca với bài viết, chỉ khác tên cột. Xem `canEditNews` cho lý do
+ * hàm này không cần `now`.
+ */
+export function canEditProject(
+  role: Role | undefined | null,
+  project: SchedulableProject,
+): boolean {
+  if (canEditAnyState(role)) return true;
+  if (role !== "EDITOR") return false;
+  if (project.publishedAt !== null) return false;
+  if (project.contentStatus === "DRAFT") return true;
+  return project.contentStatus === "PENDING" && project.scheduledAt === null;
 }
 
 /**

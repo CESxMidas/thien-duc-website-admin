@@ -82,7 +82,18 @@ const image: ProjectGalleryImage = {
   createdAt: NOW,
 };
 
-function makeProject(contentStatus: ContentStatus): ProjectDetail {
+/**
+ * Dự án cha ở một trạng thái xuất bản cho trước.
+ *
+ * Batch 9 thêm `publishedAt`/`scheduledAt`, và vị từ quyền sửa đọc cả hai. Mặc
+ * định ở đây là nội dung CHƯA từng công khai, chưa hẹn giờ — trừ khi cha đã
+ * `PUBLISHED` thì mốc công khai phải có thật. `schedule` cho phép dựng riêng ca
+ * "đã lên lịch" / "nháp từng đăng" của Batch 9.
+ */
+function makeProject(
+  contentStatus: ContentStatus,
+  schedule: { publishedAt?: string | null; scheduledAt?: string | null } = {},
+): ProjectDetail {
   return {
     id: "p1",
     slug: "du-an",
@@ -91,6 +102,9 @@ function makeProject(contentStatus: ContentStatus): ProjectDetail {
     description: null,
     status: "DANG_THI_CONG",
     contentStatus,
+    publishedAt:
+      schedule.publishedAt ?? (contentStatus === "PUBLISHED" ? NOW : null),
+    scheduledAt: schedule.scheduledAt ?? null,
     location: null,
     image: null,
     category: null,
@@ -159,6 +173,50 @@ describe("ProjectItemsTab — thao tác theo vai trò × trạng thái cha", () 
       expect(screen.getByRole("button", { name: /Sửa/ })).toBeInTheDocument();
       expect(
         screen.getByRole("button", { name: "Xóa hạng mục" }),
+      ).toBeInTheDocument();
+    },
+  );
+});
+
+/**
+ * **Batch 9 — cha ĐÃ LÊN LỊCH cũng phải khoá nội dung con.**
+ *
+ * Trước Batch 9 điều kiện chỉ là `PUBLISHED`, mà một dự án đã hẹn giờ vẫn lưu là
+ * `PENDING` — để nguyên thì EDITOR sửa được hạng mục của bản sắp tự ra công khai.
+ */
+describe("ProjectItemsTab — cha đã lên lịch / từng đăng", () => {
+  const FUTURE = "2099-08-20T01:00:00.000Z";
+
+  it.each([
+    ["đã lên lịch", { publishedAt: FUTURE, scheduledAt: FUTURE }],
+    ["đã đến giờ đăng", { publishedAt: NOW, scheduledAt: NOW }],
+    ["nháp từng đăng", { publishedAt: NOW, scheduledAt: null }],
+  ] as const)("EDITOR + cha %s: không còn thao tác nào", (_label, schedule) => {
+    const contentStatus: ContentStatus =
+      schedule.scheduledAt === null ? "DRAFT" : "PENDING";
+    renderTab(
+      <ProjectItemsTab project={makeProject(contentStatus, schedule)} />,
+    );
+
+    expect(screen.queryByRole("button", { name: /Thêm hạng mục/ })).toBeNull();
+    expect(screen.queryByRole("button", { name: /Sửa/ })).toBeNull();
+  });
+
+  it.each(["ADMIN", "SUPER_ADMIN"] as const)(
+    "%s + cha đã lên lịch: giữ nguyên thao tác",
+    (currentRole) => {
+      role.current = currentRole;
+      renderTab(
+        <ProjectItemsTab
+          project={makeProject("PENDING", {
+            publishedAt: FUTURE,
+            scheduledAt: FUTURE,
+          })}
+        />,
+      );
+
+      expect(
+        screen.getByRole("button", { name: /Thêm hạng mục/ }),
       ).toBeInTheDocument();
     },
   );

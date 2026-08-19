@@ -33,6 +33,7 @@ vi.mock("@/lib/api/queries", () => {
     "useCreateNews", "useUpdateNews",
     "useUpdateNewsStatus", "useDeleteNews", "useUpdateNewsCategory",
     "useScheduleNewsPublication", "useCancelNewsPublication",
+    "useScheduleProjectPublication", "useCancelProjectPublication",
     "usePages", "useCreatePage", "useUpdatePage", "useUpdatePageStatus",
     "useBanners", "useCreateBanner", "useUpdateBanner", "useReorderBanners",
     "useCooperationProjects", "useCreateCooperationProject",

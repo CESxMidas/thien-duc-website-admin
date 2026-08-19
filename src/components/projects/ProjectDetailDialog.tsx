@@ -26,10 +26,13 @@ import { resolveApiError } from "@/lib/api-error-message";
 import { resolveAssetUrl } from "@/lib/asset-url";
 import {
   contentStatusLabel,
-  contentStatusTone,
   formatDateTime,
   projectStatusLabel,
+  publicationStateLabel,
+  publicationStateTone,
 } from "@/lib/labels";
+import { deriveProjectPublicationState } from "@/lib/project-schedule";
+import { formatVietnamDateTime } from "@/lib/vietnam-time";
 import { contentStatusActions } from "@/lib/content-status-actions";
 import type { ContentStatus, ProjectDetail } from "@/types";
 
@@ -140,6 +143,10 @@ function InfoTab({ project }: { project: ProjectDetail }) {
   // chỉ ADMIN trở lên có nút. Ẩn cả cụm khi vai trò không có thao tác nào hợp lệ.
   const actions = contentStatusActions(user?.role, project.contentStatus);
 
+  // Đồng hồ máy, chỉ để chọn nhãn hiển thị — backend mới quyết định dự án có
+  // công khai hay không.
+  const publicationState = deriveProjectPublicationState(project, new Date());
+
   async function onChangeStatus(to: ContentStatus) {
     try {
       await updateStatus.mutateAsync({ slug: project.slug, status: to });
@@ -159,11 +166,20 @@ function InfoTab({ project }: { project: ProjectDetail }) {
           { label: "Phân loại", value: project.category?.vi ?? "—" },
           { label: "Tình trạng", value: projectStatusLabel[project.status] },
           {
-            label: "Trạng thái nội dung",
+            // Trạng thái XUẤT BẢN suy ra (gồm cả "Đã lên lịch" / "Đã đến giờ
+            // đăng"), tách bạch với "Tình trạng" thi công ở dòng trên.
+            label: "Trạng thái đăng",
             value: (
-              <Badge variant={contentStatusTone[project.contentStatus]}>
-                {contentStatusLabel[project.contentStatus]}
-              </Badge>
+              <span className="flex flex-wrap items-center gap-2">
+                <Badge variant={publicationStateTone[publicationState]}>
+                  {publicationStateLabel[publicationState]}
+                </Badge>
+                {publicationState === "SCHEDULED" && project.scheduledAt ? (
+                  <span className="text-xs text-slate">
+                    {formatVietnamDateTime(project.scheduledAt)}
+                  </span>
+                ) : null}
+              </span>
             ),
           },
           { label: "Mô tả ngắn", value: project.summary.vi, block: true },

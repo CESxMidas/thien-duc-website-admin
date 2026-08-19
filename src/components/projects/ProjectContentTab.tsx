@@ -18,7 +18,7 @@ import { Label } from "@/components/ui/label";
 import { useAuth } from "@/context/AuthContext";
 import { useUpdateProject } from "@/lib/api/queries";
 import { resolveApiError } from "@/lib/api-error-message";
-import { canEditPublishableContent } from "@/lib/content-editing";
+import { canEditProject } from "@/lib/content-editing";
 import {
   emptyBilingual,
   toBilingualLoose,
@@ -54,7 +54,7 @@ function move<T>(list: T[], index: number, delta: -1 | 1): T[] {
 export function ProjectContentTab({ project }: { project: ProjectDetail }) {
   const { user } = useAuth();
   const updateProject = useUpdateProject();
-  const canEdit = canEditPublishableContent(user?.role, project.contentStatus);
+  const canEdit = canEditProject(user?.role, project);
 
   const [description, setDescription] = useState<BilingualValue>(emptyBilingual);
   const [highlights, setHighlights] = useState<BilingualValue[]>([]);

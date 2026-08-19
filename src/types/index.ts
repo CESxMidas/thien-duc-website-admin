@@ -108,8 +108,17 @@ export interface Project {
   slug: string;
   title: Bilingual;
   summary: Bilingual;
+  /** TÌNH TRẠNG THI CÔNG — không liên quan tới bậc thang duyệt/xuất bản. */
   status: ProjectStatus;
+  /** Bậc thang duyệt: DRAFT → PENDING → PUBLISHED. */
   contentStatus: ContentStatus;
+  /**
+   * Mốc công khai LẦN ĐẦU và lịch hẹn đăng (Batch 9) — cùng ngữ nghĩa với
+   * `NewsPost`. "Đã lên lịch" là trạng thái SUY RA từ `contentStatus` +
+   * `scheduledAt` + `publishedAt`, không phải một giá trị enum lưu xuống DB.
+   */
+  publishedAt: string | null;
+  scheduledAt: string | null;
   location: Bilingual | null;
   image: string | null;
   category: Bilingual | null;

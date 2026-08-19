@@ -30,6 +30,7 @@ const {
   updateProjectStatus,
   updateCooperationStatus,
   updatePageStatus,
+  scheduleProject,
   role,
 } = vi.hoisted(() => ({
   // Khai báo tham số tường minh để `mock.calls[0][0]` có kiểu — bộ test này
@@ -46,6 +47,8 @@ const {
   updateProjectStatus: vi.fn(async () => ({})),
   updateCooperationStatus: vi.fn(async () => ({})),
   updatePageStatus: vi.fn(async () => ({})),
+  /** Lệnh đặt lịch dự án (Batch 9) — không được chạy ở nhánh "Lưu nháp". */
+  scheduleProject: vi.fn(async () => ({})),
   role: { current: "SUPER_ADMIN" as Role },
 }));
 
@@ -61,6 +64,10 @@ vi.mock("@/lib/api/queries", () => {
     useCreateProject: mutation(createProject),
     useUpdateProject: mutation(async () => ({})),
     useUpdateProjectStatus: mutation(updateProjectStatus),
+    // Batch 9: form tạo dự án nay có thêm nhánh "Đặt lịch". Bộ test này khẳng
+    // định nhánh MẶC ĐỊNH ("Lưu nháp") không chạy lệnh xuất bản nào — lệnh lịch
+    // được stub và `expectNoPublishCommand` canh nó không bị gọi.
+    useScheduleProjectPublication: mutation(scheduleProject),
     useCreateCooperationProject: mutation(createCooperation),
     useUpdateCooperationProject: mutation(async () => ({})),
     useUpdateCooperationStatus: mutation(updateCooperationStatus),
@@ -158,7 +165,7 @@ describe("Tạo dự án — không kèm lệnh đăng", () => {
       );
 
       await fillProject(user);
-      await submit(/^Tạo dự án$/);
+      await submit(/^Lưu nháp$/);
 
       expect(createProject).toHaveBeenCalledTimes(1);
       expectNoPublishCommand();
@@ -171,7 +178,7 @@ describe("Tạo dự án — không kèm lệnh đăng", () => {
     );
 
     await fillProject(user);
-    await submit(/^Tạo dự án$/);
+    await submit(/^Lưu nháp$/);
 
     const payload = createProject.mock.calls[0][0] as Record<string, unknown>;
     expect(payload).not.toHaveProperty("contentStatus");
@@ -179,12 +186,33 @@ describe("Tạo dự án — không kèm lệnh đăng", () => {
     expect(payload).toHaveProperty("status");
   });
 
-  it("hộp thoại nói rõ dự án mới là bản Nháp", async () => {
+  it("hộp thoại nói rõ dự án mới là bản nháp", async () => {
     await openDialog(<ProjectFormDialog trigger={<Button>Mở</Button>} />);
 
+    // Mô tả của hộp thoại phải nói ra trạng thái xuất phát; nút chính cũng nói
+    // đúng điều đó ("Lưu nháp") nên tra riêng phần mô tả cho khỏi mơ hồ.
     expect(
-      within(screen.getByRole("dialog")).getByText(/trạng thái Nháp/i),
+      within(screen.getByRole("dialog")).getByText(
+        /luôn được lưu ở dạng nháp|lưu ở trạng thái nháp/i,
+      ),
     ).toBeInTheDocument();
+  });
+
+  /**
+   * Batch 9 — nút "Đặt lịch" chỉ MỞ hộp thoại chọn giờ; nó không được tự tạo dự
+   * án. Đây là ranh giới khiến "huỷ hộp thoại lịch" không để lại rác.
+   */
+  it('"Đặt lịch" không tạo dự án cho tới khi xác nhận giờ', async () => {
+    role.current = "ADMIN";
+    const user = await openDialog(
+      <ProjectFormDialog trigger={<Button>Mở</Button>} />,
+    );
+
+    await fillProject(user);
+    await submit(/^Đặt lịch$/);
+
+    expect(createProject).not.toHaveBeenCalled();
+    expect(scheduleProject).not.toHaveBeenCalled();
   });
 });
 

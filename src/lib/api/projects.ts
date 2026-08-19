@@ -4,6 +4,8 @@
 //   POST   /projects                          -> Project        (EDITOR trở lên)
 //   PATCH  /projects/:slug                    -> Project
 //   PATCH  /projects/:slug/status             -> Project        (duyệt — ADMIN trở lên)
+//   PATCH  /projects/:slug/schedule           -> Project        (đặt/đổi lịch — ADMIN trở lên)
+//   DELETE /projects/:slug/schedule           -> Project        (huỷ lịch chưa tới hạn)
 //   DELETE /projects/:slug                    -> { deleted }    (ADMIN trở lên)
 //
 //   POST   /projects/:slug/items              -> ProjectItem
@@ -110,6 +112,39 @@ export function updateProjectStatus(
 }
 
 /** Xóa dự án — hạng mục và ảnh xóa theo cascade. Chỉ ADMIN trở lên. */
+/**
+ * Đặt / đổi lịch đăng dự án — lệnh RIÊNG, không đi qua `PATCH /projects/:slug`.
+ *
+ * `scheduledAt` bắt buộc là instant ISO-8601 **kèm múi giờ tường minh**
+ * (`2026-08-20T08:00:00+07:00`). Backend từ chối chuỗi không có offset: nó phụ
+ * thuộc múi giờ máy chủ, mà đây là field quyết định *khi nào nội dung ra công
+ * khai*.
+ *
+ * Backend ghi nguyên tử `contentStatus = PENDING`, `scheduledAt` và
+ * `publishedAt` cùng bằng mốc đã hẹn. Chỉ dành cho lần công khai ĐẦU TIÊN — dự
+ * án đã/từng đăng trả 409.
+ */
+export function scheduleProjectPublication(
+  slug: string,
+  scheduledAt: string,
+): Promise<Project> {
+  return apiFetch<Project>(`/projects/${encodeURIComponent(slug)}/schedule`, {
+    method: "PATCH",
+    body: JSON.stringify({ scheduledAt }),
+  });
+}
+
+/**
+ * Huỷ lịch đăng CHƯA tới hạn — dự án về `DRAFT`, xoá cả `scheduledAt` lẫn
+ * `publishedAt` (mốc chưa từng thành sự thật). Lịch đã qua giờ trả 409: khi đó
+ * dự án đang hiển thị công khai, việc cần làm là "Trả về nháp".
+ */
+export function cancelProjectPublication(slug: string): Promise<Project> {
+  return apiFetch<Project>(`/projects/${encodeURIComponent(slug)}/schedule`, {
+    method: "DELETE",
+  });
+}
+
 export function deleteProject(slug: string): Promise<{ deleted: boolean }> {
   return apiFetch<{ deleted: boolean }>(`/projects/${slug}`, {
     method: "DELETE",

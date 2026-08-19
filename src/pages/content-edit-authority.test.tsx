@@ -72,6 +72,9 @@ vi.mock("@/lib/api/queries", () => {
     "useUpdateProject",
     "useUpdateProjectStatus",
     "useDeleteProject",
+    // Batch 9 — màn Dự án nay dùng thêm hai lệnh lịch.
+    "useScheduleProjectPublication",
+    "useCancelProjectPublication",
     "useCreateCooperationProject",
     "useUpdateCooperationProject",
     "useUpdateCooperationStatus",
@@ -153,8 +156,14 @@ function makeProject(title: string, contentStatus: ContentStatus): Project {
     slug: `du-an-${title}`,
     title: { vi: title },
     summary: { vi: "Tóm tắt." },
+    // TÌNH TRẠNG THI CÔNG — khác hẳn `contentStatus`.
     status: "DANG_THI_CONG",
     contentStatus,
+    // Batch 9: dự án mang thêm hai mốc xuất bản. Ở bộ test này mọi hàng đều là
+    // nội dung CHƯA từng công khai và chưa hẹn giờ, nên luật sửa quy về đúng
+    // `contentStatus` — giữ nguyên ý định ban đầu của các ca kiểm.
+    publishedAt: contentStatus === "PUBLISHED" ? PAST : null,
+    scheduledAt: null,
     location: null,
     image: null,
     category: null,

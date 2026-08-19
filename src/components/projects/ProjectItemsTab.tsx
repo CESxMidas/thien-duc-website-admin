@@ -44,7 +44,7 @@ import {
   toBilingualValue,
   type BilingualValue,
 } from "@/lib/bilingual";
-import { canEditPublishableContent } from "@/lib/content-editing";
+import { canEditProject } from "@/lib/content-editing";
 import { projectStatusLabel } from "@/lib/labels";
 import type { ProjectDetail, ProjectItem, ProjectStatus } from "@/types";
 
@@ -154,7 +154,7 @@ export function ProjectItemsTab({ project }: { project: ProjectDetail }) {
   // Hạng mục hiển thị công khai VÌ dự án cha hiển thị công khai, nên quyền sửa
   // nó thừa hưởng luật của cha: EDITOR mất quyền khi dự án đã xuất bản (backend
   // trả 403 trên mọi route hạng mục). Vẫn cho ĐỌC danh sách.
-  const canEdit = canEditPublishableContent(user?.role, project.contentStatus);
+  const canEdit = canEditProject(user?.role, project);
 
   /** null = đóng form; "" = đang thêm mới; slug = đang sửa hạng mục đó. */
   const [editingSlug, setEditingSlug] = useState<string | null>(null);
