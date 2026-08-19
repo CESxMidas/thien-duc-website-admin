@@ -12,6 +12,7 @@ import { useAuth } from "@/context/AuthContext";
 import { usePages, useUpdatePageStatus } from "@/lib/api/queries";
 import { resolveApiError } from "@/lib/api-error-message";
 import { hasEnglish } from "@/lib/bilingual";
+import { canEditPublishableContent } from "@/lib/content-editing";
 import { contentStatusActions } from "@/lib/content-status-actions";
 import {
   contentStatusLabel,
@@ -96,14 +97,18 @@ export function PagesPage() {
           className="flex items-center gap-1"
           onClick={(event) => event.stopPropagation()}
         >
-          <PageFormDialog
-            page={page}
-            trigger={
-              <Button variant="ghost" size="sm" aria-label="Sửa trang">
-                <Pencil className="size-4" />
-              </Button>
-            }
-          />
+          {/* EDITOR không sửa được trang ĐANG hiển thị công khai — backend trả
+              403, nên không hiện nút. ADMIN trở lên giữ nguyên quyền sửa. */}
+          {canEditPublishableContent(user?.role, page.status) && (
+            <PageFormDialog
+              page={page}
+              trigger={
+                <Button variant="ghost" size="sm" aria-label="Sửa trang">
+                  <Pencil className="size-4" />
+                </Button>
+              }
+            />
+          )}
           {busySlug === page.slug && (
             <Loader2 className="size-3.5 animate-spin text-slate" />
           )}

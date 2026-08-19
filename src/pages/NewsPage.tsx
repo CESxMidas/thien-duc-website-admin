@@ -30,6 +30,7 @@ import {
   useUpdateNewsStatus,
 } from "@/lib/api/queries";
 import { resolveApiError } from "@/lib/api-error-message";
+import { canEditNews } from "@/lib/content-editing";
 import { contentStatusActions } from "@/lib/content-status-actions";
 import {
   bySoonestSchedule,
@@ -299,14 +300,20 @@ export function NewsPage() {
               </Button>
             )}
 
-            <NewsFormDialog
-              post={post}
-              trigger={
-                <Button variant="ghost" size="sm" aria-label="Sửa bài viết">
-                  <Pencil className="size-4" />
-                </Button>
-              }
-            />
+            {/* Nút "Sửa" chỉ hiện khi backend sẽ thật sự cho lưu: EDITOR mất
+                quyền sửa từ lúc bài được hẹn giờ hoặc đã từng công khai. Suy ra
+                từ trạng thái CHÍNH TẮC của bản ghi (ba cột persisted), không
+                phải từ nhãn hiển thị. */}
+            {canEditNews(user?.role, post) && (
+              <NewsFormDialog
+                post={post}
+                trigger={
+                  <Button variant="ghost" size="sm" aria-label="Sửa bài viết">
+                    <Pencil className="size-4" />
+                  </Button>
+                }
+              />
+            )}
 
             {canApprove && (
               <Button

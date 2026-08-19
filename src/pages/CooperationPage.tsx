@@ -27,6 +27,7 @@ import {
 } from "@/lib/api/queries";
 import { resolveApiError } from "@/lib/api-error-message";
 import { resolveAssetUrl } from "@/lib/asset-url";
+import { canEditPublishableContent } from "@/lib/content-editing";
 import { contentStatusActions } from "@/lib/content-status-actions";
 import { contentStatusLabel, contentStatusTone, formatDateTime } from "@/lib/labels";
 import type { ContentStatus, CooperationProject } from "@/types";
@@ -221,14 +222,18 @@ export function CooperationPage() {
               </Button>
             ),
           )}
-          <CooperationFormDialog
-            project={project}
-            trigger={
-              <Button variant="ghost" size="sm" aria-label="Sửa dự án hợp tác">
-                <Pencil className="size-4" />
-              </Button>
-            }
-          />
+          {/* EDITOR không sửa được dự án ĐANG hiển thị ở trang chủ — backend
+              trả 403, nên không hiện nút. ADMIN trở lên giữ nguyên quyền sửa. */}
+          {canEditPublishableContent(user?.role, project.contentStatus) && (
+            <CooperationFormDialog
+              project={project}
+              trigger={
+                <Button variant="ghost" size="sm" aria-label="Sửa dự án hợp tác">
+                  <Pencil className="size-4" />
+                </Button>
+              }
+            />
+          )}
           {canManage && (
             <Button
               variant="ghost"

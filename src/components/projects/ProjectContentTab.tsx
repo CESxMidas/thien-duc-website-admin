@@ -15,8 +15,10 @@ import { BilingualField } from "@/components/ui/BilingualField";
 import { ImagePickerField } from "@/components/ui/ImagePickerField";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useAuth } from "@/context/AuthContext";
 import { useUpdateProject } from "@/lib/api/queries";
 import { resolveApiError } from "@/lib/api-error-message";
+import { canEditPublishableContent } from "@/lib/content-editing";
 import {
   emptyBilingual,
   toBilingualLoose,
@@ -50,7 +52,9 @@ function move<T>(list: T[], index: number, delta: -1 | 1): T[] {
 }
 
 export function ProjectContentTab({ project }: { project: ProjectDetail }) {
+  const { user } = useAuth();
   const updateProject = useUpdateProject();
+  const canEdit = canEditPublishableContent(user?.role, project.contentStatus);
 
   const [description, setDescription] = useState<BilingualValue>(emptyBilingual);
   const [highlights, setHighlights] = useState<BilingualValue[]>([]);
@@ -425,11 +429,20 @@ export function ProjectContentTab({ project }: { project: ProjectDetail }) {
         )}
       </section>
 
-      <div className="flex justify-end border-t border-line pt-4">
+      {/* Tab này lưu qua ĐÚNG route `PATCH /projects/:slug` như nút "Sửa dự án",
+          nên phải chịu cùng một chốt quyền: EDITOR không lưu được nội dung của
+          dự án đã xuất bản (backend trả 403). Vẫn cho ĐỌC — chỉ khoá nút lưu và
+          nói rõ vì sao, thay vì để người dùng nhập xong mới gặp lỗi. */}
+      <div className="flex items-center justify-end gap-3 border-t border-line pt-4">
+        {!canEdit && (
+          <p className="text-xs text-slate">
+            Dự án đã xuất bản — chỉ quản trị viên sửa được nội dung.
+          </p>
+        )}
         <Button
           type="button"
           onClick={() => void onSave()}
-          disabled={updateProject.isPending}
+          disabled={updateProject.isPending || !canEdit}
         >
           {updateProject.isPending && <Loader2 className="size-4 animate-spin" />}
           Lưu nội dung

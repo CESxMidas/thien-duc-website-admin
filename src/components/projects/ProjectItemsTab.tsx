@@ -44,6 +44,7 @@ import {
   toBilingualValue,
   type BilingualValue,
 } from "@/lib/bilingual";
+import { canEditPublishableContent } from "@/lib/content-editing";
 import { projectStatusLabel } from "@/lib/labels";
 import type { ProjectDetail, ProjectItem, ProjectStatus } from "@/types";
 
@@ -150,6 +151,11 @@ export function ProjectItemsTab({ project }: { project: ProjectDetail }) {
   // Chỉ ADMIN trở lên xóa được hạng mục (backend cũng chặn) — ẩn nút cho EDITOR.
   const canDelete = user?.role === "ADMIN" || user?.role === "SUPER_ADMIN";
 
+  // Hạng mục hiển thị công khai VÌ dự án cha hiển thị công khai, nên quyền sửa
+  // nó thừa hưởng luật của cha: EDITOR mất quyền khi dự án đã xuất bản (backend
+  // trả 403 trên mọi route hạng mục). Vẫn cho ĐỌC danh sách.
+  const canEdit = canEditPublishableContent(user?.role, project.contentStatus);
+
   /** null = đóng form; "" = đang thêm mới; slug = đang sửa hạng mục đó. */
   const [editingSlug, setEditingSlug] = useState<string | null>(null);
   const [form, setForm] = useState<ItemFormState>(emptyForm);
@@ -186,7 +192,9 @@ export function ProjectItemsTab({ project }: { project: ProjectDetail }) {
     setContentDirty((current) => ({ ...current, description: true }));
   }
 
-  function editHighlights(updater: (current: HighlightDraft[]) => HighlightDraft[]) {
+  function editHighlights(
+    updater: (current: HighlightDraft[]) => HighlightDraft[],
+  ) {
     setForm((current) => ({
       ...current,
       highlights: updater(current.highlights),
@@ -285,10 +293,18 @@ export function ProjectItemsTab({ project }: { project: ProjectDetail }) {
 
   return (
     <div className="space-y-4">
+      {!canEdit && (
+        <p className="rounded-lg border border-line bg-cream/40 px-3 py-2 text-xs text-slate">
+          Dự án đã xuất bản — chỉ quản trị viên sửa được hạng mục.
+        </p>
+      )}
+
       {editingSlug === null ? (
-        <Button variant="outline" onClick={openCreate}>
-          <Plus className="size-4" /> Thêm hạng mục
-        </Button>
+        canEdit && (
+          <Button variant="outline" onClick={openCreate}>
+            <Plus className="size-4" /> Thêm hạng mục
+          </Button>
+        )
       ) : (
         <form
           onSubmit={onSave}
@@ -402,7 +418,9 @@ export function ProjectItemsTab({ project }: { project: ProjectDetail }) {
                 {form.highlights.map((highlight, index) => (
                   <li
                     key={highlight.id}
-                    style={{ "--row-index": Math.min(index, 7) } as CSSProperties}
+                    style={
+                      { "--row-index": Math.min(index, 7) } as CSSProperties
+                    }
                     className="row-in flex items-start gap-2 rounded-lg border border-line p-2"
                   >
                     <div className="min-w-0 flex-1">
@@ -482,7 +500,9 @@ export function ProjectItemsTab({ project }: { project: ProjectDetail }) {
                 {form.quickFacts.map((fact, index) => (
                   <li
                     key={fact.id}
-                    style={{ "--row-index": Math.min(index, 7) } as CSSProperties}
+                    style={
+                      { "--row-index": Math.min(index, 7) } as CSSProperties
+                    }
                     className="row-in flex items-start gap-2 rounded-lg border border-line p-2"
                   >
                     <div className="min-w-0 flex-1 space-y-2">
@@ -578,7 +598,12 @@ export function ProjectItemsTab({ project }: { project: ProjectDetail }) {
           {error && <p className="text-sm text-red-600">{error}</p>}
 
           <div className="flex justify-end gap-2">
-            <Button type="button" variant="outline" onClick={closeForm} disabled={saving}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={closeForm}
+              disabled={saving}
+            >
               Hủy
             </Button>
             <Button type="submit" disabled={saving}>
@@ -614,9 +639,15 @@ export function ProjectItemsTab({ project }: { project: ProjectDetail }) {
                 </p>
               </div>
               <div className="flex shrink-0 gap-1">
-                <Button variant="ghost" size="sm" onClick={() => openEdit(item)}>
-                  <Pencil className="size-4" /> Sửa
-                </Button>
+                {canEdit && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => openEdit(item)}
+                  >
+                    <Pencil className="size-4" /> Sửa
+                  </Button>
+                )}
                 {canDelete && (
                   <Button
                     variant="ghost"

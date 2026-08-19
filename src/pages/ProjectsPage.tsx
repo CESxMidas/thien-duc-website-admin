@@ -12,6 +12,7 @@ import { ProjectDetailDialog } from "@/components/projects/ProjectDetailDialog";
 import { useAuth } from "@/context/AuthContext";
 import { useDeleteProject, useProjects } from "@/lib/api/queries";
 import { resolveApiError } from "@/lib/api-error-message";
+import { canEditPublishableContent } from "@/lib/content-editing";
 import {
   contentStatusLabel,
   contentStatusTone,
@@ -117,15 +118,19 @@ export function ProjectsPage() {
           className="flex justify-end gap-1"
           onClick={(e) => e.stopPropagation()}
         >
-          <ProjectFormDialog
-            project={p}
-            trigger={
-              <Button variant="ghost" size="sm">
-                <Pencil className="size-4" />
-                Sửa
-              </Button>
-            }
-          />
+          {/* EDITOR không sửa được dự án ĐANG hiển thị công khai — backend trả
+              403, nên không hiện nút. ADMIN trở lên giữ nguyên quyền sửa. */}
+          {canEditPublishableContent(user?.role, p.contentStatus) && (
+            <ProjectFormDialog
+              project={p}
+              trigger={
+                <Button variant="ghost" size="sm">
+                  <Pencil className="size-4" />
+                  Sửa
+                </Button>
+              }
+            />
+          )}
           {canDelete && (
             <Button
               variant="ghost"

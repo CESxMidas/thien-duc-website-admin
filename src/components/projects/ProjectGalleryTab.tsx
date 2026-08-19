@@ -6,7 +6,14 @@
 
 import { useState, type CSSProperties } from "react";
 import { toast } from "sonner";
-import { ChevronDown, ChevronUp, ImageOff, Loader2, Plus, Trash2 } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronUp,
+  ImageOff,
+  Loader2,
+  Plus,
+  Trash2,
+} from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -21,6 +28,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useAuth } from "@/context/AuthContext";
 import {
   useAddGalleryImage,
   useDeleteGalleryImage,
@@ -28,6 +36,7 @@ import {
 } from "@/lib/api/queries";
 import { resolveApiError } from "@/lib/api-error-message";
 import { resolveAssetUrl } from "@/lib/asset-url";
+import { canEditPublishableContent } from "@/lib/content-editing";
 import type { ProjectDetail, ProjectGalleryImage } from "@/types";
 
 /** Giá trị Select cho "ảnh của cả dự án" — Radix không nhận value rỗng. */
@@ -65,10 +74,16 @@ function GalleryThumb({ url, alt }: { url: string; alt: string }) {
 }
 
 export function ProjectGalleryTab({ project }: { project: ProjectDetail }) {
+  const { user } = useAuth();
   const images = project.galleryImages;
   const addImage = useAddGalleryImage();
   const deleteImage = useDeleteGalleryImage();
   const reorder = useReorderGallery();
+
+  // Ảnh thư viện — kể cả THỨ TỰ của chúng — là nội dung công khai của dự án cha,
+  // nên quyền sửa thừa hưởng luật của cha: EDITOR mất quyền khi dự án đã xuất
+  // bản (backend trả 403 trên thêm / sửa / xóa / sắp xếp). Vẫn cho xem ảnh.
+  const canEdit = canEditPublishableContent(user?.role, project.contentStatus);
 
   const [url, setUrl] = useState("");
   const [caption, setCaption] = useState("");
@@ -96,7 +111,9 @@ export function ProjectGalleryTab({ project }: { project: ProjectDetail }) {
       setUrl("");
       setCaption("");
     } catch (error) {
-      toast.error(resolveApiError(error, "Không thêm được ảnh. Vui lòng thử lại."));
+      toast.error(
+        resolveApiError(error, "Không thêm được ảnh. Vui lòng thử lại."),
+      );
     }
   }
 
@@ -124,63 +141,73 @@ export function ProjectGalleryTab({ project }: { project: ProjectDetail }) {
       toast.success("Đã xóa ảnh.");
       setToDelete(null);
     } catch (error) {
-      toast.error(resolveApiError(error, "Không xóa được ảnh. Vui lòng thử lại."));
+      toast.error(
+        resolveApiError(error, "Không xóa được ảnh. Vui lòng thử lại."),
+      );
     }
   }
 
   return (
     <div className="space-y-5">
-      <form
-        onSubmit={onAdd}
-        className="space-y-3 rounded-xl border border-line bg-cream/40 p-4"
-      >
-        <div className="space-y-1.5">
-          <Label>Thêm ảnh con</Label>
-          <ImagePickerField
-            value={url}
-            onChange={setUrl}
-            folder="projects"
-            aspect="3/2"
-            alt="Ảnh con đã chọn"
-          />
-        </div>
-        <div className="space-y-1.5">
-          <Label htmlFor="gallery-caption">Chú thích (không bắt buộc)</Label>
-          <Input
-            id="gallery-caption"
-            value={caption}
-            onChange={(e) => setCaption(e.target.value)}
-            placeholder="Phối cảnh mặt tiền"
-          />
-        </div>
+      {!canEdit && (
+        <p className="rounded-lg border border-line bg-cream/40 px-3 py-2 text-xs text-slate">
+          Dự án đã xuất bản — chỉ quản trị viên sửa được thư viện ảnh.
+        </p>
+      )}
 
-        <div className="flex flex-wrap items-end justify-between gap-3">
+      {canEdit && (
+        <form
+          onSubmit={onAdd}
+          className="space-y-3 rounded-xl border border-line bg-cream/40 p-4"
+        >
           <div className="space-y-1.5">
-            <Label>Thuộc hạng mục</Label>
-            <Select value={itemSlug} onValueChange={setItemSlug}>
-              <SelectTrigger className="w-64">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value={NO_ITEM}>Ảnh của cả dự án</SelectItem>
-                {project.items.map((item) => (
-                  <SelectItem key={item.id} value={item.slug}>
-                    {item.title.vi}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Label>Thêm ảnh con</Label>
+            <ImagePickerField
+              value={url}
+              onChange={setUrl}
+              folder="projects"
+              aspect="3/2"
+              alt="Ảnh con đã chọn"
+            />
           </div>
-          <Button type="submit" disabled={!url.trim() || addImage.isPending}>
-            {addImage.isPending ? (
-              <Loader2 className="size-4 animate-spin" />
-            ) : (
-              <Plus className="size-4" />
-            )}
-            Thêm ảnh
-          </Button>
-        </div>
-      </form>
+          <div className="space-y-1.5">
+            <Label htmlFor="gallery-caption">Chú thích (không bắt buộc)</Label>
+            <Input
+              id="gallery-caption"
+              value={caption}
+              onChange={(e) => setCaption(e.target.value)}
+              placeholder="Phối cảnh mặt tiền"
+            />
+          </div>
+
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div className="space-y-1.5">
+              <Label>Thuộc hạng mục</Label>
+              <Select value={itemSlug} onValueChange={setItemSlug}>
+                <SelectTrigger className="w-64">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={NO_ITEM}>Ảnh của cả dự án</SelectItem>
+                  {project.items.map((item) => (
+                    <SelectItem key={item.id} value={item.slug}>
+                      {item.title.vi}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <Button type="submit" disabled={!url.trim() || addImage.isPending}>
+              {addImage.isPending ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <Plus className="size-4" />
+              )}
+              Thêm ảnh
+            </Button>
+          </div>
+        </form>
+      )}
 
       {images.length === 0 ? (
         <p className="py-8 text-center text-sm text-slate">
@@ -198,7 +225,9 @@ export function ProjectGalleryTab({ project }: { project: ProjectDetail }) {
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm text-ink">
                   {image.caption?.vi || (
-                    <span className="text-slate italic">Không có chú thích</span>
+                    <span className="text-slate italic">
+                      Không có chú thích
+                    </span>
                   )}
                 </p>
                 {/* Chỉ hiện tên file cho gọn; rê chuột xem URL đầy đủ. */}
@@ -211,35 +240,37 @@ export function ProjectGalleryTab({ project }: { project: ProjectDetail }) {
                   </Badge>
                 )}
               </div>
-              <div className="flex shrink-0 items-center gap-0.5">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  aria-label="Đưa ảnh lên trước"
-                  disabled={index === 0 || reorder.isPending}
-                  onClick={() => void onMove(index, -1)}
-                >
-                  <ChevronUp className="size-4" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  aria-label="Đưa ảnh xuống sau"
-                  disabled={index === images.length - 1 || reorder.isPending}
-                  onClick={() => void onMove(index, 1)}
-                >
-                  <ChevronDown className="size-4" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  aria-label="Xóa ảnh"
-                  className="text-red-600 hover:bg-red-50 hover:text-red-700"
-                  onClick={() => setToDelete(image)}
-                >
-                  <Trash2 className="size-4" />
-                </Button>
-              </div>
+              {canEdit && (
+                <div className="flex shrink-0 items-center gap-0.5">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    aria-label="Đưa ảnh lên trước"
+                    disabled={index === 0 || reorder.isPending}
+                    onClick={() => void onMove(index, -1)}
+                  >
+                    <ChevronUp className="size-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    aria-label="Đưa ảnh xuống sau"
+                    disabled={index === images.length - 1 || reorder.isPending}
+                    onClick={() => void onMove(index, 1)}
+                  >
+                    <ChevronDown className="size-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    aria-label="Xóa ảnh"
+                    className="text-red-600 hover:bg-red-50 hover:text-red-700"
+                    onClick={() => setToDelete(image)}
+                  >
+                    <Trash2 className="size-4" />
+                  </Button>
+                </div>
+              )}
             </li>
           ))}
         </ul>
