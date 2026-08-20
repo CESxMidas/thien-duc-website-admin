@@ -190,7 +190,16 @@ export interface StaticPage {
   title: Bilingual;
   /** Nội dung tự do (JSONB) — dùng mảng đoạn văn giống `NewsPost.content`. */
   content: Bilingual[] | null;
+  /** Bậc thang duyệt. Model này gọi cột là `status` (giống `NewsPost`). */
   status: ContentStatus;
+  /**
+   * Mốc công khai LẦN ĐẦU và lịch hẹn đăng (Batch 11) — cùng ngữ nghĩa với
+   * `NewsPost`, `Project`, `CooperationProject`. "Đã lên lịch" là trạng thái
+   * SUY RA từ `status` + `scheduledAt` + `publishedAt`, không phải giá trị enum
+   * lưu xuống DB.
+   */
+  publishedAt: string | null;
+  scheduledAt: string | null;
   createdAt: string;
   updatedAt: string;
 }

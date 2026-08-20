@@ -35,6 +35,8 @@ vi.mock("@/lib/api/queries", () => {
     "useScheduleNewsPublication", "useCancelNewsPublication",
     "useScheduleProjectPublication", "useCancelProjectPublication",
     "usePages", "useCreatePage", "useUpdatePage", "useUpdatePageStatus",
+    // Batch 11 — man Trang nay dung them hai lenh lich.
+    "useSchedulePagePublication", "useCancelPagePublication",
     "useBanners", "useCreateBanner", "useUpdateBanner", "useReorderBanners",
     "useCooperationProjects", "useCreateCooperationProject",
     "useUpdateCooperationProject", "useUpdateCooperationStatus",

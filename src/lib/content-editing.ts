@@ -21,6 +21,7 @@
 import type { ContentStatus, Role } from "@/types";
 import type { SchedulableContent } from "@/lib/news-schedule";
 import type { SchedulableCooperationProject } from "@/lib/cooperation-schedule";
+import type { SchedulablePage } from "@/lib/page-schedule";
 import type { SchedulableProject } from "@/lib/project-schedule";
 
 /**
@@ -32,16 +33,14 @@ function canEditAnyState(role?: Role | null): boolean {
 }
 
 /**
- * Sửa được nội dung của Trang không?
+ * Luật sửa CŨ theo bậc thang duyệt, không xét lịch sử xuất bản: EDITOR sửa được
+ * nháp/chờ duyệt, không sửa được nội dung ĐANG hiển thị công khai.
  *
- * Model này chưa có cột lịch sử xuất bản, nên không phân biệt được "nháp chưa
- * từng đăng" với "nháp đã từng đăng rồi gỡ xuống". Luật vì thế lấy đúng phần
- * chắc chắn: EDITOR sửa được nháp/chờ duyệt, không sửa được nội dung ĐANG hiển
- * thị công khai. Khớp `editorMayEditUnpublished` ở backend.
- *
- * **Dự án đã tách khỏi hàm này từ Batch 9** (xem `canEditProject`) và **Dự án
- * hợp tác từ Batch 10** (xem `canEditCooperation`) — cả hai đã có lịch đăng nên
- * cần luật chặt hơn.
+ * **Không còn module nội dung nào dùng hàm này**: Dự án tách ra từ Batch 9
+ * (`canEditProject`), Dự án hợp tác từ Batch 10 (`canEditCooperation`), Trang
+ * nội dung từ Batch 11 (`canEditPage`) — cả ba nay có cột mốc thời gian nên
+ * dùng luật chặt hơn. Giữ lại vì `Banner` và các màn khác có thể còn cần một vị
+ * từ chỉ-theo-trạng-thái; xoá hẳn thuộc một đợt dọn riêng.
  */
 export function canEditPublishableContent(
   role: Role | undefined | null,
@@ -98,6 +97,29 @@ export function canEditCooperation(
   if (project.publishedAt !== null) return false;
   if (project.contentStatus === "DRAFT") return true;
   return project.contentStatus === "PENDING" && project.scheduledAt === null;
+}
+
+/**
+ * Sửa được nội dung TRANG không? (Batch 11 — trang nay có lịch đăng.)
+ *
+ * Trước Batch 11 trang dùng chung `canEditPublishableContent`: chặn ở PUBLISHED,
+ * cho sửa mọi PENDING. Nay một trang ĐÃ ĐƯỢC LÊN LỊCH vẫn lưu là `PENDING`, nên
+ * luật cũ sẽ hiện nút "Sửa" cho một trang mà backend chắc chắn từ chối — và tệ
+ * hơn, nếu backend cũng còn luật cũ thì EDITOR sửa được bản sắp tự ra công khai.
+ *
+ * Trang gọi cột bậc thang duyệt là `status`, đúng như `NewsPost` — nên luật ở
+ * đây đọc giống hệt `canEditNews`. Xem `canEditNews` cho lý do hàm này không
+ * cần `now`.
+ */
+export function canEditPage(
+  role: Role | undefined | null,
+  page: SchedulablePage,
+): boolean {
+  if (canEditAnyState(role)) return true;
+  if (role !== "EDITOR") return false;
+  if (page.publishedAt !== null) return false;
+  if (page.status === "DRAFT") return true;
+  return page.status === "PENDING" && page.scheduledAt === null;
 }
 
 /**

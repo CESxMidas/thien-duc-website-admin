@@ -77,6 +77,9 @@ vi.mock("@/lib/api/queries", () => {
     useCreatePage: mutation(createPage),
     useUpdatePage: mutation(async () => ({})),
     useUpdatePageStatus: mutation(updatePageStatus),
+    // Batch 11 — form Trang nay dung them lenh dat lich.
+    useSchedulePagePublication: mutation(async () => ({})),
+    useCancelPagePublication: mutation(async () => ({})),
     useMedia: empty,
     useUploadMedia: mutation(async () => ({})),
   };
@@ -240,7 +243,7 @@ describe("Tạo trang nội dung — không kèm lệnh đăng", () => {
       );
 
       await fillPage(user);
-      await submit(/^Tạo trang$/);
+      await submit(/^Lưu nháp$/);
 
       expect(createPage).toHaveBeenCalledTimes(1);
       expectNoPublishCommand();
@@ -253,7 +256,7 @@ describe("Tạo trang nội dung — không kèm lệnh đăng", () => {
     );
 
     await fillPage(user);
-    await submit(/^Tạo trang$/);
+    await submit(/^Lưu nháp$/);
 
     const payload = createPage.mock.calls[0][0] as Record<string, unknown>;
     expect(payload).not.toHaveProperty("status");

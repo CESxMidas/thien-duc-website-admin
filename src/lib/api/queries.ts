@@ -189,6 +189,23 @@ export function useUpdatePageStatus() {
   );
 }
 
+/**
+ * Đặt / đổi lịch đăng trang. Dùng chung `usePagesMutation` nên sau khi thành
+ * công danh sách được làm mới — hàng vừa đặt lịch hiện ngay huy hiệu "Đã lên
+ * lịch" với mốc mới.
+ */
+export function useSchedulePagePublication() {
+  return usePagesMutation(
+    ({ slug, scheduledAt }: { slug: string; scheduledAt: string }) =>
+      pagesApi.schedulePagePublication(slug, scheduledAt),
+  );
+}
+
+/** Huỷ lịch chưa tới hạn — trang về nháp, mốc lịch biến mất khỏi danh sách. */
+export function useCancelPagePublication() {
+  return usePagesMutation(pagesApi.cancelPagePublication);
+}
+
 /* -------------------------------------------------------------------------
    Banner — /banners
    ------------------------------------------------------------------------- */

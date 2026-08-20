@@ -68,6 +68,9 @@ vi.mock("@/lib/api/queries", () => {
     "useCreatePage",
     "useUpdatePage",
     "useUpdatePageStatus",
+    // Batch 11 — man Trang nay dung them hai lenh lich.
+    "useSchedulePagePublication",
+    "useCancelPagePublication",
     "useCreateProject",
     "useUpdateProject",
     "useUpdateProjectStatus",
@@ -222,13 +225,21 @@ const COOPERATION_ROWS = [
   makeCooperation("Hợp tác đã đăng", "PUBLISHED", { publishedAt: PAST }),
 ];
 
-function makeStaticPage(title: string, status: ContentStatus): StaticPage {
+function makeStaticPage(
+  title: string,
+  status: ContentStatus,
+  // Batch 11: hai cột mốc quyết định quyền sửa, nên fixture phải khai báo rõ
+  // thay vì để `undefined` — vị từ đọc `undefined !== null` và chặn nhầm.
+  schedule: { scheduledAt?: string | null; publishedAt?: string | null } = {},
+): StaticPage {
   return {
     id: title,
     slug: `trang-${title}`,
     title: { vi: title },
     content: [{ vi: "Nội dung." }],
     status,
+    publishedAt: schedule.publishedAt ?? null,
+    scheduledAt: schedule.scheduledAt ?? null,
     createdAt: PAST,
     updatedAt: PAST,
   };
@@ -237,7 +248,8 @@ function makeStaticPage(title: string, status: ContentStatus): StaticPage {
 const PAGE_ROWS = [
   makeStaticPage("Trang nháp", "DRAFT"),
   makeStaticPage("Trang chờ duyệt", "PENDING"),
-  makeStaticPage("Trang đã đăng", "PUBLISHED"),
+  // Đã đăng thật → có mốc công khai (dữ liệu sau Batch 11).
+  makeStaticPage("Trang đã đăng", "PUBLISHED", { publishedAt: PAST }),
 ];
 
 /* --------------------------------- Harness -------------------------------- */
