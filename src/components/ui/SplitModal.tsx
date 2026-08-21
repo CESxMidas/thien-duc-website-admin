@@ -129,13 +129,25 @@ export function MediaSection({
       <div className="flex min-h-6 items-center justify-between gap-2">
         <h3 className="text-[11px] font-semibold tracking-[0.14em] text-slate uppercase">
           {label}
+          {/*
+            KHÔNG mờ đi bằng `/60`: trên nền trắng nó cho tỉ lệ tương phản 2.59,
+            dưới xa ngưỡng 4.5 của WCAG AA cho chữ thường. Kế thừa `text-slate`
+            của <h3> (6.08) là đủ — số đếm đã tự tách khỏi nhãn nhờ dấu "·" và
+            `font-weight` của nhãn.
+          */}
           {typeof count === "number" ? (
-            <span className="ml-1 text-slate/60 tabular-nums">· {count}</span>
+            <span className="ml-1 tabular-nums">· {count}</span>
           ) : null}
         </h3>
         {action}
       </div>
-      {hint ? <p className="text-xs leading-relaxed text-slate/80">{hint}</p> : null}
+      {/*
+        `text-slate` đặc thay cho `text-slate/80`. Ở `text-xs` (12px, không đậm)
+        WCAG AA đòi 4.5:1 — đây KHÔNG phải "chữ lớn" (ngưỡng 3:1 chỉ áp cho
+        >=18pt, hoặc >=14pt in đậm). `/80` trộn ra #7a8388 trên nền trắng, chỉ
+        đạt 3.87:1; bỏ độ mờ đưa về 6.08:1. Không đổi cỡ chữ, không đổi bảng màu.
+      */}
+      {hint ? <p className="text-xs leading-relaxed text-slate">{hint}</p> : null}
       {children}
     </section>
   );

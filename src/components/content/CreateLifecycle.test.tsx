@@ -122,8 +122,14 @@ function expectNoPublishCommand() {
 }
 
 /**
- * Field song ngữ có `aria-label="Tiếng Việt"` cho cả cụm, nên tìm theo NHÃN sẽ
- * nhập nhằng. Bám vào placeholder — thứ duy nhất phân biệt được từng ô.
+ * Bám vào placeholder để chỉ đúng ô cần điền.
+ *
+ * Lý do CŨ (đã hết hiệu lực): `BilingualField` từng đặt `aria-label` ngôn ngữ
+ * đè lên nhãn thật, nên mọi ô song ngữ đều mang tên "Tiếng Việt" và tìm theo
+ * nhãn là nhập nhằng. Nay tên truy cập đã là nhãn của từng field, tìm theo nhãn
+ * hoàn toàn dùng được. Giữ placeholder ở đây vì bộ test này trải trên BỐN loại
+ * nội dung với các nhãn khác nhau, và placeholder vẫn là cách gọn nhất để mô tả
+ * "ô nào, giá trị nào" trong một bảng dữ liệu duy nhất.
  */
 function fillByPlaceholder(
   user: ReturnType<typeof userEvent.setup>,

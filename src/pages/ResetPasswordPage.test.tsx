@@ -39,10 +39,39 @@ function renderPage() {
   );
 }
 
-/** Nhập cặp mật khẩu vào form (đã ở trạng thái "form"). */
+/**
+ * Nhập cặp mật khẩu vào form (đã ở trạng thái "form").
+ *
+ * `userEvent.type` gõ TỪNG KÝ TỰ: mỗi ký tự là một vòng sự kiện đầy đủ cộng một
+ * lượt render lại của ô có kiểm soát. Với chuỗi ngắn thì không sao, nhưng ca
+ * "mật khẩu quá dài" dùng 129 ký tự × 2 ô = 258 lượt gõ, đo được **4117ms** khi
+ * chạy RIÊNG trên máy rảnh — tức đã ăn 82% ngân sách 5000ms mặc định của
+ * vitest. Chạy cùng 51 file khác là tràn. Đó chính là "flake" đã thấy: không
+ * phải tranh chấp bất định, mà là một test nằm sát trần thời gian.
+ *
+ * Với chuỗi dài, dán (`paste`) thay cho gõ: cùng một sự kiện `change` của React,
+ * cùng một đường validate của react-hook-form + zod, nhưng đúng MỘT lượt thay
+ * vì 129. Khẳng định không bị nới lỏng chút nào — vẫn là "giá trị 129 ký tự bị
+ * từ chối". Dán cũng sát thực tế hơn: mật khẩu dài thường đến từ trình quản lý
+ * mật khẩu.
+ *
+ * Ngưỡng 20 ký tự: đủ để mọi ca nghiệp vụ ngắn (mật khẩu thật, ca "quá ngắn",
+ * ca "không khớp") vẫn đi đường GÕ như cũ, giữ nguyên độ phủ sự kiện bàn phím.
+ */
+const TYPE_THRESHOLD = 20;
+
+async function enterPassword(field: HTMLElement, text: string) {
+  if (text.length <= TYPE_THRESHOLD) {
+    await userEvent.type(field, text);
+    return;
+  }
+  await userEvent.click(field);
+  await userEvent.paste(text);
+}
+
 async function fillPasswords(pw: string, confirm = pw) {
-  await userEvent.type(screen.getByLabelText(/Mật khẩu mới/i), pw);
-  await userEvent.type(screen.getByLabelText(/Xác nhận mật khẩu/i), confirm);
+  await enterPassword(screen.getByLabelText(/Mật khẩu mới/i), pw);
+  await enterPassword(screen.getByLabelText(/Xác nhận mật khẩu/i), confirm);
 }
 
 describe("ResetPasswordPage", () => {

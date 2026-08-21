@@ -123,10 +123,9 @@ describe("NewsFormDialog — chuyên mục bắt buộc", () => {
   it("không chọn chuyên mục thì không gửi được, có thông báo rõ", async () => {
     const { user, dialog } = await openForm();
 
-    // Form có nhiều BilingualField (tiêu đề, tóm tắt, nội dung) — ô đầu tiên
-    // là tiêu đề.
+    // Gọi thẳng tên field thay vì đếm chỉ số trong danh sách ô song ngữ.
     await user.type(
-      within(dialog).getAllByRole("textbox", { name: "Tiếng Việt" })[0],
+      within(dialog).getByRole("textbox", { name: "Tiêu đề" }),
       "Tiêu đề bài mới",
     );
     // Nút chính của form tạo (ADMIN): lưu bài ở dạng nháp. Các nút phụ

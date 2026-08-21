@@ -144,11 +144,19 @@ async function fillValidForm(
   user: ReturnType<typeof userEvent.setup>,
   dialog: HTMLElement,
 ) {
-  const viFields = within(dialog).getAllByRole("textbox", {
-    name: "Tiếng Việt",
-  });
-  await user.type(viFields[0], "Bài mới");
-  await user.type(viFields[1], "Tóm tắt bài mới đủ dài.");
+  // Chọn theo ĐÚNG TÊN của từng field. Trước đây phải lấy
+  // `getAllByRole("textbox", { name: "Tiếng Việt" })` rồi đếm chỉ số, vì
+  // `BilingualField` đặt `aria-label` ngôn ngữ đè lên nhãn thật nên mọi ô song
+  // ngữ đều mang cùng một tên. Nay tên truy cập là nhãn của field, nên test
+  // bám vào ý nghĩa thay vì thứ tự xuất hiện trong DOM.
+  await user.type(
+    within(dialog).getByRole("textbox", { name: "Tiêu đề" }),
+    "Bài mới",
+  );
+  await user.type(
+    within(dialog).getByRole("textbox", { name: "Tóm tắt" }),
+    "Tóm tắt bài mới đủ dài.",
+  );
   await user.type(
     within(dialog).getByLabelText("Đường dẫn"),
     "slug-nguoi-dung-go",

@@ -176,7 +176,7 @@ describe("NewsCategoriesPage — tạo chuyên mục", () => {
     const dialog = await screen.findByRole("dialog");
 
     await user.type(
-      within(dialog).getByRole("textbox", { name: "Tiếng Việt" }),
+      within(dialog).getByRole("textbox", { name: "Tên chuyên mục" }),
       "Kiến trúc & Xây dựng",
     );
 
@@ -192,7 +192,7 @@ describe("NewsCategoriesPage — tạo chuyên mục", () => {
     await user.click(screen.getByRole("button", { name: /Thêm chuyên mục/ }));
     const dialog = await screen.findByRole("dialog");
     const nameInput = within(dialog).getByRole("textbox", {
-      name: "Tiếng Việt",
+      name: "Tên chuyên mục",
     });
     const slugInput = within(dialog).getByRole("textbox", {
       name: /Đường dẫn/i,
@@ -214,7 +214,7 @@ describe("NewsCategoriesPage — tạo chuyên mục", () => {
     await user.click(screen.getByRole("button", { name: /Thêm chuyên mục/ }));
     const dialog = await screen.findByRole("dialog");
     await user.type(
-      within(dialog).getByRole("textbox", { name: "Tiếng Việt" }),
+      within(dialog).getByRole("textbox", { name: "Tên chuyên mục" }),
       "Sự kiện",
     );
     await user.click(
@@ -236,7 +236,7 @@ describe("NewsCategoriesPage — tạo chuyên mục", () => {
     await user.click(screen.getByRole("button", { name: /Thêm chuyên mục/ }));
     const dialog = await screen.findByRole("dialog");
     await user.type(
-      within(dialog).getByRole("textbox", { name: "Tiếng Việt" }),
+      within(dialog).getByRole("textbox", { name: "Tên chuyên mục" }),
       "Tin dự án",
     );
     const slugInput = within(dialog).getByRole("textbox", {
