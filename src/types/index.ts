@@ -215,6 +215,18 @@ export interface Banner {
   objectPosition: string | null;
   order: number;
   isActive: boolean;
+  /**
+   * CỬA SỔ HIỂN THỊ (Batch 12) — cấu hình thời gian, KHÔNG phải lịch xuất bản.
+   *
+   * `null` = không có biên tương ứng: bỏ trống `displayFrom` là có hiệu lực
+   * ngay, bỏ trống `displayUntil` là không giới hạn ngày kết thúc. Khoảng nửa
+   * mở `[displayFrom, displayUntil)`.
+   *
+   * Độc lập hoàn toàn với `isActive`: banner ra được trang chủ khi VỪA đang bật
+   * VỪA trong cửa sổ. Backend xét cả hai lúc truy vấn — CMS không tự lọc.
+   */
+  displayFrom: string | null;
+  displayUntil: string | null;
   createdAt: string;
   updatedAt: string;
 }

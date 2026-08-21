@@ -59,6 +59,12 @@ const validBanner = {
   subtitle: bilingual(""),
   ctaLabel: bilingual(""),
   objectPosition: "",
+  // Cửa sổ hiển thị (Batch 12) — bốn ô rỗng là cấu hình hợp lệ và cũng là mặc
+  // định: banner hiện ngay, không giới hạn ngày kết thúc.
+  fromDate: "",
+  fromTime: "",
+  untilDate: "",
+  untilTime: "",
 };
 
 const validCooperation = {

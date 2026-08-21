@@ -21,6 +21,20 @@ export interface CreateBannerInput {
   objectPosition?: string;
   order?: number;
   isActive?: boolean;
+  /**
+   * Cửa sổ hiển thị — đi thẳng qua create/update thường, KHÔNG có endpoint lệnh
+   * riêng như luồng đặt lịch đăng của tin tức/dự án/trang.
+   *
+   * Ba giá trị mang ba ý nghĩa khác nhau và backend phân biệt cả ba:
+   *   vắng mặt  → giữ nguyên biên đang lưu
+   *   `null`    → XOÁ biên
+   *   chuỗi ISO → đặt biên (bắt buộc kèm múi giờ, vd `...+07:00`)
+   *
+   * Vì `null` mang nghĩa riêng nên tuyệt đối không được `JSON.stringify` bỏ qua
+   * — không dùng `undefined` thay cho ý định xoá.
+   */
+  displayFrom?: string | null;
+  displayUntil?: string | null;
 }
 
 export type UpdateBannerInput = Partial<CreateBannerInput>;

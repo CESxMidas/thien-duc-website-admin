@@ -40,6 +40,8 @@ const seededBanners: Banner[] = [
     objectPosition: "35% center",
     order: 0,
     isActive: true,
+    displayFrom: null,
+    displayUntil: null,
     createdAt: "2026-07-28T02:00:00.000Z",
     updatedAt: "2026-07-28T02:00:00.000Z",
   },
@@ -57,6 +59,8 @@ const seededBanners: Banner[] = [
     objectPosition: "45% center",
     order: 1,
     isActive: true,
+    displayFrom: null,
+    displayUntil: null,
     createdAt: "2026-07-28T02:00:00.000Z",
     updatedAt: "2026-07-28T02:00:00.000Z",
   },
@@ -74,6 +78,8 @@ const seededBanners: Banner[] = [
     objectPosition: "center center",
     order: 2,
     isActive: true,
+    displayFrom: null,
+    displayUntil: null,
     createdAt: "2026-07-28T02:00:00.000Z",
     updatedAt: "2026-07-28T02:00:00.000Z",
   },
@@ -91,6 +97,8 @@ const seededBanners: Banner[] = [
     objectPosition: "center center",
     order: 3,
     isActive: false,
+    displayFrom: null,
+    displayUntil: null,
     createdAt: "2026-07-28T02:00:00.000Z",
     updatedAt: "2026-07-28T02:00:00.000Z",
   },
@@ -235,6 +243,11 @@ describe("BannersPage — nội dung banner đã seed", () => {
         subtitle: banner.subtitle,
         ctaLabel: banner.ctaLabel,
         objectPosition: banner.objectPosition,
+        // Batch 12: form luôn gửi hai biên TƯỜNG MINH. Ở đây bốn ô thời gian
+        // bỏ trống nên cả hai là `null` — đúng nghĩa "hiện ngay, không hạn", và
+        // là cách duy nhất nói với backend "xoá biên" nếu trước đó có đặt.
+        displayFrom: null,
+        displayUntil: null,
       },
     });
   });
