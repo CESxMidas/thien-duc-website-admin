@@ -12,7 +12,7 @@
  * chuẩn hoá slug, và đoán sai nghĩa là hẹn giờ nhầm dự án khác.
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { render, screen, within } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
@@ -328,9 +328,28 @@ describe("tạo + đặt lịch — các lối hỏng", () => {
     const dialog = await scheduleDialog();
     await user.click(within(dialog).getByRole("button", { name: /Hủy|Huỷ/ }));
 
+    // Chờ ĐÚNG điều kiện ngữ nghĩa: lớp lịch đã rời khỏi cây a11y. Trước đây
+    // test hỏi form nền ngay lập tức, nên nó vừa đọc trúng khoảnh khắc chuyển
+    // tiếp, vừa che mất một lỗi thật (xem khẳng định ngay dưới).
+    await waitFor(() =>
+      expect(
+        screen.queryByRole("dialog", { name: "Lên lịch đăng bài" }),
+      ).toBeNull(),
+    );
+
     expect(createProject).not.toHaveBeenCalled();
     expect(schedulePublication).not.toHaveBeenCalled();
+
+    // Form tạo phải CÒN MỞ. Đây mới là điều then chốt: sự kiện dismiss của hộp
+    // thoại lịch từng rơi xuống lớp dưới và đóng luôn form, cuốn theo mọi thứ
+    // biên tập viên vừa gõ.
+    expect(screen.getByRole("dialog", { name: "Tạo dự án mới" })).toBeInTheDocument();
     expect(screen.getByLabelText(/Slug/)).toHaveValue("du-an-moi-2026");
+    expect(screen.getByLabelText("Tên dự án")).toHaveValue("Khu đô thị Hưng Phú");
+
+    // Và vẫn gõ tiếp được — lớp vừa đóng không để lại bẫy tiêu điểm.
+    await user.type(screen.getByLabelText(/Slug/), "-2");
+    expect(screen.getByLabelText(/Slug/)).toHaveValue("du-an-moi-2026-2");
   });
 
   it("ESC trong hộp thoại lịch cũng không tạo dự án", async () => {

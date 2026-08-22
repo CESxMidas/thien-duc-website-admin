@@ -263,6 +263,18 @@ export function NewsFormDialog({ trigger, post }: NewsFormDialogProps) {
         // mất dấu bài vừa tạo và không biết lệnh thứ hai đã chạy hay chưa.
         onOpenChange={(next) => {
           if (running) return;
+          // Hộp thoại đặt lịch đang mở CHỒNG LÊN form này. Radix dựng hai modal
+          // thành anh em trong DOM, nên khi lớp trên đóng lại, sự kiện dismiss
+          // của nó có thể rơi xuống lớp dưới và bị hiểu là "người dùng muốn
+          // đóng form". Đó là một cuộc đua thật: đo được trên bộ test chạy song
+          // song, nút mở form quay về `aria-expanded="false"` — tức form tạo đã
+          // ĐÓNG HẲN, kéo theo toàn bộ nội dung biên tập viên vừa gõ.
+          //
+          // Trong khi còn một modal nằm trên, form nền không có lý do chính
+          // đáng nào để tự đóng: mọi yêu cầu đóng lúc này là rò rỉ sự kiện, chứ
+          // không phải ý người dùng. Người dùng vẫn đóng form bình thường được
+          // sau khi hộp thoại lịch đã tắt.
+          if (!next && pendingSchedule !== null) return;
           setOpen(next);
         }}
         trigger={trigger}

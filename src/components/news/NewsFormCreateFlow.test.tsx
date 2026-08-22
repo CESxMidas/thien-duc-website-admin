@@ -344,8 +344,12 @@ describe("tạo + đặt lịch — các lối hỏng", () => {
     );
     expect(createNews).not.toHaveBeenCalled();
     expect(schedulePublication).not.toHaveBeenCalled();
-    // Form tạo còn đó, dữ liệu đang gõ chưa mất.
-    const createDialog = await screen.findByRole("dialog");
+
+    // Form tạo phải CÒN MỞ, dữ liệu đang gõ chưa mất. Hỏi đích danh theo TÊN
+    // thay vì `findByRole("dialog")` trống: lời gọi trống vừa mơ hồ khi hai
+    // modal cùng tồn tại trong khoảnh khắc chuyển tiếp, vừa không nói được
+    // form NÀO còn mở — mà đó chính là điều lỗi này làm hỏng.
+    const createDialog = screen.getByRole("dialog", { name: "Viết tin mới" });
     const slugField = within(createDialog).getByDisplayValue(
       "slug-nguoi-dung-go",
     );
