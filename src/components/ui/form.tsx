@@ -13,6 +13,7 @@ import {
 
 import { cn } from "@/lib/utils";
 import { Label } from "@/components/ui/label";
+import { getFieldErrorMessage } from "@/lib/field-error-message";
 
 const Form = FormProvider;
 
@@ -136,7 +137,11 @@ function FormDescription({ className, ...props }: React.ComponentProps<"p">) {
 
 function FormMessage({ className, ...props }: React.ComponentProps<"p">) {
   const { error, formMessageId } = useFormField();
-  const body = error ? String(error?.message ?? "") : props.children;
+  // `getFieldErrorMessage` thay cho `String(error?.message ?? "")`: với field có
+  // giá trị lồng nhau (mọi field song ngữ), Zod gắn lỗi vào đường dẫn con nên
+  // `message` ở gốc là `undefined` và thông báo không bao giờ hiện ra. Lỗi phẳng
+  // vẫn đi đúng nhánh đầu tiên của helper nên hành vi KHÔNG đổi một chút nào.
+  const body = error ? getFieldErrorMessage(error) : props.children;
 
   if (!body) {
     return null;
