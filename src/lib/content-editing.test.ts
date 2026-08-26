@@ -7,9 +7,10 @@ import type { SchedulableContent } from "@/lib/news-schedule";
 /**
  * Batch 8 — ranh giới quyền sửa nội dung, bản UI.
  *
- * Hai hàm ở đây phải khớp TỪNG CA với backend (`editorMayEditNews` và
- * `editorMayEditUnpublished`): lệch một ca là hoặc hiện nút chắc chắn nổ 403,
- * hoặc ẩn mất một thao tác chính đáng.
+ * Backend là nơi chốt quyền: nó mới là chỗ quyết định EDITOR được sửa nội dung ở
+ * trạng thái/lịch đăng nào. Hai hàm ở đây chỉ soi gương luật đó cho UI, nên phải
+ * khớp TỪNG CA: lệch một ca là hoặc hiện nút chắc chắn nổ 403, hoặc ẩn mất một
+ * thao tác chính đáng.
  */
 
 const PAST = "2026-08-01T01:00:00.000Z";
