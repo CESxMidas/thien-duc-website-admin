@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { seedAccounts, uniqueE2eEmail } from '../helpers/config';
+import { adminPath, seedAccounts, uniqueE2eEmail } from '../helpers/config';
 import { deleteTestUsers, upsertTestUser } from '../helpers/api';
 import {
   expectLoggedIn,
@@ -98,7 +98,10 @@ test.describe('Admin — Đăng nhập (mục 6)', () => {
   test('ADMIN đăng nhập thành công → vào khu vực bảo vệ', async ({ page }) => {
     await uiLogin(page, seed.admin.email, seed.admin.password);
     await expectLoggedIn(page);
-    await expect(page).toHaveURL((u) => !u.pathname.startsWith('/dang-nhap'));
+    // So theo ĐUÔI, không theo tiền tố: dưới base `/admin`, pathname là
+    // `/admin/dang-nhap` — `startsWith('/dang-nhap')` sẽ luôn false và biến
+    // khẳng định này thành vô nghĩa (test xanh kể cả khi vẫn kẹt ở trang login).
+    await expect(page).toHaveURL((u) => !u.pathname.endsWith('/dang-nhap'));
   });
 
   test('SUPER_ADMIN đăng nhập thành công', async ({ page }) => {
@@ -127,7 +130,7 @@ test.describe('Admin — Đăng nhập (mục 6)', () => {
   test('route bảo vệ chuyển hướng về đăng nhập khi chưa đăng nhập', async ({
     page,
   }) => {
-    await page.goto('/tai-khoan');
+    await page.goto(adminPath('/tai-khoan'));
     await expect(page).toHaveURL(/\/dang-nhap$/);
   });
 
@@ -139,7 +142,7 @@ test.describe('Admin — Đăng nhập (mục 6)', () => {
     await expect(page.getByRole('link', { name: 'Tài khoản' })).toHaveCount(0);
     await expect(page.getByRole('link', { name: 'Banner' })).toHaveCount(0);
     // Vào thẳng route cấm → bị đẩy sang trang 403.
-    await page.goto('/tai-khoan');
+    await page.goto(adminPath('/tai-khoan'));
     await expect(page).toHaveURL(/\/403$/);
   });
 

@@ -1,10 +1,5 @@
 import { test, expect } from '@playwright/test';
-import {
-  API_URL,
-  FRONTEND_URL,
-  seedAccounts,
-  uniqueE2eEmail,
-} from '../helpers/config';
+import { adminPath, API_URL, FRONTEND_URL, seedAccounts, uniqueE2eEmail } from '../helpers/config';
 import { expectNoHorizontalOverflow } from '../helpers/layout';
 import {
   apiLogin,
@@ -121,14 +116,14 @@ for (const vp of VIEWPORTS) {
     test('Admin: login/forgot/reset/setup không tràn ngang + control chính hiển thị', async ({
       page,
     }) => {
-      await page.goto('/dang-nhap');
+      await page.goto(adminPath('/dang-nhap'));
       await expect(
         page.getByRole('button', { name: 'Đăng nhập' }),
       ).toBeVisible();
       await expect(page.getByLabel('Email')).toBeVisible();
       await expectNoHorizontalOverflow(page, `login-${vp.name}`);
 
-      await page.goto('/quen-mat-khau');
+      await page.goto(adminPath('/quen-mat-khau'));
       await expect(
         page.getByRole('button', { name: 'Gửi hướng dẫn đặt lại mật khẩu' }),
       ).toBeVisible();
@@ -148,7 +143,7 @@ for (const vp of VIEWPORTS) {
     }) => {
       await uiLogin(page, seed.superAdmin.email, seed.superAdmin.password);
       await expect(page.locator(SESSION_BTN)).toBeVisible();
-      await page.goto('/tai-khoan');
+      await page.goto(adminPath('/tai-khoan'));
       await expect(
         page.getByRole('heading', { name: 'Tài khoản', level: 1 }),
       ).toBeVisible();
@@ -244,7 +239,7 @@ for (const vp of VIEWPORTS) {
         ['/lien-he', 'Liên hệ', 'admin-contacts'],
       ];
       for (const [path, heading, label] of pages) {
-        await page.goto(path);
+        await page.goto(adminPath(path));
         await expect(
           page.getByRole('heading', { name: heading, level: 1 }),
         ).toBeVisible();
@@ -258,7 +253,7 @@ for (const vp of VIEWPORTS) {
         ['/banner', 'Thêm banner'],
       ];
       for (const [path, action] of forms) {
-        await page.goto(path);
+        await page.goto(adminPath(path));
         const trigger = page.getByRole('button', { name: action });
         await expect(trigger).toBeVisible();
         await trigger.click();
@@ -285,7 +280,7 @@ test.describe('§14 — Modal trong viewport (mobile)', () => {
   test('modal thêm tài khoản nằm gọn trong viewport', async ({ page }) => {
     await uiLogin(page, seed.superAdmin.email, seed.superAdmin.password);
     await expect(page.locator(SESSION_BTN)).toBeVisible();
-    await page.goto('/tai-khoan');
+    await page.goto(adminPath('/tai-khoan'));
     await page.getByRole('button', { name: 'Thêm tài khoản' }).click();
     const dialog = page.getByRole('dialog');
     await expect(dialog).toBeVisible();

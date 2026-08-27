@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { seedAccounts, uniqueE2eEmail } from '../helpers/config';
+import { adminPath, seedAccounts, uniqueE2eEmail } from '../helpers/config';
 import {
   apiLogin,
   authedPost,
@@ -158,7 +158,7 @@ test.describe('§ Retire POST /users — route tạo trực tiếp đã gỡ', (
 
     await uiLogin(page, seed.superAdmin.email, seed.superAdmin.password);
     await expectLoggedIn(page);
-    await page.goto('/tai-khoan');
+    await page.goto(adminPath('/tai-khoan'));
     await expect(
       page.getByRole('heading', { name: 'Tài khoản', level: 1 }),
     ).toBeVisible();

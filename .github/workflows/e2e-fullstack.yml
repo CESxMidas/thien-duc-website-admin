@@ -63,7 +63,12 @@ jobs:
           NODE_ENV=test
           PORT=3001
           DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:5432/thien_duc_test?sslmode=disable
-          ADMIN_APP_URL=http://127.0.0.1:5174
+          # Batch 15B: PHẢI kèm `/admin` — Admin chạy dưới base `/admin/`, và
+          # backend dựng link email mời/đặt lại mật khẩu từ biến này. Thiếu hậu tố
+          # thì link trỏ về gốc `/` và E2E mở ra trang cảnh báo base của Vite.
+          # (CI khởi động backend TRỰC TIẾP từ .env này, nên `env` của webServer
+          # trong playwright.config.ts KHÔNG áp dụng ở đây.)
+          ADMIN_APP_URL=http://127.0.0.1:5174/admin
           FRONTEND_URL=http://127.0.0.1:3000
           CORS_ORIGIN=http://127.0.0.1:3000,http://127.0.0.1:5174
           JWT_ACCESS_SECRET=ci-fake-access-secret-thien-duc-minimum-32-characters
@@ -185,10 +190,12 @@ jobs:
           cat "$GITHUB_WORKSPACE/backend.log"
           exit 1
 
-      - name: Admin sẵn sàng (http://127.0.0.1:5174/)
+      # Thăm dò `/admin/` chứ KHÔNG phải `/` (Batch 15B): Vite chạy với
+      # `base: '/admin/'` nên gốc `/` chỉ là một chuyển hướng, không phải app.
+      - name: Admin sẵn sàng (http://127.0.0.1:5174/admin/)
         run: |
           for i in $(seq 1 120); do
-            if curl -fsS -o /dev/null http://127.0.0.1:5174/; then
+            if curl -fsS -o /dev/null http://127.0.0.1:5174/admin/; then
               echo "Admin ready on port 5174 (sau ${i}s)"
               exit 0
             fi

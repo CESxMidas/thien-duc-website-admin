@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { toRouterBasename } from "@/lib/base-path";
 import { AuthProvider } from "@/context/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AdminLayout } from "@/components/layout/AdminLayout";
@@ -24,7 +25,12 @@ import { NotFoundPage } from "@/pages/NotFoundPage";
 export default function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
+      {/* basename lấy từ `import.meta.env.BASE_URL` (Batch 15B): Admin chạy
+          dưới `/admin` trên production. Nhờ đó MỌI `<Link>`, `<Navigate>`,
+          `navigate()` bên dưới vẫn viết path theo gốc app (`/dang-nhap`,
+          `/du-an`…) — React Router tự gắn tiền tố. Tuyệt đối KHÔNG gõ `/admin`
+          vào từng route. */}
+      <BrowserRouter basename={toRouterBasename()}>
         <Routes>
           <Route path="/dang-nhap" element={<LoginPage />} />
           {/* Trang CÔNG KHAI: người được mời tự đặt mật khẩu (ngoài ProtectedRoute). */}

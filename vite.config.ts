@@ -1,4 +1,4 @@
-import { defineConfig } from "vite";
+import { defineConfig, type PluginOption } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { sentryVitePlugin } from "@sentry/vite-plugin";
@@ -40,11 +40,69 @@ import {
 const sentryPluginOptions = resolveSentryPluginOptions(process.env);
 const sentryRelease = resolveSentryRelease(process.env);
 
+/**
+ * ĐƯỜNG DẪN CÔNG KHAI của Admin (Batch 15B).
+ *
+ * Admin lộ ra ở `https://www.thienduccons.vn/admin` — FE public (Next.js, Vercel
+ * project KHÁC) rewrite `/admin/:path*` sang đây và GIỮ NGUYÊN tiền tố.
+ *
+ * `base` chỉ đổi **URL** trong bundle, KHÔNG đổi **vị trí file** trong `dist/`.
+ * Nếu để `outDir` mặc định (`dist/`), file nằm ở `dist/assets/…` trong khi
+ * trình duyệt xin `/admin/assets/…` → Vercel (phục vụ tĩnh thuần, không strip
+ * base như `vite preview`) không thấy file → rơi vào SPA fallback → trả
+ * `index.html` với `Content-Type: text/html` cho một request `.js` → trắng
+ * trang. Vì vậy `outDir` phải là `dist/admin` để **đường dẫn file khớp đúng
+ * đường dẫn URL**; khi đó Vercel tự phục vụ file thật trước khi xét rewrite.
+ *
+ * Dùng CHUNG cho dev và build (không phụ thuộc mode): dev server cũng chạy ở
+ * `/admin/` nên lỗi liên quan tới base lộ ra ngay trên máy, không đợi tới
+ * production. `import.meta.env.BASE_URL` là nguồn sự thật cho mã runtime
+ * (xem `src/lib/base-path.ts`).
+ */
+const BASE_PATH = "/admin/";
+
+/**
+ * Dev server: `/admin` (KHÔNG có dấu `/` cuối) → 302 sang `/admin/`.
+ *
+ * Vite dev chỉ phục vụ nội dung cho đường dẫn nằm TRONG `base`; `/admin` trần
+ * rơi ra ngoài nên nó trả trang cảnh báo "The server is configured with a public
+ * base URL of /admin/". Điều đó **thật sự xảy ra khi dùng bình thường**: sau khi
+ * đăng nhập, React Router (basename `/admin`) để thanh địa chỉ ở `/admin`, nên
+ * bấm F5 ngay lúc đó là gặp trang cảnh báo thay vì app. E2E đã bắt đúng ca này
+ * ("phiên đăng nhập được giữ qua reload").
+ *
+ * Production KHÔNG có vấn đề này — cả `vercel.json` của Admin lẫn `rewrites()`
+ * của FE đều có rule riêng cho `/admin` trần. Middleware này chỉ để **dev khớp
+ * với production**, thay vì để lệch rồi phải nhớ một ngoại lệ.
+ */
+function adminBaseRedirect(): PluginOption {
+  const bare = BASE_PATH.replace(/\/$/, ""); // "/admin"
+  return {
+    name: "admin-base-redirect",
+    configureServer(server) {
+      server.middlewares.use((req, res, next) => {
+        // So sánh trên pathname: `/admin?x=1` cũng phải được chuyển hướng.
+        const [pathname, query] = (req.url ?? "").split("?");
+        if (pathname === bare) {
+          res.writeHead(302, {
+            Location: query ? `${BASE_PATH}?${query}` : BASE_PATH,
+          });
+          res.end();
+          return;
+        }
+        next();
+      });
+    },
+  };
+}
+
 // https://vite.dev/config/
 export default defineConfig({
+  base: BASE_PATH,
   plugins: [
     react(),
     tailwindcss(),
+    adminBaseRedirect(),
     // Cổng tắt → mảng rỗng → plugin không tồn tại trong config.
     ...(sentryPluginOptions ? [sentryVitePlugin(sentryPluginOptions)] : []),
   ],
@@ -57,6 +115,10 @@ export default defineConfig({
   },
   build: {
     sourcemap: resolveSourcemapSetting(process.env),
+    // Phải KHỚP `base` ở trên — xem giải thích tại `BASE_PATH`. Vercel giữ
+    // `outputDirectory` mặc định của preset Vite là `dist`, nên file thật sẽ
+    // nằm đúng tại `/admin/*` trên URL.
+    outDir: "dist/admin",
   },
   resolve: {
     alias: {

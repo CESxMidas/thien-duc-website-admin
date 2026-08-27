@@ -1,5 +1,5 @@
 import { test, expect, type Page, type Browser } from '@playwright/test';
-import { seedAccounts, uniqueE2eEmail } from '../helpers/config';
+import { adminPath, seedAccounts, uniqueE2eEmail } from '../helpers/config';
 import {
   ageInvitations,
   apiLogin,
@@ -26,7 +26,7 @@ test.afterAll(async () => {
 async function openUserManagementAsSuperAdmin(page: Page): Promise<void> {
   await uiLogin(page, seed.superAdmin.email, seed.superAdmin.password);
   await expectLoggedIn(page);
-  await page.goto('/tai-khoan');
+  await page.goto(adminPath('/tai-khoan'));
   await expect(
     page.getByRole('heading', { name: 'Tài khoản', level: 1 }),
   ).toBeVisible();
@@ -147,7 +147,7 @@ test.describe('Admin — Lời mời tài khoản (mục 7)', () => {
     await expectLoggedIn(lp);
     // Vai trò EDITOR: không thấy mục quản trị, vào /tai-khoan bị chặn 403.
     await expect(lp.getByRole('link', { name: 'Tài khoản' })).toHaveCount(0);
-    await lp.goto('/tai-khoan');
+    await lp.goto(adminPath('/tai-khoan'));
     await expect(lp).toHaveURL(/\/403$/);
 
     // Dùng lại link thiết lập cũ (đã dùng) → trạng thái không hợp lệ chung.
@@ -243,7 +243,7 @@ test.describe('Admin — Lời mời tài khoản (mục 7)', () => {
     // UI: ADMIN xem được danh sách nhưng KHÔNG có nút "Thêm tài khoản".
     await uiLogin(page, seed.admin.email, seed.admin.password);
     await expectLoggedIn(page);
-    await page.goto('/tai-khoan');
+    await page.goto(adminPath('/tai-khoan'));
     await expect(
       page.getByRole('heading', { name: 'Tài khoản', level: 1 }),
     ).toBeVisible();
@@ -287,7 +287,7 @@ test.describe('Admin — Lời mời tài khoản (mục 7)', () => {
     // UI: EDITOR vào /tai-khoan bị đẩy sang 403.
     await uiLogin(page, editor, SETUP_PW);
     await expectLoggedIn(page);
-    await page.goto('/tai-khoan');
+    await page.goto(adminPath('/tai-khoan'));
     await expect(page).toHaveURL(/\/403$/);
 
     // API: token EDITOR gọi endpoint lời mời → 403.

@@ -1,5 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
-import { uniqueE2eEmail } from '../helpers/config';
+import { adminPath, uniqueE2eEmail } from '../helpers/config';
 import {
   apiLogin,
   apiRefresh,
@@ -56,7 +56,7 @@ test.afterAll(async () => {
 
 /** Gửi yêu cầu quên mật khẩu qua UI cho một email, xác nhận màn hình trung tính. */
 async function submitForgot(page: Page, email: string): Promise<void> {
-  await page.goto('/quen-mat-khau');
+  await page.goto(adminPath('/quen-mat-khau'));
   await page.getByLabel('Email').fill(email);
   await page
     .getByRole('button', { name: 'Gửi hướng dẫn đặt lại mật khẩu' })
@@ -237,7 +237,7 @@ test.describe('Admin — Quên/Đặt lại mật khẩu (mục 8)', () => {
     page,
   }) => {
     await page.route('**/auth/forgot-password', (route) => route.abort());
-    await page.goto('/quen-mat-khau');
+    await page.goto(adminPath('/quen-mat-khau'));
     await page.getByLabel('Email').fill(resetUser);
     await page
       .getByRole('button', { name: 'Gửi hướng dẫn đặt lại mật khẩu' })

@@ -1,10 +1,5 @@
 import { test, expect } from '@playwright/test';
-import {
-  API_URL,
-  FRONTEND_URL,
-  seedAccounts,
-  uniqueE2eEmail,
-} from '../helpers/config';
+import { adminPath, API_URL, FRONTEND_URL, seedAccounts, uniqueE2eEmail } from '../helpers/config';
 import {
   apiLogin,
   authedPost,
@@ -65,7 +60,7 @@ test.describe('§13 — Kiểm thử accessibility (axe)', () => {
   test('Admin đăng nhập: axe + đúng một h1 + nút hiện mật khẩu có tên khả truy cập', async ({
     page,
   }) => {
-    await page.goto('/dang-nhap');
+    await page.goto(adminPath('/dang-nhap'));
     await expect(
       page.getByRole('heading', { name: 'Đăng nhập hệ thống quản trị' }),
     ).toBeVisible();
@@ -77,7 +72,7 @@ test.describe('§13 — Kiểm thử accessibility (axe)', () => {
   });
 
   test('Admin quên mật khẩu: axe + đúng một h1', async ({ page }) => {
-    await page.goto('/quen-mat-khau');
+    await page.goto(adminPath('/quen-mat-khau'));
     await expect(page.getByRole('heading', { name: 'Quên mật khẩu?' })).toBeVisible();
     await expect(page.locator('h1')).toHaveCount(1);
     await expectNoSeriousA11y(page, 'admin-forgot');
@@ -102,7 +97,7 @@ test.describe('§13 — Kiểm thử accessibility (axe)', () => {
   test('Admin quản lý tài khoản: axe', async ({ page }) => {
     await uiLogin(page, seed.superAdmin.email, seed.superAdmin.password);
     await expectLoggedIn(page);
-    await page.goto('/tai-khoan');
+    await page.goto(adminPath('/tai-khoan'));
     await expect(
       page.getByRole('heading', { name: 'Tài khoản', level: 1 }),
     ).toBeVisible();
@@ -123,7 +118,7 @@ test.describe('§13 — Kiểm thử accessibility (axe)', () => {
   }) => {
     await uiLogin(page, seed.superAdmin.email, seed.superAdmin.password);
     await expectLoggedIn(page);
-    await page.goto('/tai-khoan');
+    await page.goto(adminPath('/tai-khoan'));
     // Chọn ĐÚNG phần tử huy hiệu (`data-slot="badge"`), không phải ô chứa nó.
     const badge = page
       .locator('[data-slot="badge"]', { hasText: 'Đang hoạt động' })
@@ -214,7 +209,7 @@ test.describe('§13 — Kiểm thử accessibility (axe)', () => {
   }) => {
     await uiLogin(page, seed.superAdmin.email, seed.superAdmin.password);
     await expectLoggedIn(page);
-    await page.goto('/tai-khoan');
+    await page.goto(adminPath('/tai-khoan'));
     await page.getByRole('button', { name: 'Thêm tài khoản' }).click();
     const dialog = page.getByRole('dialog');
     await expect(dialog).toBeVisible();

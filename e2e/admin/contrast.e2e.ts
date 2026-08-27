@@ -1,10 +1,5 @@
 import { test, type Page } from '@playwright/test';
-import {
-  API_URL,
-  FRONTEND_URL,
-  seedAccounts,
-  uniqueE2eEmail,
-} from '../helpers/config';
+import { adminPath, API_URL, FRONTEND_URL, seedAccounts, uniqueE2eEmail } from '../helpers/config';
 import {
   apiLogin,
   authedPost,
@@ -66,8 +61,9 @@ test.afterAll(async () => {
   await deleteTestUsers();
 });
 
+/** `path` là đường dẫn theo GỐC APP (`/dang-nhap`); `adminPath` gắn tiền tố base. */
 async function goAdmin(page: Page, path: string) {
-  await page.goto(path);
+  await page.goto(adminPath(path));
   await page.waitForLoadState('load');
 }
 async function goFE(page: Page, path: string) {

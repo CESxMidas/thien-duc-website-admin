@@ -1,5 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
-import { seedAccounts, uniqueE2eEmail } from '../helpers/config';
+import { adminPath, seedAccounts, uniqueE2eEmail } from '../helpers/config';
 import {
   apiLogin,
   authedDelete,
@@ -96,7 +96,7 @@ test.afterAll(async () => {
 async function openUserList(page: Page): Promise<void> {
   await uiLogin(page, seed.superAdmin.email, seed.superAdmin.password);
   await expectLoggedIn(page);
-  await page.goto('/tai-khoan');
+  await page.goto(adminPath('/tai-khoan'));
   await expect(
     page.getByRole('heading', { name: 'Tài khoản', level: 1 }),
   ).toBeVisible();
@@ -275,7 +275,7 @@ test.describe('§9 — Bảo mật quản lý tài khoản', () => {
   test('ADMIN: không có nút quản lý trên UI + API trả 403', async ({ page }) => {
     await uiLogin(page, seed.admin.email, seed.admin.password);
     await expectLoggedIn(page);
-    await page.goto('/tai-khoan');
+    await page.goto(adminPath('/tai-khoan'));
     await expect(
       page.getByRole('heading', { name: 'Tài khoản', level: 1 }),
     ).toBeVisible();
@@ -318,7 +318,7 @@ test.describe('§9 — Bảo mật quản lý tài khoản', () => {
   }) => {
     await uiLogin(page, editorUser, FIXTURE_PW);
     await expectLoggedIn(page);
-    await page.goto('/tai-khoan');
+    await page.goto(adminPath('/tai-khoan'));
     await expect(page).toHaveURL(/\/403$/);
 
     expect((await authedGet('/users', editorToken)).status).toBe(403);
@@ -342,13 +342,13 @@ test.describe('§9 — Bảo mật quản lý tài khoản', () => {
     page,
   }) => {
     // Chưa đăng nhập → chuyển hướng.
-    await page.goto('/tai-khoan');
+    await page.goto(adminPath('/tai-khoan'));
     await expect(page).toHaveURL(/\/dang-nhap$/);
 
     // Đăng nhập, mở danh sách, rồi đăng xuất.
     await uiLogin(page, seed.superAdmin.email, seed.superAdmin.password);
     await expectLoggedIn(page);
-    await page.goto('/tai-khoan');
+    await page.goto(adminPath('/tai-khoan'));
     await expect(
       page.getByRole('row').filter({ hasText: activeUser }),
     ).toBeVisible();
@@ -362,7 +362,7 @@ test.describe('§9 — Bảo mật quản lý tài khoản', () => {
       page.getByRole('row').filter({ hasText: activeUser }),
     ).toHaveCount(0);
     // Điều hướng thẳng lại route bảo vệ khi đã đăng xuất → bị đẩy về đăng nhập.
-    await page.goto('/tai-khoan');
+    await page.goto(adminPath('/tai-khoan'));
     await expect(page).toHaveURL(/\/dang-nhap$/);
   });
 

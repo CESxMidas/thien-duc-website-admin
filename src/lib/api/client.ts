@@ -3,6 +3,7 @@
 //                          hoặc lỗi { success:false, error:{ code, message, details } }.
 
 import { toast } from "sonner";
+import { isAppPath, withBase } from "@/lib/base-path";
 
 const API_URL = import.meta.env.VITE_API_URL ?? "";
 
@@ -105,10 +106,26 @@ interface FetchConfig {
   skipAuthHandler?: boolean;
 }
 
-/** Điều hướng cứng về trang đăng nhập, tránh lặp khi đang ở sẵn trang đó. */
+/**
+ * Điều hướng CỨNG về trang đăng nhập, tránh lặp khi đang ở sẵn trang đó.
+ *
+ * Cố ý dùng `window.location` chứ không phải `navigate()` của React Router:
+ * hàm này chạy trong `apiFetch` — ngoài cây component, không có quyền dùng
+ * hook. Đổi lại, nó **bỏ qua `basename`** của router nên phải tự gắn base
+ * (Batch 15B).
+ *
+ * Không gắn base thì khi phiên hết hạn ở `/admin/du-an`, trình duyệt nhảy tới
+ * `https://www.thienduccons.vn/dang-nhap` — trang 404 của WEBSITE CÔNG KHAI,
+ * không phải trang đăng nhập CMS. Biên tập viên bị đá khỏi CMS mà không hiểu vì
+ * sao.
+ *
+ * Chốt chống lặp cũng phải so sánh theo base: `location.pathname` là
+ * `/admin/dang-nhap` còn `LOGIN_PATH` là `/dang-nhap`, so trực tiếp luôn khác
+ * nhau → sẽ tự gán lại location ngay khi đang đứng ở trang đăng nhập.
+ */
 function redirectToLogin(): void {
-  if (window.location.pathname !== LOGIN_PATH) {
-    window.location.assign(LOGIN_PATH);
+  if (!isAppPath(window.location.pathname, LOGIN_PATH)) {
+    window.location.assign(withBase(LOGIN_PATH));
   }
 }
 

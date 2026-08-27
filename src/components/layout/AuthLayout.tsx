@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { withBase } from "@/lib/base-path";
 
 /**
  * Khung chung cho MỌI màn hình xác thực công khai (đăng nhập, thiết lập tài
@@ -22,7 +23,7 @@ export function AuthLayout({ children }: { children: ReactNode }) {
           <div className="mb-8 flex items-center gap-3">
             <span className="grid size-12 shrink-0 place-items-center rounded-lg border border-black/10 bg-white p-1.5 shadow-sm">
               <img
-                src="/images/brand/logo-thien-duc.png"
+                src={withBase("/images/brand/logo-thien-duc.png")}
                 alt="Logo Thiên Đức"
                 width={48}
                 height={48}
@@ -42,7 +43,7 @@ export function AuthLayout({ children }: { children: ReactNode }) {
       {/* ---- Cột ảnh dự án (ẩn dưới lg — ưu tiên biểu mẫu trên mobile/tablet) ---- */}
       <div className="relative hidden lg:block">
         <img
-          src="/images/login-hero.jpg"
+          src={withBase("/images/login-hero.jpg")}
           alt="Phối cảnh tổng thể Khu đô thị Hưng Phú — Thiên Đức"
           className="absolute inset-0 h-full w-full object-cover"
         />

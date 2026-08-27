@@ -4,6 +4,7 @@ import { X } from "lucide-react";
 import { navItems } from "./nav";
 import { useAuth } from "@/context/AuthContext";
 import { usePresence } from "@/lib/use-presence";
+import { withBase } from "@/lib/base-path";
 
 export function Sidebar({
   open,
@@ -63,7 +64,7 @@ export function Sidebar({
                 cùng một file thương hiệu, khác nền hộp cho phù hợp sidebar tối. */}
             <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-white p-1">
               <img
-                src="/images/brand/logo-thien-duc.png"
+                src={withBase("/images/brand/logo-thien-duc.png")}
                 alt="Logo Thiên Đức"
                 className="size-full object-contain"
               />

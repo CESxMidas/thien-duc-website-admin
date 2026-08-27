@@ -1,7 +1,12 @@
 import { defineConfig, devices } from '@playwright/test';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { ADMIN_URL, API_URL, FRONTEND_URL } from './e2e/helpers/config';
+import {
+  ADMIN_ORIGIN,
+  ADMIN_URL,
+  API_URL,
+  FRONTEND_URL,
+} from './e2e/helpers/config';
 import { BACKEND_DIR } from './e2e/helpers/backend-env';
 
 const ADMIN_DIR = path.dirname(fileURLToPath(import.meta.url));
@@ -66,12 +71,17 @@ export default defineConfig({
         SENTRY_DSN: '',
         MAIL_FROM: 'Thien Duc Test <no-reply@test.local>',
         CONTACT_NOTIFY_TO: 'receiver@test.local',
+        // CÓ kèm `/admin` (khác CORS_ORIGIN bên dưới): đây là gốc để backend
+        // dựng link trong email mời/đặt lại mật khẩu, phải trỏ đúng vào app.
+        // Cũng là bài kiểm tra thật cho việc backend giữ được sub-path.
         ADMIN_APP_URL: ADMIN_URL,
         FRONTEND_URL,
         // Origin của trình duyệt giờ là 127.0.0.1 (xem `helpers/config.ts`), nên
         // CORS phải cho phép đúng hai origin đó. Ghi ở đây thay vì bắt mọi máy
         // dev sửa `.env` — và `.env` cục bộ mới chỉ liệt kê `localhost`.
-        CORS_ORIGIN: `${FRONTEND_URL},${ADMIN_URL}`,
+        // ORIGIN thuần, KHÔNG kèm `/admin`: header `Origin` của trình duyệt
+        // không bao giờ chứa path, nên `ADMIN_URL` (đã gắn base) sẽ không khớp.
+        CORS_ORIGIN: `${FRONTEND_URL},${ADMIN_ORIGIN}`,
       },
     },
     {
@@ -80,7 +90,9 @@ export default defineConfig({
       // trong khi Playwright vẫn chờ ở 5174.
       command: 'npm run dev -- --host 127.0.0.1 --port 5174 --strictPort',
       cwd: ADMIN_DIR,
-      url: ADMIN_URL,
+      // Thăm dò sẵn sàng tại `/admin/` — với `base: '/admin/'`, Vite dev KHÔNG
+      // phục vụ nội dung ở gốc `/`.
+      url: `${ADMIN_URL}/`,
       timeout: 120_000,
       // Dùng lại được ở CẢ HAI môi trường: ở CI vì workflow đã dựng sẵn và kiểm
       // sức khỏe từng service; ở máy dev vì `npm run dev` đang chạy không gây
