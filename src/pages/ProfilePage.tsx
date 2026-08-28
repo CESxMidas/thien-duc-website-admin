@@ -1,9 +1,9 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
-import { Clock, Loader2, Mail, ShieldCheck } from "lucide-react";
+import { Clock, KeyRound, Loader2, Mail, ShieldCheck } from "lucide-react";
 
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Badge } from "@/components/ui/badge";
@@ -18,6 +18,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { ChangePasswordDialog } from "@/components/profile/ChangePasswordDialog";
 import { ImagePickerField } from "@/components/ui/ImagePickerField";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -68,6 +69,7 @@ export function ProfilePage() {
 function ProfileContent({ profile }: { profile: MyProfile }) {
   const update = useUpdateMyProfile();
   const isEditor = profile.role === "EDITOR";
+  const [passwordOpen, setPasswordOpen] = useState(false);
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
@@ -317,6 +319,42 @@ function ProfileContent({ profile }: { profile: MyProfile }) {
           </Card>
         </form>
       </Form>
+
+      {/*
+        Khối BẢO MẬT nằm NGOÀI <form> hồ sơ một cách có chủ đích:
+        - HTML không cho lồng <form> trong <form>;
+        - và quan trọng hơn: mật khẩu đi `POST /auth/change-password` (hiệu lực
+          ngay), còn hồ sơ đi `PATCH /users/me` (EDITOR phải chờ duyệt). Để
+          chung một biểu mẫu là trộn hai vòng đời hoàn toàn khác nhau.
+      */}
+      <Card>
+        <CardHeader className="border-b">
+          <CardTitle className="text-base">Bảo mật</CardTitle>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-4 pt-5 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-sm font-medium text-ink">Mật khẩu đăng nhập</p>
+            <p className="text-sm text-slate">
+              Thay đổi mật khẩu đăng nhập của tài khoản quản trị. Bạn sẽ cần
+              đăng nhập lại sau khi đổi.
+            </p>
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            className="shrink-0"
+            onClick={() => setPasswordOpen(true)}
+          >
+            <KeyRound className="size-4" />
+            Đổi mật khẩu
+          </Button>
+        </CardContent>
+      </Card>
+
+      <ChangePasswordDialog
+        open={passwordOpen}
+        onOpenChange={setPasswordOpen}
+      />
     </div>
   );
 }

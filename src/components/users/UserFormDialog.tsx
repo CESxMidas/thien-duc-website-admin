@@ -36,8 +36,9 @@ import type { AdminUser, Role } from "@/types";
 const roleOptions = Object.keys(roleLabel) as Role[];
 
 // KHÔNG có field mật khẩu ở cả tạo mới lẫn sửa: người dùng tự đặt mật khẩu qua
-// email lời mời, và tự đổi qua luồng quên mật khẩu. SUPER_ADMIN không chọn,
-// không thấy, không gửi mật khẩu vĩnh viễn của tài khoản khác.
+// email lời mời, rồi tự đổi ở /ho-so (thẻ Bảo mật) hoặc qua luồng quên mật khẩu.
+// SUPER_ADMIN không chọn, không thấy, không gửi mật khẩu vĩnh viễn của tài khoản
+// khác — kể cả route đổi mật khẩu mới cũng chỉ đổi được mật khẩu CỦA CHÍNH MÌNH.
 
 interface UserFormDialogProps {
   trigger: ReactNode;

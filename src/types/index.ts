@@ -350,6 +350,18 @@ export interface ResetPasswordInput {
   confirmPassword: string;
 }
 
+/**
+ * POST /auth/change-password — người ĐANG ĐĂNG NHẬP tự đổi mật khẩu.
+ *
+ * KHÔNG có `userId`: backend lấy danh tính từ JWT, và `ValidationPipe`
+ * (`forbidNonWhitelisted`) sẽ reject 400 nếu client gửi kèm field lạ.
+ */
+export interface ChangePasswordInput {
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+
 /** Trạng thái yêu cầu cập nhật hồ sơ (ProfileChangeStatus của backend). */
 export type ProfileChangeStatus = "PENDING" | "APPROVED" | "REJECTED";
 

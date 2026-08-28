@@ -11,6 +11,7 @@
 import type {
   AcceptInvitationInput,
   AuthUser,
+  ChangePasswordInput,
   ResetPasswordInput,
   Role,
 } from "@/types";
@@ -179,6 +180,29 @@ export async function resetPassword(
     { method: "POST", body: JSON.stringify(input) },
     { skipAuthHandler: true },
   );
+}
+
+/**
+ * Đổi mật khẩu khi ĐANG ĐĂNG NHẬP. Backend xác minh `currentPassword`, đổi hash
+ * rồi thu hồi TOÀN BỘ refresh token của tài khoản — kể cả phiên đang gọi.
+ *
+ * CỐ Ý **KHÔNG** dùng `skipAuthHandler` (khác `login` / `resetPassword`).
+ * Ở đây 401 mang đúng nghĩa gốc "phiên hết hạn" nên xử lý toàn cục là ĐÚNG:
+ * tự `/auth/refresh` rồi thử lại, hết đường mới dọn token và về trang đăng
+ * nhập. Sai `currentPassword` KHÔNG rơi vào nhánh này vì backend trả **400**
+ * — đó chính là lý do backend chọn 400 thay vì 401/403.
+ *
+ * KHÔNG tự dọn token ở đây: việc đó thuộc về caller sau khi đã hiện thông báo
+ * thành công (xem `ChangePasswordDialog`), để thứ tự "báo rồi mới đá ra" nằm
+ * gọn một chỗ.
+ */
+export async function changePassword(
+  input: ChangePasswordInput,
+): Promise<{ success: boolean; message: string }> {
+  return apiFetch<{ success: boolean; message: string }>("/auth/change-password", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
 }
 
 /** Đăng xuất: thu hồi refresh token ở backend (best-effort) rồi xóa token cục bộ. */
