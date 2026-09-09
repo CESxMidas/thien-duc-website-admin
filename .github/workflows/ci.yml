@@ -21,6 +21,8 @@ jobs:
 
       - run: npm run lint
 
+      - run: npm run typecheck
+
       # Unit/component test (Vitest) + coverage (ngưỡng chống hồi quy ở vitest.config.ts)
       - run: npm run test:coverage
 

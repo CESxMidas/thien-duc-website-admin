@@ -87,7 +87,7 @@ jobs:
           CLOUDINARY_API_SECRET=
           SENTRY_DSN=
           EOF
-          printf 'VITE_API_URL=http://127.0.0.1:3001/api\nVITE_PUBLIC_SITE_URL=http://127.0.0.1:3000\nVITE_SENTRY_DSN=\n' > thien-duc-website-admin/.env
+          printf 'VITE_API_URL=http://127.0.0.1:3001/api\nVITE_SITE_URL=http://127.0.0.1:3000\nVITE_SENTRY_DSN=\n' > thien-duc-website-admin/.env
           printf 'NEXT_PUBLIC_API_URL=http://127.0.0.1:3001/api\nNEXT_PUBLIC_SITE_URL=http://127.0.0.1:3000\nNEXT_PUBLIC_SENTRY_DSN=\n' > thien-duc-website-frontend/.env
 
       - name: Cài dependencies (backend + admin + frontend)

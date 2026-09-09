@@ -105,7 +105,7 @@ export default defineConfig({
         // Trang admin chạy ở origin 127.0.0.1 nên phải gọi API cũng bằng
         // 127.0.0.1, nếu không sẽ thành cross-origin và bị CORS chặn.
         VITE_API_URL: API_URL,
-        VITE_PUBLIC_SITE_URL: FRONTEND_URL,
+        VITE_SITE_URL: FRONTEND_URL,
         VITE_SENTRY_DSN: '',
       },
     },
