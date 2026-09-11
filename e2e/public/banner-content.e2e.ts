@@ -417,22 +417,27 @@ for (const vp of VIEWPORTS) {
       expect(box.x).toBeGreaterThanOrEqual(-1);
       expect(box.x + box.width).toBeLessThanOrEqual(vp.width + 1);
 
-      // Tiêu đề `line-clamp-2`, mô tả `line-clamp-3`: nội dung phải vừa khung,
-      // không bị cắt mất chữ. So sánh theo **nửa dòng** chứ không phải 1px:
-      // hộp `line-clamp` luôn báo scrollHeight nhỉnh hơn clientHeight vài pixel
-      // do làm tròn line-box, trong khi bị cắt thật thì lệch nguyên một dòng.
+      // Cả tiêu đề và mô tả đều cố ý clamp tối đa 2 dòng để giữ ảnh banner là
+      // nội dung chính. Khẳng định dữ liệu CMS vẫn nguyên vẹn trong DOM và hộp
+      // chữ không vượt quá giới hạn thiết kế; scrollHeight lớn hơn clientHeight
+      // là hành vi đúng của line-clamp, không phải mất dữ liệu.
       for (const [label, locator] of [
         ['tiêu đề', heading],
         ['mô tả', banner.getByText(seeded[0].subtitle.vi)],
       ] as const) {
-        const { overflow, lineHeight } = await locator.evaluate((el) => ({
-          overflow: el.scrollHeight - el.clientHeight,
+        await expect(locator).toHaveText(
+          label === 'tiêu đề' ? seeded[0].title.vi : seeded[0].subtitle.vi,
+        );
+        const { clientHeight, lineHeight, lineClamp } = await locator.evaluate((el) => ({
+          clientHeight: el.clientHeight,
           lineHeight: parseFloat(getComputedStyle(el).lineHeight),
+          lineClamp: getComputedStyle(el).webkitLineClamp,
         }));
+        expect(lineClamp, `[${vp.name}] ${label} phải clamp 2 dòng`).toBe('2');
         expect(
-          overflow,
-          `[${vp.name}] ${label} bị cắt: dư ${overflow}px (dòng ${lineHeight}px)`,
-        ).toBeLessThan(lineHeight / 2);
+          clientHeight,
+          `[${vp.name}] ${label} cao ${clientHeight}px, vượt 2 dòng (${lineHeight}px)`,
+        ).toBeLessThanOrEqual(lineHeight * 2 + 1);
       }
     });
   });

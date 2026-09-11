@@ -30,20 +30,25 @@ const MOTION_PAGES = [
   ['danh sách dự án (EN)', '/en/du-an'],
 ] as const;
 
-/** Đọc style đã tính của mọi con trực tiếp trong `.stagger-sides`. */
-async function staggerChildStyles(page: Page) {
+/** Đọc style đã tính của carousel dự án hiện tại và mọi slide. */
+async function projectCarouselStyles(page: Page) {
   return page.evaluate(() => {
-    const containers = Array.from(document.querySelectorAll('.stagger-sides'));
-    return containers.flatMap((container) =>
-      Array.from(container.children).map((child) => {
+    const track = document.querySelector('[data-testid="projects-carousel-track"]');
+    if (!track) return undefined;
+    const trackStyle = getComputedStyle(track);
+    return {
+      transitionProperty: trackStyle.transitionProperty,
+      transitionDuration: trackStyle.transitionDuration,
+      transform: trackStyle.transform,
+      slides: Array.from(
+        track.querySelectorAll('[data-testid="projects-carousel-slide"]'),
+      ).map((child) => {
         const style = getComputedStyle(child);
         return {
-          animationName: style.animationName,
-          transform: style.transform,
           opacity: style.opacity,
         };
       }),
-    );
+    };
   });
 }
 
@@ -103,13 +108,16 @@ test.describe('§M2-R2 — prefers-reduced-motion trung hoà reveal', () => {
       // thái mà người dùng thật gặp, không phải trạng thái trước reveal.
       await scrollAndAwaitReveal(page);
 
-      const children = await staggerChildStyles(page);
-      expect(children.length, 'trang phải có phần tử .stagger-sides để test có nghĩa')
-        .toBeGreaterThan(0);
+      const carousel = await projectCarouselStyles(page);
+      expect(carousel, 'trang phải có carousel dự án để test có nghĩa').toBeTruthy();
+      expect(carousel!.slides.length).toBeGreaterThan(0);
+      expect(carousel!.transitionProperty).toBe('none');
+      expect(
+        isNoTransform(carousel!.transform),
+        `transform = ${carousel!.transform}`,
+      ).toBe(true);
 
-      for (const style of children) {
-        expect(style.animationName).toBe('none');
-        expect(isNoTransform(style.transform), `transform = ${style.transform}`).toBe(true);
+      for (const style of carousel!.slides) {
         expect(Number(style.opacity)).toBe(1);
       }
     });
@@ -133,11 +141,12 @@ test.describe('§M2-R2 — prefers-reduced-motion trung hoà reveal', () => {
     await page.goto(`${FRONTEND_URL}/du-an`);
     await scrollAndAwaitReveal(page);
 
-    const children = await staggerChildStyles(page);
-    expect(children.length).toBeGreaterThan(0);
-    // Ít nhất một phần tử phải có animation thật — nếu tất cả đều `none` thì bản
-    // sửa đã rò ra ngoài khối media và giết hiệu ứng của mọi người dùng.
-    expect(children.some((style) => style.animationName !== 'none')).toBe(true);
+    const carousel = await projectCarouselStyles(page);
+    expect(carousel, 'trang phải có carousel dự án để test có nghĩa').toBeTruthy();
+    expect(carousel!.slides.length).toBeGreaterThan(0);
+    // Track phải giữ transition thật cho người không yêu cầu giảm chuyển động.
+    expect(carousel!.transitionProperty).toContain('transform');
+    expect(carousel!.transitionDuration).not.toBe('0s');
   });
 
   test('nội dung vẫn đọc được: tiêu đề trang hiển thị khi giảm chuyển động', async ({ page }) => {

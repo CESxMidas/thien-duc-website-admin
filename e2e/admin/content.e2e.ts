@@ -1,4 +1,4 @@
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect, type Page, type Response } from '@playwright/test';
 import { FRONTEND_URL, seedAccounts } from '../helpers/config';
 import {
   apiLogin,
@@ -39,6 +39,29 @@ async function gotoFE(page: Page, path: string) {
   });
 }
 
+/**
+ * Next.js 16 trả 200 cho notFound xảy ra sau khi streaming đã bắt đầu. Khi đó
+ * hợp đồng bắt buộc là giao diện 404 + robots noindex; 200 thiếu một trong hai
+ * điều kiện này vẫn là lỗi và không được chấp nhận như trang not-found.
+ */
+async function expectFrontendNotFound(
+  page: Page,
+  response: Response,
+  label: string,
+): Promise<void> {
+  const status = response.status();
+  expect([200, 404], `${label}: status chỉ được là hard/soft 404`).toContain(status);
+  if (status === 200) {
+    await expect(
+      page.locator('meta[name="robots"]'),
+      `${label}: soft 404 phải cấm index`,
+    ).toHaveAttribute('content', /noindex/i);
+  }
+  await expect(page.locator('body'), `${label}: phải render giao diện 404`).toContainText(
+    '404',
+  );
+}
+
 test.describe('§11 — Nội dung công khai (frontend)', () => {
   test('route VN và EN hoạt động; điều hướng locale', async ({ page }) => {
     const vi = await gotoFE(page, '/');
@@ -71,9 +94,9 @@ test.describe('§11 — Nội dung công khai (frontend)', () => {
 
   test('nội dung không tồn tại → trạng thái not-found', async ({ page }) => {
     const news = await gotoFE(page, `/tin-tuc/khong-ton-tai-${stamp}`);
-    expect(news!.status()).toBe(404);
+    await expectFrontendNotFound(page, news!, 'tin không tồn tại');
     const proj = await gotoFE(page, `/du-an/khong-ton-tai-${stamp}`);
-    expect(proj!.status()).toBe(404);
+    await expectFrontendNotFound(page, proj!, 'dự án không tồn tại');
   });
 
   test('route auth/admin KHÔNG tồn tại trên frontend công khai', async ({
@@ -112,12 +135,12 @@ test.describe('§11 — Nội dung công khai (frontend)', () => {
 
     // Frontend: trang chi tiết bài DRAFT → not-found.
     const draftDetail = await gotoFE(page, `/tin-tuc/${newsSlug}`);
-    expect(draftDetail!.status()).toBe(404);
+    await expectFrontendNotFound(page, draftDetail!, 'bài DRAFT');
 
     // Đăng bài.
     const published = await authedPatch(
       `/news/${newsSlug}/status`,
-      adminToken,
+      superToken,
       { status: 'PUBLISHED' },
     );
     expect(published.status).toBeLessThan(400);

@@ -63,9 +63,9 @@ async function createPost(
   expect(created.status, `tạo bài ${slug}`).toBe(201);
   createdSlugs.push(slug);
 
-  // SUPER_ADMIN tạo bài là PUBLISHED ngay (luồng bỏ qua duyệt), nên chỉ cần đổi
-  // trạng thái khi muốn bài KHÔNG được đăng.
-  if (status !== 'PUBLISHED') {
+  // Tạo bài luôn bắt đầu ở DRAFT, kể cả với SUPER_ADMIN. Mọi trạng thái khác
+  // phải đi qua command chuyển trạng thái để fixture phản ánh đúng nghiệp vụ.
+  if (status !== 'DRAFT') {
     const moved = await authedPatch(`/news/${slug}/status`, token, { status });
     expect(moved.status, `đổi trạng thái ${slug} → ${status}`).toBe(200);
   }

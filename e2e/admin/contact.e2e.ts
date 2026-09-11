@@ -9,6 +9,7 @@ import {
   getTestContacts,
   setMailFailMode,
 } from '../helpers/api';
+import { waitForAppHydration } from '../helpers/hydration';
 
 const seed = seedAccounts();
 const CONTACT_URL = `${FRONTEND_URL}/lien-he`;
@@ -23,9 +24,10 @@ test.afterAll(async () => {
 async function gotoContact(page: Page): Promise<void> {
   await page.goto(CONTACT_URL, { timeout: 60_000, waitUntil: 'domcontentloaded' });
   await expect(page.getByRole('button', { name: 'Gửi yêu cầu' })).toBeVisible();
-  // Chờ React hydrate xong (mạng lắng) để form dùng onSubmit của JS, không phải
-  // submit gốc của trình duyệt — tránh reload khi tương tác quá sớm.
-  await page.waitForLoadState('networkidle');
+  // Chờ đúng tín hiệu React/Next đã hydrate để form có onSubmit. `networkidle`
+  // không phải tín hiệu hydration và có thể không bao giờ đến khi dev server
+  // còn request nền, nhất là lúc chạy toàn suite.
+  await waitForAppHydration(page);
 }
 
 interface ContactInput {

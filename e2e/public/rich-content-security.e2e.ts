@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { API_URL, seedAccounts } from '../helpers/config';
-import { apiLogin, authedPost } from '../helpers/api';
+import { apiLogin, authedPatch, authedPost } from '../helpers/api';
 import { probeDetailRoute } from '../helpers/detail-route-probe';
 
 /**
@@ -52,7 +52,8 @@ test.beforeAll(async () => {
     .data!.accessToken;
   expect(token).not.toBe('');
 
-  // SUPER_ADMIN tạo là PUBLISHED ngay → bài có mặt ở route công khai.
+  // Tạo bài luôn bắt đầu ở DRAFT; xuất bản bằng command riêng để route công
+  // khai có dữ liệu đúng hợp đồng workflow hiện tại.
   const created = await authedPost('/news', token, {
     slug,
     title: { vi: `Tiêu đề ${PAYLOADS[0]}`, en: `Title ${PAYLOADS[0]}` },
@@ -60,6 +61,10 @@ test.beforeAll(async () => {
     content: PAYLOADS.map((payload) => ({ vi: payload, en: payload })),
   });
   expect(created.status, 'tạo bài chứa payload').toBe(201);
+  const published = await authedPatch(`/news/${slug}/status`, token, {
+    status: 'PUBLISHED',
+  });
+  expect(published.status, 'đăng bài chứa payload').toBe(200);
 });
 
 test.afterAll(async () => {
@@ -90,9 +95,9 @@ test.describe('§M2 — nội dung độc hại không thực thi trên trang c�
       const errors: string[] = [];
       page.on('pageerror', (error) => errors.push(error.message));
 
-      // CHẨN ĐOÁN: bài này do SUPER_ADMIN tạo nên PHẢI là PUBLISHED ngay. Hỏi
-      // backend public trước, rồi mới mở frontend — nếu backend 404 thì lỗi nằm
-      // ở khâu tạo/đăng (lớp A/C), không phải ở sanitizer.
+      // CHẨN ĐOÁN: bài đã được xuất bản bằng command riêng. Hỏi backend public
+      // trước, rồi mới mở frontend — nếu backend 404 thì lỗi nằm ở khâu
+      // tạo/đăng (lớp A/C), không phải ở sanitizer.
       await probeDetailRoute(page, {
         apiPath: `/news/${slug}`,
         frontendPath: `${locale}/tin-tuc/${slug}`,
