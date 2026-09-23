@@ -15,7 +15,7 @@ const SITE_URL =
   configuredSiteUrl || (import.meta.env.DEV ? "http://localhost:3000" : "");
 
 export function resolveAssetUrl(url: string): string {
-  // URL tuyệt đối (Cloudinary, CDN) dùng nguyên trạng.
+
   if (/^(https?:|data:|blob:)/i.test(url)) return url;
   if (!SITE_URL || !url.startsWith("/")) return url;
   return `${SITE_URL}${url}`;

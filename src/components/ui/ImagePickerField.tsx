@@ -24,6 +24,11 @@ const ASPECT_CLASS: Record<AspectRatio, string> = {
   "3/2": "aspect-3/2",
   "1/1": "aspect-square",
 };
+type PreviewFit = "cover" | "contain";
+const PREVIEW_FIT_CLASS: Record<PreviewFit, string> = {
+  cover: "object-cover",
+  contain: "object-contain",
+};
 
 interface ImagePickerFieldProps {
   /** URL ảnh hiện tại (chuỗi rỗng = chưa chọn). */
@@ -35,23 +40,33 @@ interface ImagePickerFieldProps {
   aspect?: AspectRatio;
   /** Văn bản thay thế cho ảnh xem trước. */
   alt?: string;
+  /** Cách căn ảnh trong khung xem trước. Logo nên dùng contain, ảnh nội dung giữ cover. */
+  previewFit?: PreviewFit;
+  /** Class bổ sung cho khung xem trước. */
+  previewClassName?: string;
 }
 
 /** Ảnh xem trước, tự đổi sang ô giữ chỗ khi URL hỏng. */
 function Preview({
   url,
   aspectClass,
+  fitClass,
+  className,
   alt,
 }: {
   url: string;
   aspectClass: string;
+  fitClass: string;
+  className?: string;
   alt: string;
 }) {
   const [failed, setFailed] = useState(false);
+  const frameClassName = `${aspectClass} w-full overflow-hidden rounded-lg border border-line bg-cream ${className ?? ""}`;
+
   if (failed) {
     return (
       <div
-        className={`grid ${aspectClass} w-full place-items-center rounded-lg bg-cream text-slate/50`}
+        className={`${frameClassName} grid place-items-center text-slate/50`}
         title="Không tải được ảnh từ URL này"
       >
         <ImageOff className="size-6" aria-hidden />
@@ -61,13 +76,15 @@ function Preview({
   }
 
   return (
-    <img
-      key={url}
-      src={resolveAssetUrl(url)}
-      alt={alt}
-      className={`${aspectClass} w-full rounded-lg border border-line bg-cream object-cover`}
-      onError={() => setFailed(true)}
-    />
+    <div className={frameClassName}>
+      <img
+        key={url}
+        src={resolveAssetUrl(url)}
+        alt={alt}
+        className={`size-full ${fitClass}`}
+        onError={() => setFailed(true)}
+      />
+    </div>
   );
 }
 
@@ -77,11 +94,14 @@ export function ImagePickerField({
   folder = "banners",
   aspect = "3/1",
   alt = "Ảnh đã chọn",
+  previewFit = "cover",
+  previewClassName,
 }: ImagePickerFieldProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const upload = useUploadMedia();
   const [libraryOpen, setLibraryOpen] = useState(false);
   const aspectClass = ASPECT_CLASS[aspect];
+  const fitClass = PREVIEW_FIT_CLASS[previewFit];
 
   async function handleFile(file: File | undefined) {
     if (!file) return;
@@ -113,7 +133,13 @@ export function ImagePickerField({
 
       {value ? (
         <div className="space-y-2">
-          <Preview url={value} aspectClass={aspectClass} alt={alt} />
+          <Preview
+            url={value}
+            aspectClass={aspectClass}
+            fitClass={fitClass}
+            className={previewClassName}
+            alt={alt}
+          />
           <div className="flex flex-wrap gap-2">
             <Button
               type="button"

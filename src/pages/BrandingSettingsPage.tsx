@@ -88,6 +88,8 @@ export function BrandingSettingsPage() {
               onChange={setLogoUrl}
               folder="branding"
               aspect="3/1"
+              previewFit="contain"
+              previewClassName="max-w-xl bg-white p-4"
               alt="Logo thương hiệu"
             />
 
@@ -158,7 +160,7 @@ export function BrandingSettingsPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid min-h-44 place-items-center rounded-xl border border-line bg-cream/55 p-6">
+            <div className="grid min-h-44 place-items-center rounded-lg border border-line bg-cream/55 p-6">
               {effectiveLogo ? (
                 <img
                   src={resolveAssetUrl(effectiveLogo)}
@@ -169,7 +171,10 @@ export function BrandingSettingsPage() {
                 <ImageOff className="size-10 text-slate/40" />
               )}
             </div>
-            <p className="mt-3 break-all text-xs leading-5 text-slate">
+            <p
+              className="mt-3 truncate text-xs leading-5 text-slate"
+              title={logoUrl || DEFAULT_LOGO}
+            >
               {logoUrl || DEFAULT_LOGO}
             </p>
           </CardContent>
