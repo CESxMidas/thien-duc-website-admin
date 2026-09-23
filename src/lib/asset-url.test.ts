@@ -1,11 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { resolveAssetUrl } from "@/lib/asset-url";
 
-// NOTE: the SITE_URL-prefix branch depends on VITE_SITE_URL being set at module
-// load; it is captured once at import time so it can't be toggled per-test here.
-// These cases cover the deterministic branches when VITE_SITE_URL is unset (the
-// default test env). The prefixing branch is left for a future env-scoped test.
-describe("resolveAssetUrl (VITE_SITE_URL unset)", () => {
+describe("resolveAssetUrl", () => {
   it("returns absolute http(s) URLs unchanged", () => {
     expect(resolveAssetUrl("https://res.cloudinary.com/x/a.jpg")).toBe(
       "https://res.cloudinary.com/x/a.jpg",
@@ -15,9 +11,9 @@ describe("resolveAssetUrl (VITE_SITE_URL unset)", () => {
     );
   });
 
-  it("returns a relative path unchanged when no site URL is configured", () => {
+  it("prefixes public-site assets with the dev frontend origin by default", () => {
     expect(resolveAssetUrl("/images/projects/a.jpg")).toBe(
-      "/images/projects/a.jpg",
+      "http://localhost:3000/images/projects/a.jpg",
     );
   });
 
