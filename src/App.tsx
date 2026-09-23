@@ -16,6 +16,7 @@ import { BannersPage } from "@/pages/BannersPage";
 import { CooperationPage } from "@/pages/CooperationPage";
 import { ContactPage } from "@/pages/ContactPage";
 import { MediaPage } from "@/pages/MediaPage";
+import { BrandingSettingsPage } from "@/pages/BrandingSettingsPage";
 import { UsersPage } from "@/pages/UsersPage";
 import { ProfilePage } from "@/pages/ProfilePage";
 import { ProfileRequestsPage } from "@/pages/ProfileRequestsPage";
@@ -76,6 +77,14 @@ export default function App() {
               }
             />
             <Route path="thu-vien" element={<MediaPage />} />
+            <Route
+              path="thuong-hieu"
+              element={
+                <ProtectedRoute roles={["ADMIN", "SUPER_ADMIN"]}>
+                  <BrandingSettingsPage />
+                </ProtectedRoute>
+              }
+            />
             {/* Hồ sơ cá nhân — mọi vai trò. */}
             <Route path="ho-so" element={<ProfilePage />} />
             {/* Duyệt cập nhật hồ sơ — chỉ Admin/Super Admin. */}

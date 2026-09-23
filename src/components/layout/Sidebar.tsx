@@ -3,6 +3,8 @@ import { NavLink } from "react-router-dom";
 import { X } from "lucide-react";
 import { navItems } from "./nav";
 import { useAuth } from "@/context/AuthContext";
+import { useBrandingSettings } from "@/lib/api/queries";
+import { resolveAssetUrl } from "@/lib/asset-url";
 import { usePresence } from "@/lib/use-presence";
 import { withBase } from "@/lib/base-path";
 
@@ -14,6 +16,7 @@ export function Sidebar({
   onClose: () => void;
 }) {
   const { user } = useAuth();
+  const { data: branding } = useBrandingSettings();
   const overlay = usePresence(open);
   const items = navItems.filter(
     (item) => !item.roles || (user && item.roles.includes(user.role)),
@@ -64,7 +67,11 @@ export function Sidebar({
                 cùng một file thương hiệu, khác nền hộp cho phù hợp sidebar tối. */}
             <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-white p-1">
               <img
-                src={withBase("/images/brand/logo-thien-duc.png")}
+                src={
+                  branding?.logoUrl
+                    ? resolveAssetUrl(branding.logoUrl)
+                    : withBase("/images/brand/logo-thien-duc.png")
+                }
                 alt="Logo Thiên Đức"
                 className="size-full object-contain"
               />

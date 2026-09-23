@@ -1,15 +1,16 @@
 import {
-  LayoutDashboard,
+  BadgeCheck,
   Building2,
-  Handshake,
-  Newspaper,
   FileText,
   GalleryHorizontalEnd,
-  Inbox,
+  Handshake,
   Images,
-  Users,
+  Inbox,
+  LayoutDashboard,
+  Newspaper,
+  Palette,
   UserCog,
-  BadgeCheck,
+  Users,
   type LucideIcon,
 } from "lucide-react";
 import type { Role } from "@/types";
@@ -18,7 +19,7 @@ export interface NavItem {
   to: string;
   label: string;
   icon: LucideIcon;
-  /** Vai trò tối thiểu được thấy mục này (mặc định mọi vai trò). */
+  /** Vai trò tối thiểu được thấy mục này, mặc định mọi vai trò. */
   roles?: Role[];
 }
 
@@ -29,8 +30,6 @@ export const navItems: NavItem[] = [
   { to: "/tin-tuc", label: "Tin tức", icon: Newspaper },
   { to: "/trang", label: "Trang nội dung", icon: FileText },
   {
-    // Banner là nội dung trang chủ hiển thị cao, không có luồng duyệt riêng —
-    // chỉ ADMIN trở lên quản lý (khớp `@Roles(ADMIN, SUPER_ADMIN)` ở backend).
     to: "/banner",
     label: "Banner",
     icon: GalleryHorizontalEnd,
@@ -53,6 +52,12 @@ export const navItems: NavItem[] = [
     to: "/tai-khoan",
     label: "Tài khoản",
     icon: Users,
+    roles: ["ADMIN", "SUPER_ADMIN"],
+  },
+  {
+    to: "/thuong-hieu",
+    label: "Thương hiệu",
+    icon: Palette,
     roles: ["ADMIN", "SUPER_ADMIN"],
   },
   { to: "/ho-so", label: "Thông tin cá nhân", icon: UserCog },

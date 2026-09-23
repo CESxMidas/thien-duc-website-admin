@@ -10,6 +10,7 @@ import * as mediaApi from "./media";
 import * as newsApi from "./news";
 import * as pagesApi from "./pages";
 import * as projectsApi from "./projects";
+import * as settingsApi from "./settings";
 import * as usersApi from "./users";
 import type { ContentStatus } from "@/types";
 
@@ -26,7 +27,28 @@ export const queryKeys = {
   users: ["users"] as const,
   myProfile: ["my-profile"] as const,
   profileRequests: ["profile-requests"] as const,
+  brandingSettings: ["settings", "branding"] as const,
 };
+
+/* -------------------------------------------------------------------------
+   Cai dat thuong hieu - /settings/branding
+   ------------------------------------------------------------------------- */
+
+export function useBrandingSettings() {
+  return useQuery({
+    queryKey: queryKeys.brandingSettings,
+    queryFn: settingsApi.getBrandingSettings,
+  });
+}
+
+export function useUpdateBrandingSettings() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: settingsApi.updateBrandingSettings,
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: queryKeys.brandingSettings }),
+  });
+}
 
 /* -------------------------------------------------------------------------
    Liên hệ (lead) — /contact
