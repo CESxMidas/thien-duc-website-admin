@@ -292,7 +292,7 @@ export function NewsFormDialog({ trigger, post }: NewsFormDialogProps) {
         media={
           <MediaSection
             label="Ảnh chính"
-            hint="Ảnh đại diện bài viết — hiện ở thẻ tin và đầu bài."
+            hint="Ảnh đại diện bài viết"
           >
             <FormField
               control={form.control}

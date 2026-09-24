@@ -11,6 +11,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { ReactElement } from "react";
 
 import { BannersPage } from "@/pages/BannersPage";
+import { resolveAssetUrl } from "@/lib/asset-url";
 import type { Banner } from "@/types";
 
 // `vi.mock` được hoist lên đầu file nên factory không đọc được biến khai báo
@@ -158,10 +159,10 @@ describe("BannersPage — nội dung banner đã seed", () => {
     const sources = [...container.querySelectorAll("img")].map((img) =>
       img.getAttribute("src"),
     );
-    expect(sources).toEqual(seededBanners.map((b) => b.image));
+    expect(sources).toEqual(seededBanners.map((b) => resolveAssetUrl(b.image)));
     expect(new Set(sources).size).toBe(sources.length);
     for (const src of sources) {
-      expect(src).toMatch(/^\/images\/banners\/home\/.+\.jpg$/);
+      expect(src).toMatch(/\/images\/banners\/home\/.+\.jpg$/);
     }
   });
 
@@ -227,7 +228,7 @@ describe("BannersPage — nội dung banner đã seed", () => {
     // lại đúng ảnh cũ nên mở/lưu không kéo theo lượt upload mới.
     expect(
       [...dialog.querySelectorAll("img")].map((img) => img.getAttribute("src")),
-    ).toContain(banner.image);
+    ).toContain(resolveAssetUrl(banner.image));
 
     await user.click(within(dialog).getByRole("button", { name: "Lưu thay đổi" }));
     await waitFor(() => expect(updateBanner).toHaveBeenCalledTimes(1));

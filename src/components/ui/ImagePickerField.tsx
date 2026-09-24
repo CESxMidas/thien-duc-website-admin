@@ -134,6 +134,7 @@ export function ImagePickerField({
       {value ? (
         <div className="space-y-2">
           <Preview
+            key={value}
             url={value}
             aspectClass={aspectClass}
             fitClass={fitClass}
