@@ -27,8 +27,18 @@ export const MEDIA_FOLDERS = [
   { value: "misc", label: "Khác" },
 ] as const;
 
-export function listMedia(folder?: string): Promise<MediaAsset[]> {
-  const query = folder ? `?folder=${encodeURIComponent(folder)}` : "";
+export interface UpdateMediaInput {
+  isActive?: boolean;
+}
+
+export function listMedia(
+  folder?: string,
+  includeInactive = false,
+): Promise<MediaAsset[]> {
+  const params = new URLSearchParams();
+  if (folder) params.set("folder", folder);
+  if (includeInactive) params.set("includeInactive", "true");
+  const query = params.toString() ? `?${params.toString()}` : "";
   return apiFetch<MediaAsset[]>(`/media${query}`);
 }
 
@@ -52,8 +62,18 @@ export function uploadMedia(file: File, folder: string): Promise<MediaAsset> {
   );
 }
 
-export function deleteMedia(id: string): Promise<{ deleted: boolean }> {
-  return apiFetch<{ deleted: boolean }>(`/media/${id}`, { method: "DELETE" });
+export function updateMedia(
+  id: string,
+  input: UpdateMediaInput,
+): Promise<MediaAsset> {
+  return apiFetch<MediaAsset>(`/media/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(input),
+  });
+}
+
+export function deleteMedia(id: string): Promise<{ hidden: boolean }> {
+  return apiFetch<{ hidden: boolean }>(`/media/${id}`, { method: "DELETE" });
 }
 
 /** `1536000` → `1,5 MB`. Cloudinary trả `bytes`, UI cần đơn vị người đọc được. */

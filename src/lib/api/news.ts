@@ -105,8 +105,8 @@ export function cancelNewsPublication(slug: string): Promise<NewsPost> {
   });
 }
 
-export function deleteNews(slug: string): Promise<{ deleted: boolean }> {
-  return apiFetch<{ deleted: boolean }>(`/news/${encodeURIComponent(slug)}`, {
+export function deleteNews(slug: string): Promise<{ hidden: boolean }> {
+  return apiFetch<{ hidden: boolean }>(`/news/${encodeURIComponent(slug)}`, {
     method: "DELETE",
   });
 }
@@ -130,6 +130,7 @@ export interface CreateNewsCategoryInput {
   slug: string;
   name: Bilingual;
   order?: number;
+  isActive?: boolean;
 }
 
 export function createNewsCategory(
@@ -142,8 +143,8 @@ export function createNewsCategory(
 }
 
 /** 409 `CATEGORY_IN_USE` nếu chuyên mục còn bài viết (mọi trạng thái). */
-export function deleteNewsCategory(slug: string): Promise<{ deleted: boolean }> {
-  return apiFetch<{ deleted: boolean }>(
+export function deleteNewsCategory(slug: string): Promise<{ hidden: boolean }> {
+  return apiFetch<{ hidden: boolean }>(
     `/news/categories/${encodeURIComponent(slug)}`,
     { method: "DELETE" },
   );
@@ -157,6 +158,7 @@ export function deleteNewsCategory(slug: string): Promise<{ deleted: boolean }> 
 export interface UpdateNewsCategoryInput {
   name?: Bilingual;
   order?: number;
+  isActive?: boolean;
 }
 
 export function updateNewsCategory(

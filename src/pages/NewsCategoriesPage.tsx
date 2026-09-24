@@ -4,10 +4,11 @@ import {
   ArrowDown,
   ArrowLeft,
   ArrowUp,
+  Eye,
+  EyeOff,
   Loader2,
   Pencil,
   Plus,
-  Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -45,7 +46,7 @@ export function NewsCategoriesPage() {
   const [busyId, setBusyId] = useState<string | null>(null);
   const [toDelete, setToDelete] = useState<NewsCategory | null>(null);
 
-  // Xóa chuyên mục theo đúng phân quyền backend (`@Roles(ADMIN, SUPER_ADMIN)`).
+  // Ẩn/hiện chuyên mục theo đúng phân quyền backend (`@Roles(ADMIN, SUPER_ADMIN)`).
   const canDelete = user?.role === "ADMIN" || user?.role === "SUPER_ADMIN";
 
   /**
@@ -86,16 +87,30 @@ export function NewsCategoriesPage() {
     if (!toDelete) return;
     try {
       await deleteCategory.mutateAsync(toDelete.slug);
-      toast.success(`Đã xóa chuyên mục "${toDelete.name.vi}".`);
+      toast.success(`Đã ẩn chuyên mục "${toDelete.name.vi}".`);
       setToDelete(null);
     } catch (error) {
-      // Nút xóa đã bị khoá khi chuyên mục còn bài, nhưng dữ liệu trên màn có
-      // thể cũ (người khác vừa gán bài vào chuyên mục này). Backend là chốt
-      // chặn cuối và thông báo 409 của nó đã viết cho người dùng cuối.
       toast.error(
-        resolveApiError(error, "Không xóa được chuyên mục. Vui lòng thử lại."),
+        resolveApiError(error, "Không ẩn được chuyên mục. Vui lòng thử lại."),
       );
       setToDelete(null);
+    }
+  }
+
+  async function showCategory(category: NewsCategory) {
+    setBusyId(category.id);
+    try {
+      await updateCategory.mutateAsync({
+        slug: category.slug,
+        data: { isActive: true },
+      });
+      toast.success(`Đã hiện chuyên mục "${category.name.vi}".`);
+    } catch (error) {
+      toast.error(
+        resolveApiError(error, "Không hiện được chuyên mục. Vui lòng thử lại."),
+      );
+    } finally {
+      setBusyId(null);
     }
   }
 
@@ -138,16 +153,24 @@ export function NewsCategoriesPage() {
       key: "name",
       header: "Tên chuyên mục",
       cellClassName: "whitespace-normal",
-      render: (category) => (
+      render: (category) => {
+        const isActive = category.isActive !== false;
+        return (
         <div>
-          <p className="font-medium text-ink">{category.name.vi}</p>
+          <div className="flex flex-wrap items-center gap-2">
+            <p className="font-medium text-ink">{category.name.vi}</p>
+            <Badge variant={isActive ? "green" : "gray"}>
+              {isActive ? "Đang hiện" : "Đang ẩn"}
+            </Badge>
+          </div>
           {category.name.en ? (
             <p className="text-xs text-slate">{category.name.en}</p>
           ) : (
             <p className="text-xs text-warning">Chưa có tên tiếng Anh</p>
           )}
         </div>
-      ),
+        );
+      },
     },
     {
       key: "slug",
@@ -188,7 +211,7 @@ export function NewsCategoriesPage() {
       headerClassName: "text-right",
       cellClassName: "text-right",
       render: (category) => {
-        const inUse = (category.totalCount ?? 0) > 0;
+        const isActive = category.isActive !== false;
         return (
           <div className="flex justify-end gap-1">
             <NewsCategoryFormDialog
@@ -204,21 +227,31 @@ export function NewsCategoriesPage() {
               }
             />
             {canDelete && (
-              <Button
-                variant="ghost"
-                size="sm"
-                disabled={inUse}
-                aria-label={`Xóa chuyên mục ${category.name.vi}`}
-                title={
-                  inUse
-                    ? `Chuyên mục đang được ${category.totalCount} bài viết sử dụng. Hãy chuyển hoặc gỡ các bài đó trước khi xóa.`
-                    : undefined
-                }
-                onClick={() => setToDelete(category)}
-                className="text-danger hover:text-danger"
-              >
-                <Trash2 className="size-4" />
-              </Button>
+              isActive ? (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  aria-label={`Ẩn chuyên mục ${category.name.vi}`}
+                  onClick={() => setToDelete(category)}
+                  className="text-danger hover:text-danger"
+                >
+                  <EyeOff className="size-4" />
+                </Button>
+              ) : (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  aria-label={`Hiện chuyên mục ${category.name.vi}`}
+                  disabled={busyId === category.id}
+                  onClick={() => void showCategory(category)}
+                >
+                  {busyId === category.id ? (
+                    <Loader2 className="size-4 animate-spin" />
+                  ) : (
+                    <Eye className="size-4" />
+                  )}
+                </Button>
+              )
             )}
           </div>
         );
@@ -260,21 +293,20 @@ export function NewsCategoriesPage() {
       <ConfirmDialog
         open={toDelete !== null}
         onOpenChange={(open) => !open && setToDelete(null)}
-        title={`Xóa chuyên mục "${toDelete?.name.vi ?? ""}"?`}
+        title={`Ẩn chuyên mục "${toDelete?.name.vi ?? ""}" khỏi website?`}
         description={
           <>
             <p>
               Đường dẫn công khai <code>/tin-tuc/danh-muc/{toDelete?.slug}</code>{" "}
-              sẽ không còn truy cập được.
+              sẽ không còn hiển thị trong bộ lọc.
             </p>
             <p className="mt-2">
-              Chuyên mục này hiện <b>không có bài viết nào</b> (
-              {toDelete?.totalCount ?? 0} bài), nên không bài nào bị mất phân
-              loại. Thao tác không hoàn tác được.
+              Các bài viết đang gắn chuyên mục này vẫn giữ nguyên phân loại.
+              Có thể hiện lại chuyên mục bất cứ lúc nào.
             </p>
           </>
         }
-        confirmLabel="Xóa chuyên mục"
+        confirmLabel="Ẩn chuyên mục"
         submitting={deleteCategory.isPending}
         onConfirm={() => void onConfirmDelete()}
       />

@@ -3,12 +3,12 @@ import { Link } from "react-router-dom";
 import {
   CalendarClock,
   CalendarX2,
+  EyeOff,
   Loader2,
   Pencil,
   Plus,
   Send,
   Tags,
-  Trash2,
   Undo2,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -154,10 +154,10 @@ export function NewsPage() {
     if (!pendingDelete) return;
     try {
       await removeNews.mutateAsync(pendingDelete.slug);
-      toast.success("Đã xóa bài viết.");
+      toast.success("Đã ẩn bài viết.");
       setPendingDelete(null);
     } catch (error) {
-      toast.error(resolveApiError(error, "Không xóa được bài viết."));
+      toast.error(resolveApiError(error, "Không ẩn được bài viết."));
     }
   }
 
@@ -319,10 +319,10 @@ export function NewsPage() {
               <Button
                 variant="ghost"
                 size="sm"
-                aria-label="Xóa bài viết"
+                aria-label="Ẩn bài viết"
                 onClick={() => setPendingDelete(post)}
               >
-                <Trash2 className="size-4 text-red-600" />
+                <EyeOff className="size-4 text-red-600" />
               </Button>
             )}
           </div>
@@ -447,16 +447,16 @@ export function NewsPage() {
       <ConfirmDialog
         open={pendingDelete !== null}
         onOpenChange={(open) => !open && setPendingDelete(null)}
-        title="Xóa bài viết?"
+        title="Ẩn bài viết khỏi website?"
         description={
           pendingDelete ? (
             <>
-              Bài <strong>{pendingDelete.title.vi}</strong> sẽ bị xóa vĩnh viễn.
-              Link <code>/tin-tuc/{pendingDelete.slug}</code> sẽ trả về trang
-              không tìm thấy.
+              Bài <strong>{pendingDelete.title.vi}</strong> sẽ chuyển về nháp
+              và không còn hiển thị công khai. Dữ liệu vẫn được giữ lại.
             </>
           ) : null
         }
+        confirmLabel="Ẩn bài viết"
         submitting={removeNews.isPending}
         onConfirm={() => void handleDelete()}
       />

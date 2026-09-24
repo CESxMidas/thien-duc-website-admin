@@ -38,6 +38,7 @@ vi.mock("@/lib/api/queries", () => {
     useDeleteProjectItem: mutation,
     useAddGalleryImage: mutation,
     useDeleteGalleryImage: mutation,
+    useUpdateGalleryImage: mutation,
     useReorderGallery: mutation,
     useMedia: () => ({ data: [], isLoading: false }),
     useUploadMedia: mutation,
@@ -149,7 +150,7 @@ describe("ProjectItemsTab — thao tác theo vai trò × trạng thái cha", () 
 
     expect(screen.queryByRole("button", { name: /Thêm hạng mục/ })).toBeNull();
     expect(screen.queryByRole("button", { name: /Sửa/ })).toBeNull();
-    expect(screen.queryByRole("button", { name: "Xóa hạng mục" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Ẩn hạng mục" })).toBeNull();
     expect(
       screen.getByText(/chỉ quản trị viên sửa được hạng mục/),
     ).toBeInTheDocument();
@@ -172,7 +173,7 @@ describe("ProjectItemsTab — thao tác theo vai trò × trạng thái cha", () 
       ).toBeInTheDocument();
       expect(screen.getByRole("button", { name: /Sửa/ })).toBeInTheDocument();
       expect(
-        screen.getByRole("button", { name: "Xóa hạng mục" }),
+        screen.getByRole("button", { name: "Ẩn hạng mục" }),
       ).toBeInTheDocument();
     },
   );
@@ -229,7 +230,7 @@ describe("ProjectGalleryTab — thao tác theo vai trò × trạng thái cha", (
     "Thêm ảnh",
     "Đưa ảnh lên trước",
     "Đưa ảnh xuống sau",
-    "Xóa ảnh",
+    "Ẩn ảnh",
   ];
 
   it.each(["DRAFT", "PENDING"] as ContentStatus[])(

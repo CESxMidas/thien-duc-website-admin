@@ -117,8 +117,8 @@ export function cancelCooperationPublication(
 
 export function deleteCooperationProject(
   id: string,
-): Promise<{ deleted: boolean }> {
-  return apiFetch<{ deleted: boolean }>(`/cooperation/${id}`, {
+): Promise<{ hidden: boolean }> {
+  return apiFetch<{ hidden: boolean }>(`/cooperation/${id}`, {
     method: "DELETE",
   });
 }

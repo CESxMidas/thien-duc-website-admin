@@ -60,6 +60,7 @@ export interface CreateProjectItemInput {
   description?: Bilingual;
   highlights?: Bilingual[];
   quickFacts?: ProjectFact[];
+  isActive?: boolean;
 }
 
 export type UpdateProjectItemInput = Partial<CreateProjectItemInput>;
@@ -69,6 +70,12 @@ export interface CreateGalleryImageInput {
   caption?: Bilingual;
   /** Slug hạng mục nếu ảnh thuộc hạng mục con; bỏ trống = ảnh của dự án. */
   itemSlug?: string;
+  isActive?: boolean;
+}
+
+export interface UpdateGalleryImageInput
+  extends Partial<CreateGalleryImageInput> {
+  order?: number;
 }
 
 /* -------------------------------- Dự án --------------------------------- */
@@ -145,8 +152,8 @@ export function cancelProjectPublication(slug: string): Promise<Project> {
   });
 }
 
-export function deleteProject(slug: string): Promise<{ deleted: boolean }> {
-  return apiFetch<{ deleted: boolean }>(`/projects/${slug}`, {
+export function deleteProject(slug: string): Promise<{ hidden: boolean }> {
+  return apiFetch<{ hidden: boolean }>(`/projects/${slug}`, {
     method: "DELETE",
   });
 }
@@ -177,8 +184,8 @@ export function updateProjectItem(
 export function deleteProjectItem(
   slug: string,
   itemSlug: string,
-): Promise<{ deleted: boolean }> {
-  return apiFetch<{ deleted: boolean }>(`/projects/${slug}/items/${itemSlug}`, {
+): Promise<{ hidden: boolean }> {
+  return apiFetch<{ hidden: boolean }>(`/projects/${slug}/items/${itemSlug}`, {
     method: "DELETE",
   });
 }
@@ -198,9 +205,20 @@ export function addGalleryImage(
 export function deleteGalleryImage(
   slug: string,
   imageId: string,
-): Promise<{ deleted: boolean }> {
-  return apiFetch<{ deleted: boolean }>(`/projects/${slug}/gallery/${imageId}`, {
+): Promise<{ hidden: boolean }> {
+  return apiFetch<{ hidden: boolean }>(`/projects/${slug}/gallery/${imageId}`, {
     method: "DELETE",
+  });
+}
+
+export function updateGalleryImage(
+  slug: string,
+  imageId: string,
+  input: UpdateGalleryImageInput,
+): Promise<ProjectGalleryImage> {
+  return apiFetch<ProjectGalleryImage>(`/projects/${slug}/gallery/${imageId}`, {
+    method: "PATCH",
+    body: JSON.stringify(input),
   });
 }
 

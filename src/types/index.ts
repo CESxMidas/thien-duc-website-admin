@@ -78,6 +78,7 @@ export interface ProjectGalleryImage {
   url: string;
   caption: Bilingual | null;
   order: number;
+  isActive?: boolean;
   createdAt: string;
 }
 
@@ -98,6 +99,7 @@ export interface ProjectItem {
   status: ProjectStatus | null;
   image: string | null;
   order: number;
+  isActive?: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -158,6 +160,7 @@ export interface NewsCategory {
   slug: string;
   name: Bilingual;
   order: number;
+  isActive?: boolean;
   publishedCount: number;
   totalCount?: number;
 }
@@ -214,7 +217,7 @@ export interface Banner {
   ctaLabel: Bilingual | null;
   objectPosition: string | null;
   order: number;
-  isActive: boolean;
+  isActive?: boolean;
   /**
    * CỬA SỔ HIỂN THỊ (Batch 12) — cấu hình thời gian, KHÔNG phải lịch xuất bản.
    *
@@ -288,6 +291,7 @@ export interface MediaAsset {
   bytes: number | null;
   folder: string | null;
   uploadedById: string | null;
+  isActive?: boolean;
   createdAt: string;
 }
 

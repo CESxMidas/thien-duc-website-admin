@@ -3,11 +3,11 @@ import { toast } from "sonner";
 import {
   CalendarClock,
   CalendarX2,
+  EyeOff,
   Loader2,
   Pencil,
   Plus,
   Send,
-  Trash2,
   Undo2,
 } from "lucide-react";
 
@@ -90,7 +90,7 @@ export function ProjectsPage() {
   const [scheduleTarget, setScheduleTarget] = useState<Project | null>(null);
   const [scheduleError, setScheduleError] = useState<string | null>(null);
 
-  // Chỉ ADMIN trở lên xóa được dự án (backend cũng chặn).
+  // Chỉ ADMIN trở lên ẩn được dự án (backend cũng chặn).
   const canDelete = user?.role === "ADMIN" || user?.role === "SUPER_ADMIN";
 
   // Đồng hồ MÁY, chỉ để chọn nhãn và ẩn nút chắc chắn bị từ chối — backend mới
@@ -155,11 +155,11 @@ export function ProjectsPage() {
     if (!toDelete) return;
     try {
       await deleteProject.mutateAsync(toDelete.slug);
-      toast.success(`Đã xóa dự án "${toDelete.title.vi}".`);
+      toast.success(`Đã ẩn dự án "${toDelete.title.vi}".`);
       setToDelete(null);
     } catch (error) {
       toast.error(
-        resolveApiError(error, "Không xóa được dự án. Vui lòng thử lại."),
+        resolveApiError(error, "Không ẩn được dự án. Vui lòng thử lại."),
       );
     }
   }
@@ -342,11 +342,11 @@ export function ProjectsPage() {
               <Button
                 variant="ghost"
                 size="sm"
-                aria-label="Xóa dự án"
+                aria-label="Ẩn dự án"
                 className="text-red-600 hover:bg-red-50 hover:text-red-700"
                 onClick={() => setToDelete(p)}
               >
-                <Trash2 className="size-4" />
+                <EyeOff className="size-4" />
               </Button>
             )}
           </div>
@@ -436,9 +436,9 @@ export function ProjectsPage() {
       <ConfirmDialog
         open={toDelete !== null}
         onOpenChange={(open) => !open && setToDelete(null)}
-        title={`Xóa dự án "${toDelete?.title.vi ?? ""}"?`}
-        description="Toàn bộ hạng mục con và ảnh trong thư viện của dự án cũng bị xóa theo. Thao tác không hoàn tác được."
-        confirmLabel="Xóa dự án"
+        title={`Ẩn dự án "${toDelete?.title.vi ?? ""}" khỏi website?`}
+        description="Dự án sẽ chuyển về nháp và không còn hiển thị công khai. Hạng mục con và ảnh vẫn được giữ lại để bật lại hoặc biên tập sau."
+        confirmLabel="Ẩn dự án"
         submitting={deleteProject.isPending}
         onConfirm={() => void onConfirmDelete()}
       />

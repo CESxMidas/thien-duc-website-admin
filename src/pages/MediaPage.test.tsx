@@ -8,8 +8,8 @@ import type { MediaAsset } from "@/types";
 import type { Role } from "@/types";
 
 /**
- * ADMIN-ROLE-VISIBILITY-AUDIT-M1 / R1: nút xóa ảnh (thao tác phá hủy) chỉ hiện
- * với ADMIN/SUPER_ADMIN. EDITOR vẫn tải ảnh lên nhưng không thấy nút xóa — khớp
+ * ADMIN-ROLE-VISIBILITY-AUDIT-M1 / R1: nút ẩn ảnh chỉ hiện
+ * với ADMIN/SUPER_ADMIN. EDITOR vẫn tải ảnh lên nhưng không thấy nút ẩn — khớp
  * `@Roles(ADMIN, SUPER_ADMIN)` ở `DELETE /media/:id`.
  */
 
@@ -49,6 +49,7 @@ vi.mock("@/lib/api/queries", () => {
     useMedia: () => ({ data: [asset], isLoading: false }),
     useUploadMedia: () => mutation,
     useDeleteMedia: () => mutation,
+    useUpdateMedia: () => mutation,
   };
 });
 
@@ -65,33 +66,33 @@ function renderMediaPage() {
   );
 }
 
-describe("MediaPage — quyền xóa ảnh theo vai trò", () => {
+describe("MediaPage — quyền ẩn ảnh theo vai trò", () => {
   beforeEach(() => {
     currentRole = "EDITOR";
   });
 
-  it("EDITOR: thấy nút Tải ảnh lên nhưng KHÔNG thấy nút xóa", () => {
+  it("EDITOR: thấy nút Tải ảnh lên nhưng KHÔNG thấy nút ẩn", () => {
     currentRole = "EDITOR";
     renderMediaPage();
     expect(
       screen.getByRole("button", { name: /Tải ảnh lên/ }),
     ).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /^Xóa ảnh/ })).toBeNull();
+    expect(screen.queryByRole("button", { name: /^Ẩn ảnh/ })).toBeNull();
   });
 
-  it("ADMIN: thấy nút xóa ảnh", () => {
+  it("ADMIN: thấy nút ẩn ảnh", () => {
     currentRole = "ADMIN";
     renderMediaPage();
     expect(
-      screen.getByRole("button", { name: /^Xóa ảnh/ }),
+      screen.getByRole("button", { name: /^Ẩn ảnh/ }),
     ).toBeInTheDocument();
   });
 
-  it("SUPER_ADMIN: thấy nút xóa ảnh", () => {
+  it("SUPER_ADMIN: thấy nút ẩn ảnh", () => {
     currentRole = "SUPER_ADMIN";
     renderMediaPage();
     expect(
-      screen.getByRole("button", { name: /^Xóa ảnh/ }),
+      screen.getByRole("button", { name: /^Ẩn ảnh/ }),
     ).toBeInTheDocument();
   });
 });

@@ -5,12 +5,12 @@ import {
   ArrowUp,
   CalendarClock,
   CalendarX2,
+  EyeOff,
   Handshake,
   Loader2,
   Pencil,
   Plus,
   Send,
-  Trash2,
   Undo2,
 } from "lucide-react";
 
@@ -160,10 +160,10 @@ export function CooperationPage() {
     if (!toDelete) return;
     try {
       await deleteProject.mutateAsync(toDelete.id);
-      toast.success(`Đã xóa dự án hợp tác "${toDelete.name.vi}".`);
+      toast.success(`Đã ẩn dự án hợp tác "${toDelete.name.vi}".`);
       setToDelete(null);
     } catch (error) {
-      toast.error(resolveApiError(error, "Không xóa được. Vui lòng thử lại."));
+      toast.error(resolveApiError(error, "Không ẩn được. Vui lòng thử lại."));
     }
   }
 
@@ -397,11 +397,11 @@ export function CooperationPage() {
             <Button
               variant="ghost"
               size="sm"
-              aria-label="Xóa dự án hợp tác"
+              aria-label="Ẩn dự án hợp tác"
               className="text-red-600 hover:bg-red-50 hover:text-red-700"
               onClick={() => setToDelete(project)}
             >
-              <Trash2 className="size-4" />
+              <EyeOff className="size-4" />
             </Button>
           )}
         </div>
@@ -465,9 +465,9 @@ export function CooperationPage() {
       <ConfirmDialog
         open={toDelete !== null}
         onOpenChange={(open) => !open && setToDelete(null)}
-        title={`Xóa dự án hợp tác "${toDelete?.name.vi ?? ""}"?`}
-        description="Thao tác không hoàn tác được."
-        confirmLabel="Xóa"
+        title={`Ẩn dự án hợp tác "${toDelete?.name.vi ?? ""}" khỏi website?`}
+        description="Bản ghi sẽ chuyển về nháp và không còn hiển thị công khai. Dữ liệu vẫn được giữ lại."
+        confirmLabel="Ẩn dự án"
         submitting={deleteProject.isPending}
         onConfirm={() => void onConfirmDelete()}
       />

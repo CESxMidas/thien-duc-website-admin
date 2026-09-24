@@ -334,10 +334,10 @@ export function useDeleteCooperationProject() {
    Thư viện ảnh — /media
    ------------------------------------------------------------------------- */
 
-export function useMedia(folder?: string) {
+export function useMedia(folder?: string, includeInactive = false) {
   return useQuery({
-    queryKey: [...queryKeys.media, folder ?? "all"],
-    queryFn: () => mediaApi.listMedia(folder),
+    queryKey: [...queryKeys.media, folder ?? "all", includeInactive],
+    queryFn: () => mediaApi.listMedia(folder, includeInactive),
   });
 }
 
@@ -360,6 +360,13 @@ export function useUploadMedia() {
 
 export function useDeleteMedia() {
   return useMediaMutation(mediaApi.deleteMedia);
+}
+
+export function useUpdateMedia() {
+  return useMediaMutation(
+    ({ id, data }: { id: string; data: mediaApi.UpdateMediaInput }) =>
+      mediaApi.updateMedia(id, data),
+  );
 }
 
 /* -------------------------------------------------------------------------
@@ -487,6 +494,20 @@ export function useDeleteGalleryImage() {
   return useProjectsMutation(
     ({ slug, imageId }: { slug: string; imageId: string }) =>
       projectsApi.deleteGalleryImage(slug, imageId),
+  );
+}
+
+export function useUpdateGalleryImage() {
+  return useProjectsMutation(
+    ({
+      slug,
+      imageId,
+      data,
+    }: {
+      slug: string;
+      imageId: string;
+      data: projectsApi.UpdateGalleryImageInput;
+    }) => projectsApi.updateGalleryImage(slug, imageId, data),
   );
 }
 

@@ -54,7 +54,10 @@ const seededBanners: Banner[] = [
       vi: "Fancy Tower — 196 căn hộ tại Hưng Phú",
       en: "Fancy Tower — 196 homes at Hung Phu",
     },
-    subtitle: { vi: "19 tầng nổi và 1 tầng hầm, 196 căn hộ.", en: "Nineteen storeys, 196 apartments." },
+    subtitle: {
+      vi: "19 tầng nổi và 1 tầng hầm, 196 căn hộ.",
+      en: "Nineteen storeys, 196 apartments.",
+    },
     href: "/du-an/khu-do-thi-hung-phu/fancy-tower",
     ctaLabel: { vi: "Xem hạng mục căn hộ", en: "View the apartments" },
     objectPosition: "45% center",
@@ -73,7 +76,10 @@ const seededBanners: Banner[] = [
       vi: "Dự án Thiên Đức tại các tỉnh phía Nam",
       en: "Thien Duc projects across the south",
     },
-    subtitle: { vi: "Từ TP.HCM và Vũng Tàu đến Bến Tre.", en: "From Ho Chi Minh City to Ben Tre." },
+    subtitle: {
+      vi: "Từ TP.HCM và Vũng Tàu đến Bến Tre.",
+      en: "From Ho Chi Minh City to Ben Tre.",
+    },
     href: "/du-an",
     ctaLabel: { vi: "Xem toàn bộ dự án", en: "Browse all projects" },
     objectPosition: "center center",
@@ -92,7 +98,10 @@ const seededBanners: Banner[] = [
       vi: "Thiên Đức — xây dựng từ năm 2010",
       en: "Thien Duc — building since 2010",
     },
-    subtitle: { vi: "Từ hợp tác CapitaLand đến chủ đầu tư phía Nam.", en: "From CapitaLand to leading southern projects." },
+    subtitle: {
+      vi: "Từ hợp tác CapitaLand đến chủ đầu tư phía Nam.",
+      en: "From CapitaLand to leading southern projects.",
+    },
     href: "/gioi-thieu",
     ctaLabel: { vi: "Tìm hiểu về Thiên Đức", en: "Learn about Thien Duc" },
     objectPosition: "center center",
@@ -134,6 +143,15 @@ function renderPage(ui: ReactElement) {
   );
 }
 
+function normalizeImgSrc(src: string | null): string | null {
+  if (!src) return src;
+  try {
+    return new URL(src).pathname;
+  } catch {
+    return src;
+  }
+}
+
 beforeEach(() => {
   updateBanner.mockClear();
   createBanner.mockClear();
@@ -157,9 +175,11 @@ describe("BannersPage — nội dung banner đã seed", () => {
   it("ảnh xem trước dùng lại đúng file banner có sẵn, mỗi ảnh một lần", () => {
     const { container } = renderPage(<BannersPage />);
     const sources = [...container.querySelectorAll("img")].map((img) =>
-      img.getAttribute("src"),
+      normalizeImgSrc(img.getAttribute("src")),
     );
-    expect(sources).toEqual(seededBanners.map((b) => resolveAssetUrl(b.image)));
+    expect(sources).toEqual(
+      seededBanners.map((b) => normalizeImgSrc(resolveAssetUrl(b.image))),
+    );
     expect(new Set(sources).size).toBe(sources.length);
     for (const src of sources) {
       expect(src).toMatch(/\/images\/banners\/home\/.+\.jpg$/);
@@ -202,7 +222,9 @@ describe("BannersPage — nội dung banner đã seed", () => {
       banner.href,
       banner.objectPosition!,
     ]) {
-      expect(within(dialog).getAllByDisplayValue(text).length).toBeGreaterThan(0);
+      expect(within(dialog).getAllByDisplayValue(text).length).toBeGreaterThan(
+        0,
+      );
     }
 
     // Không field nào bị đánh dấu thiếu bản dịch → cả 4 field đều có tiếng Anh.
@@ -212,7 +234,9 @@ describe("BannersPage — nội dung banner đã seed", () => {
 
     // `BilingualField` chỉ render một ô tại một thời điểm; gạt cả 4 field sang
     // EN rồi mới đọc được nội dung tiếng Anh đã nạp.
-    for (const button of within(dialog).getAllByRole("button", { name: "en" })) {
+    for (const button of within(dialog).getAllByRole("button", {
+      name: "en",
+    })) {
       await user.click(button);
     }
     for (const text of [
@@ -221,16 +245,22 @@ describe("BannersPage — nội dung banner đã seed", () => {
       banner.subtitle!.en!,
       banner.ctaLabel!.en!,
     ]) {
-      expect(within(dialog).getAllByDisplayValue(text).length).toBeGreaterThan(0);
+      expect(within(dialog).getAllByDisplayValue(text).length).toBeGreaterThan(
+        0,
+      );
     }
 
     // Ảnh hiện qua `ImagePickerField` (xem trước), không phải ô nhập — form nạp
     // lại đúng ảnh cũ nên mở/lưu không kéo theo lượt upload mới.
     expect(
-      [...dialog.querySelectorAll("img")].map((img) => img.getAttribute("src")),
-    ).toContain(resolveAssetUrl(banner.image));
+      [...dialog.querySelectorAll("img")].map((img) =>
+        normalizeImgSrc(img.getAttribute("src")),
+      ),
+    ).toContain(normalizeImgSrc(resolveAssetUrl(banner.image)));
 
-    await user.click(within(dialog).getByRole("button", { name: "Lưu thay đổi" }));
+    await user.click(
+      within(dialog).getByRole("button", { name: "Lưu thay đổi" }),
+    );
     await waitFor(() => expect(updateBanner).toHaveBeenCalledTimes(1));
 
     // Payload giữ nguyên ảnh cũ (không upload lại) và đúng shape {vi, en}.
@@ -263,7 +293,9 @@ describe("BannersPage — nội dung banner đã seed", () => {
     const href = within(dialog).getByDisplayValue("/du-an/khu-do-thi-hung-phu");
     await user.clear(href);
     await user.type(href, "du-an");
-    await user.click(within(dialog).getByRole("button", { name: "Lưu thay đổi" }));
+    await user.click(
+      within(dialog).getByRole("button", { name: "Lưu thay đổi" }),
+    );
 
     expect(
       await within(dialog).findByText(

@@ -4,7 +4,7 @@
  * Ba điều dễ hỏng nhất và là lý do file này tồn tại:
  * - **Slug bị đổi sau khi tạo** → chết URL công khai đã lập chỉ mục. Form sửa
  *   phải khoá slug, và payload PATCH tuyệt đối không được mang `slug`.
- * - **Xóa chuyên mục còn bài** → hàng loạt bài mất phân loại, không Undo.
+ * - **Ẩn chuyên mục còn bài** → bài vẫn giữ phân loại, chuyên mục chỉ rời bộ lọc công khai.
  * - **EDITOR xóa được** → vượt phân quyền backend (`@Roles(ADMIN, SUPER_ADMIN)`).
  */
 import { describe, it, expect, vi, beforeEach } from "vitest";
@@ -291,46 +291,43 @@ describe("NewsCategoriesPage — sửa chuyên mục", () => {
   });
 });
 
-describe("NewsCategoriesPage — xóa", () => {
-  it("chuyên mục CÒN bài: nút xóa bị khoá kèm lý do", () => {
+describe("NewsCategoriesPage — ẩn / hiện", () => {
+  it("chuyên mục CÒN bài: vẫn ẩn được vì không mất phân loại", () => {
     renderPage(<NewsCategoriesPage />);
 
-    const button = screen.getByLabelText("Xóa chuyên mục Kiến trúc & Xây dựng");
-    expect(button).toBeDisabled();
-    expect(button).toHaveAttribute(
-      "title",
-      expect.stringContaining("5 bài viết"),
-    );
+    expect(
+      screen.getByLabelText("Ẩn chuyên mục Kiến trúc & Xây dựng"),
+    ).toBeEnabled();
   });
 
-  it("chuyên mục rỗng: xóa được, hộp xác nhận nêu tên + slug + số bài", async () => {
+  it("ẩn chuyên mục: hộp xác nhận nêu tên + slug và nói rõ dữ liệu được giữ", async () => {
     const user = userEvent.setup();
     renderPage(<NewsCategoriesPage />);
 
-    await user.click(screen.getByLabelText("Xóa chuyên mục Tin công ty"));
+    await user.click(screen.getByLabelText("Ẩn chuyên mục Tin công ty"));
 
     const dialog = await screen.findByRole("dialog");
     expect(
-      within(dialog).getByText(/Xóa chuyên mục "Tin công ty"\?/),
+      within(dialog).getByText(/Ẩn chuyên mục "Tin công ty" khỏi website\?/),
     ).toBeInTheDocument();
     expect(within(dialog).getByText(/tin-cong-ty/)).toBeInTheDocument();
     expect(
-      within(dialog).getByText(/không có bài viết nào/),
+      within(dialog).getByText(/vẫn giữ nguyên phân loại/),
     ).toBeInTheDocument();
 
     await user.click(
-      within(dialog).getByRole("button", { name: "Xóa chuyên mục" }),
+      within(dialog).getByRole("button", { name: "Ẩn chuyên mục" }),
     );
     await waitFor(() =>
       expect(deleteCategory).toHaveBeenCalledWith("tin-cong-ty"),
     );
   });
 
-  it("EDITOR không thấy nút xóa", () => {
+  it("EDITOR không thấy nút ẩn", () => {
     role.current = "EDITOR";
     renderPage(<NewsCategoriesPage />);
 
-    expect(screen.queryByLabelText(/^Xóa chuyên mục/)).toBeNull();
+    expect(screen.queryByLabelText(/^Ẩn chuyên mục/)).toBeNull();
     // Nhưng vẫn sửa được — EDITOR có quyền create/update ở backend.
     expect(screen.getByLabelText("Sửa chuyên mục Tin dự án")).toBeInTheDocument();
   });

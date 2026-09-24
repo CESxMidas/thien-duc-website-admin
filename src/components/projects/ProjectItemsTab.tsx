@@ -9,6 +9,8 @@ import { toast } from "sonner";
 import {
   ChevronDown,
   ChevronUp,
+  Eye,
+  EyeOff,
   Loader2,
   Pencil,
   Plus,
@@ -17,6 +19,7 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { BilingualField } from "@/components/ui/BilingualField";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { ImagePickerField } from "@/components/ui/ImagePickerField";
@@ -282,11 +285,26 @@ export function ProjectItemsTab({ project }: { project: ProjectDetail }) {
         slug: project.slug,
         itemSlug: toDelete.slug,
       });
-      toast.success("Đã xóa hạng mục.");
+      toast.success("Đã ẩn hạng mục.");
       setToDelete(null);
     } catch (err) {
       toast.error(
-        resolveApiError(err, "Không xóa được hạng mục. Vui lòng thử lại."),
+        resolveApiError(err, "Không ẩn được hạng mục. Vui lòng thử lại."),
+      );
+    }
+  }
+
+  async function showItem(item: ProjectItem) {
+    try {
+      await updateItem.mutateAsync({
+        slug: project.slug,
+        itemSlug: item.slug,
+        data: { isActive: true },
+      });
+      toast.success("Đã hiện hạng mục.");
+    } catch (err) {
+      toast.error(
+        resolveApiError(err, "Không hiện được hạng mục. Vui lòng thử lại."),
       );
     }
   }
@@ -620,16 +638,23 @@ export function ProjectItemsTab({ project }: { project: ProjectDetail }) {
         </p>
       ) : (
         <ul className="space-y-2">
-          {project.items.map((item, index) => (
+          {project.items.map((item, index) => {
+            const isActive = item.isActive !== false;
+            return (
             <li
               key={item.id}
               style={{ "--row-index": Math.min(index, 7) } as CSSProperties}
               className="row-in flex items-center gap-3 rounded-xl border border-line p-3 transition-colors duration-150 hover:border-line-strong"
             >
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium text-ink">
-                  {item.title.vi}
-                </p>
+                <div className="flex flex-wrap items-center gap-2">
+                  <p className="truncate text-sm font-medium text-ink">
+                    {item.title.vi}
+                  </p>
+                  <Badge variant={isActive ? "green" : "gray"}>
+                    {isActive ? "Đang hiện" : "Đang ẩn"}
+                  </Badge>
+                </div>
                 <p className="truncate text-xs text-slate">
                   /{item.slug}
                   {" · "}
@@ -649,28 +674,40 @@ export function ProjectItemsTab({ project }: { project: ProjectDetail }) {
                   </Button>
                 )}
                 {canDelete && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    aria-label="Xóa hạng mục"
-                    className="text-red-600 hover:bg-red-50 hover:text-red-700"
-                    onClick={() => setToDelete(item)}
-                  >
-                    <Trash2 className="size-4" />
-                  </Button>
+                  isActive ? (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      aria-label="Ẩn hạng mục"
+                      className="text-red-600 hover:bg-red-50 hover:text-red-700"
+                      onClick={() => setToDelete(item)}
+                    >
+                      <EyeOff className="size-4" />
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      aria-label="Hiện hạng mục"
+                      onClick={() => void showItem(item)}
+                    >
+                      <Eye className="size-4" />
+                    </Button>
+                  )
                 )}
               </div>
             </li>
-          ))}
+            );
+          })}
         </ul>
       )}
 
       <ConfirmDialog
         open={toDelete !== null}
         onOpenChange={(open) => !open && setToDelete(null)}
-        title={`Xóa hạng mục "${toDelete?.title.vi ?? ""}"?`}
-        description="Ảnh đang gắn với hạng mục này sẽ trở về cấp dự án. Thao tác không hoàn tác được."
-        confirmLabel="Xóa hạng mục"
+        title={`Ẩn hạng mục "${toDelete?.title.vi ?? ""}" khỏi website?`}
+        description="Hạng mục sẽ không còn hiển thị công khai, nhưng dữ liệu và ảnh đang gắn vẫn được giữ lại."
+        confirmLabel="Ẩn hạng mục"
         submitting={deleteItem.isPending}
         onConfirm={() => void onConfirmDelete()}
       />

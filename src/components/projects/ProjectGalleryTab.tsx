@@ -9,10 +9,11 @@ import { toast } from "sonner";
 import {
   ChevronDown,
   ChevronUp,
+  Eye,
+  EyeOff,
   ImageOff,
   Loader2,
   Plus,
-  Trash2,
 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
@@ -33,6 +34,7 @@ import {
   useAddGalleryImage,
   useDeleteGalleryImage,
   useReorderGallery,
+  useUpdateGalleryImage,
 } from "@/lib/api/queries";
 import { resolveApiError } from "@/lib/api-error-message";
 import { resolveAssetUrl } from "@/lib/asset-url";
@@ -78,6 +80,7 @@ export function ProjectGalleryTab({ project }: { project: ProjectDetail }) {
   const images = project.galleryImages;
   const addImage = useAddGalleryImage();
   const deleteImage = useDeleteGalleryImage();
+  const updateImage = useUpdateGalleryImage();
   const reorder = useReorderGallery();
 
   // Ảnh thư viện — kể cả THỨ TỰ của chúng — là nội dung công khai của dự án cha,
@@ -138,11 +141,26 @@ export function ProjectGalleryTab({ project }: { project: ProjectDetail }) {
         slug: project.slug,
         imageId: toDelete.id,
       });
-      toast.success("Đã xóa ảnh.");
+      toast.success("Đã ẩn ảnh.");
       setToDelete(null);
     } catch (error) {
       toast.error(
-        resolveApiError(error, "Không xóa được ảnh. Vui lòng thử lại."),
+        resolveApiError(error, "Không ẩn được ảnh. Vui lòng thử lại."),
+      );
+    }
+  }
+
+  async function showImage(image: ProjectGalleryImage) {
+    try {
+      await updateImage.mutateAsync({
+        slug: project.slug,
+        imageId: image.id,
+        data: { isActive: true },
+      });
+      toast.success("Đã hiện ảnh.");
+    } catch (error) {
+      toast.error(
+        resolveApiError(error, "Không hiện được ảnh. Vui lòng thử lại."),
       );
     }
   }
@@ -215,7 +233,9 @@ export function ProjectGalleryTab({ project }: { project: ProjectDetail }) {
         </p>
       ) : (
         <ul className="space-y-2">
-          {images.map((image, index) => (
+          {images.map((image, index) => {
+            const isActive = image.isActive !== false;
+            return (
             <li
               key={image.id}
               style={{ "--row-index": Math.min(index, 7) } as CSSProperties}
@@ -239,6 +259,12 @@ export function ProjectGalleryTab({ project }: { project: ProjectDetail }) {
                     {itemTitleById.get(image.projectItemId) ?? "Hạng mục"}
                   </Badge>
                 )}
+                <Badge
+                  variant={isActive ? "green" : "gray"}
+                  className="mt-1"
+                >
+                  {isActive ? "Đang hiện" : "Đang ẩn"}
+                </Badge>
               </div>
               {canEdit && (
                 <div className="flex shrink-0 items-center gap-0.5">
@@ -260,19 +286,31 @@ export function ProjectGalleryTab({ project }: { project: ProjectDetail }) {
                   >
                     <ChevronDown className="size-4" />
                   </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    aria-label="Xóa ảnh"
-                    className="text-red-600 hover:bg-red-50 hover:text-red-700"
-                    onClick={() => setToDelete(image)}
-                  >
-                    <Trash2 className="size-4" />
-                  </Button>
+                  {isActive ? (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      aria-label="Ẩn ảnh"
+                      className="text-red-600 hover:bg-red-50 hover:text-red-700"
+                      onClick={() => setToDelete(image)}
+                    >
+                      <EyeOff className="size-4" />
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      aria-label="Hiện ảnh"
+                      onClick={() => void showImage(image)}
+                    >
+                      <Eye className="size-4" />
+                    </Button>
+                  )}
                 </div>
               )}
             </li>
-          ))}
+            );
+          })}
         </ul>
       )}
 
@@ -286,9 +324,9 @@ export function ProjectGalleryTab({ project }: { project: ProjectDetail }) {
       <ConfirmDialog
         open={toDelete !== null}
         onOpenChange={(open) => !open && setToDelete(null)}
-        title="Xóa ảnh này?"
-        description="Ảnh sẽ bị gỡ khỏi thư viện dự án. Thao tác không hoàn tác được."
-        confirmLabel="Xóa ảnh"
+        title="Ẩn ảnh này khỏi website?"
+        description="Ảnh sẽ không còn hiển thị công khai trong thư viện dự án. Dữ liệu vẫn được giữ lại để hiện lại sau."
+        confirmLabel="Ẩn ảnh"
         submitting={deleteImage.isPending}
         onConfirm={() => void onConfirmDelete()}
       />
