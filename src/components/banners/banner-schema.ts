@@ -11,7 +11,6 @@ import { z } from "zod";
 import { validateDisplayWindowFields } from "@/lib/banner-display-window";
 import {
   MAX_OBJECT_POSITION_LENGTH,
-  bilingualText,
   internalHrefField,
   optionalBilingualText,
   requiredImageField,
@@ -22,7 +21,7 @@ export const bannerSchema = z
   .object({
     image: requiredImageField("Cần URL ảnh banner."),
     href: internalHrefField(),
-    title: bilingualText(3, "Tiêu đề tối thiểu 3 ký tự."),
+    title: optionalBilingualText(),
     eyebrow: optionalBilingualText(),
     subtitle: optionalBilingualText(),
     ctaLabel: optionalBilingualText(),

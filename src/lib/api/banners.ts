@@ -13,7 +13,7 @@ import type { Banner, Bilingual } from "@/types";
 
 export interface CreateBannerInput {
   image: string;
-  title: Bilingual;
+  title?: Bilingual;
   href: string;
   eyebrow?: Bilingual;
   subtitle?: Bilingual;

@@ -164,7 +164,7 @@ describe("BannersPage — nội dung banner đã seed", () => {
     const rows = screen.getAllByRole("row").slice(1); // bỏ hàng tiêu đề
     expect(rows).toHaveLength(4);
 
-    const titles = seededBanners.map((b) => b.title.vi);
+    const titles = seededBanners.map((b) => b.title!.vi);
     titles.forEach((title, index) => {
       expect(within(rows[index]).getByText(title)).toBeInTheDocument();
       // Mỗi tiêu đề xuất hiện đúng một lần trên bảng → không có slide nhân đôi.
@@ -215,7 +215,7 @@ describe("BannersPage — nội dung banner đã seed", () => {
 
     const banner = seededBanners[0];
     for (const text of [
-      banner.title.vi,
+      banner.title!.vi,
       banner.eyebrow!.vi,
       banner.subtitle!.vi,
       banner.ctaLabel!.vi,
@@ -240,7 +240,7 @@ describe("BannersPage — nội dung banner đã seed", () => {
       await user.click(button);
     }
     for (const text of [
-      banner.title.en!,
+      banner.title!.en!,
       banner.eyebrow!.en!,
       banner.subtitle!.en!,
       banner.ctaLabel!.en!,

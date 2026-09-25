@@ -87,7 +87,7 @@ export function BannerFormDialog({ trigger, banner }: BannerFormDialogProps) {
     const payload = {
       image: values.image,
       href: values.href,
-      title: toBilingualPayload(values.title),
+      title: optionalPayload(values.title),
       eyebrow: optionalPayload(values.eyebrow),
       subtitle: optionalPayload(values.subtitle),
       ctaLabel: optionalPayload(values.ctaLabel),
@@ -105,7 +105,7 @@ export function BannerFormDialog({ trigger, banner }: BannerFormDialogProps) {
         toast.success("Đã lưu banner.");
       } else {
         await createBanner.mutateAsync(payload);
-        toast.success(`Đã thêm banner "${values.title.vi}".`);
+        toast.success("Đã thêm banner.");
       }
       setOpen(false);
     } catch (error) {
@@ -126,11 +126,11 @@ export function BannerFormDialog({ trigger, banner }: BannerFormDialogProps) {
         onOpenChange={setOpen}
         trigger={trigger}
         title={isEdit ? "Sửa banner" : "Thêm banner"}
-        description="Banner mới nằm cuối danh sách. Thứ tự và bật/tắt chỉnh ở bảng."
+        description="Chọn ảnh, thêm chữ nếu cần. Ảnh đã có chữ sẵn thì để trống các ô nội dung."
         media={
           <MediaSection
-            label="Ảnh chính"
-            hint="Ảnh nền banner — tự tối ưu WebP, tối đa 1200px."
+            label="Ảnh banner"
+            hint="Nên dùng ảnh ngang, rõ nét. Chữ có thể nằm sẵn trong ảnh hoặc nhập ở phần bên cạnh."
           >
             <FormField
               control={form.control}
@@ -184,6 +184,9 @@ export function BannerFormDialog({ trigger, banner }: BannerFormDialogProps) {
                       }}
                     />
                   </FormControl>
+                  <FormDescription>
+                    Có thể để trống nếu ảnh đã có tiêu đề.
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -205,6 +208,9 @@ export function BannerFormDialog({ trigger, banner }: BannerFormDialogProps) {
                       }}
                     />
                   </FormControl>
+                  <FormDescription>
+                    Ví dụ: Dự án tiêu biểu, Ưu đãi, Thông báo. Không cần thì bỏ trống.
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -224,6 +230,9 @@ export function BannerFormDialog({ trigger, banner }: BannerFormDialogProps) {
                       onChange={field.onChange}
                     />
                   </FormControl>
+                  <FormDescription>
+                    Một câu ngắn dưới tiêu đề. Không cần thì bỏ trống.
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -234,7 +243,7 @@ export function BannerFormDialog({ trigger, banner }: BannerFormDialogProps) {
               name="ctaLabel"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Nhãn nút</FormLabel>
+                  <FormLabel>Chữ trên nút</FormLabel>
                   <FormControl>
                     <BilingualField
                       value={field.value}
@@ -242,6 +251,9 @@ export function BannerFormDialog({ trigger, banner }: BannerFormDialogProps) {
                       placeholder={{ vi: "Xem dự án", en: "View project" }}
                     />
                   </FormControl>
+                  <FormDescription>
+                    Chỉ nhập khi muốn hiện nút riêng trên banner.
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -252,13 +264,12 @@ export function BannerFormDialog({ trigger, banner }: BannerFormDialogProps) {
               name="href"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Nút dẫn tới</FormLabel>
+                  <FormLabel>Liên kết của nút</FormLabel>
                   <FormControl>
                     <Input placeholder="/du-an/khu-do-thi-hung-phu" {...field} />
                   </FormControl>
                   <FormDescription>
-                    Đường dẫn tiếng Việt, không kèm “/vi”. Trang tiếng Anh tự
-                    thêm tiền tố “/en”.
+                    Dùng đường dẫn nội bộ, ví dụ /du-an/khu-do-thi-hung-phu.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -275,8 +286,7 @@ export function BannerFormDialog({ trigger, banner }: BannerFormDialogProps) {
                     <Input placeholder="center center" {...field} />
                   </FormControl>
                   <FormDescription>
-                    Giá trị CSS `object-position`, ví dụ “center 55%”. Để trống
-                    là canh giữa.
+                    Để trống là canh giữa. Nếu ảnh bị lệch, nhập ví dụ center 55%.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -303,10 +313,8 @@ export function BannerFormDialog({ trigger, banner }: BannerFormDialogProps) {
                 Thời gian hiển thị
               </legend>
               <p className="text-xs text-slate">
-                Quyết định banner được phép xuất hiện trong khoảng nào. Khác với
-                công tắc “Đang bật/tắt” ở bảng: banner phải VỪA đang bật VỪA nằm
-                trong khoảng này thì mới ra trang chủ. Giờ nhập theo{" "}
-                {VIETNAM_TIMEZONE_LABEL}.
+                Chọn ngày giờ nếu banner chỉ chạy trong một giai đoạn. Giờ nhập
+                theo {VIETNAM_TIMEZONE_LABEL}.
               </p>
 
               <div className="grid gap-3 sm:grid-cols-2">
@@ -338,7 +346,7 @@ export function BannerFormDialog({ trigger, banner }: BannerFormDialogProps) {
                 />
               </div>
               <p className="text-xs text-slate">
-                Bỏ trống: banner có hiệu lực ngay.
+                Không nhập phần này thì banner có thể hiện ngay sau khi bật.
               </p>
 
               <div className="grid gap-3 sm:grid-cols-2">
@@ -370,8 +378,7 @@ export function BannerFormDialog({ trigger, banner }: BannerFormDialogProps) {
                 />
               </div>
               <p className="text-xs text-slate">
-                Bỏ trống: không giới hạn ngày kết thúc. Đúng vào mốc này banner
-                ngừng hiển thị.
+                Không nhập phần này thì banner không tự hết hạn.
               </p>
             </fieldset>
 

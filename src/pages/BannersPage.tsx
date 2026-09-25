@@ -32,6 +32,14 @@ function swap(banners: Banner[], from: number, to: number): Banner[] {
   return next;
 }
 
+function bannerListTitle(banner: Banner): string {
+  const title = banner.title?.vi?.trim();
+  if (title) return title;
+
+  const fileName = banner.image.split("/").pop()?.trim();
+  return fileName || "Banner chưa đặt tên";
+}
+
 export function BannersPage() {
   const { data: banners = [], isLoading } = useBanners();
   // MỘT mốc "bây giờ" cho cả lượt render: nếu mỗi hàng tự gọi `new Date()` thì
@@ -130,7 +138,7 @@ export function BannersPage() {
             )}
           </div>
           <div>
-            <p className="font-medium text-ink">{banner.title.vi}</p>
+            <p className="font-medium text-ink">{bannerListTitle(banner)}</p>
             <p className="text-xs text-slate">{banner.href}</p>
           </div>
         </div>

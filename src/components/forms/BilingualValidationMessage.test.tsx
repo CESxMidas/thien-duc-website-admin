@@ -108,22 +108,11 @@ function describedTextOf(control: HTMLElement): string {
 }
 
 /**
- * Ba form, cùng một kỳ vọng. Mỗi mục mô tả: cách mở, nút gửi, thông báo phải
+ * Hai form, cùng một kỳ vọng. Mỗi mục mô tả: cách mở, nút gửi, thông báo phải
  * thấy, và spy tạo mới tương ứng.
+ * Banner đứng ngoài nhóm này vì các phần chữ hiển thị trên ảnh được phép bỏ trống.
  */
 const FORMS = [
-  {
-    name: "Banner",
-    open: "Thêm banner",
-    submit: "Thêm banner",
-    field: "Tiêu đề",
-    message: "Tiêu đề tối thiểu 3 ký tự.",
-    valid: "Khu đô thị Hưng Phú",
-    create: spies.createBanner,
-    render: () => (
-      <BannerFormDialog trigger={<Button>Thêm banner</Button>} />
-    ),
-  },
   {
     name: "Trang nội dung",
     open: "Tạo trang",
@@ -205,33 +194,21 @@ describe.each(FORMS)(
 );
 
 /**
- * §15 — chuyển tab VI/EN trên một field ĐANG lỗi. `en` là tùy chọn nên không
- * được tự nhiên trở thành bắt buộc, và thông báo cũng không được nhân đôi.
+ * Banner có thể dùng ảnh đã thiết kế sẵn chữ, nên các field chữ phủ lên ảnh
+ * không được ép nhập chỉ để qua form.
  */
-describe("Chuyển VI/EN khi field đang lỗi", () => {
-  it("Banner: lỗi VI giữ nguyên đúng một thông báo, EN không thành bắt buộc", async () => {
+describe("Banner — chữ phủ lên ảnh là tùy chọn", () => {
+  it("không báo lỗi tiêu đề khi để trống", async () => {
     const user = userEvent.setup();
     renderUI(<BannerFormDialog trigger={<Button>Thêm banner</Button>} />);
     await user.click(screen.getByRole("button", { name: "Thêm banner" }));
     const dialog = await screen.findByRole("dialog");
 
     await user.click(within(dialog).getByRole("button", { name: "Thêm banner" }));
-    await within(dialog).findByText("Tiêu đề tối thiểu 3 ký tự.");
+    await within(dialog).findByText("Cần URL ảnh banner.");
 
-    const item = within(dialog)
-      .getByText("Tiêu đề")
-      .closest("[data-slot='form-item']") as HTMLElement;
-    await user.click(item.querySelectorAll("button[aria-pressed]")[1]);
-
-    const messages = item.querySelectorAll("[data-slot='form-message']");
-    expect(messages).toHaveLength(1);
-    expect(messages[0].textContent).toBe("Tiêu đề tối thiểu 3 ký tự.");
-
-    // Ô EN rỗng và vẫn được nối đúng thông báo + danh tính field.
-    const control = controlIn(dialog, "Tiêu đề");
-    expect(control).toHaveValue("");
-    expect(within(dialog).getByRole("textbox", { name: "Tiêu đề" })).toBe(control);
-    expect(describedTextOf(control)).toContain("Tiêu đề tối thiểu 3 ký tự.");
-    expect(describedTextOf(control)).toContain("English");
+    expect(
+      within(dialog).queryByText("Tiêu đề tối thiểu 3 ký tự."),
+    ).not.toBeInTheDocument();
   });
 });

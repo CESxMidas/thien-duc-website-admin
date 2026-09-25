@@ -167,13 +167,18 @@ describe("6 schema FormDialog — hành vi chung", () => {
    ========================================================================= */
 
 describe("Chữ song ngữ — VI bắt buộc, EN tùy chọn", () => {
-  it("banner: thiếu tiêu đề VI bị chặn, EN rỗng vẫn hợp lệ", () => {
+  it("banner: các phần chữ hiển thị được phép bỏ trống", () => {
     expect(
-      errorPaths(bannerSchema.safeParse({ ...validBanner, title: bilingual("") })),
-    ).toContain("title.vi");
-    expect(ok(bannerSchema.safeParse({ ...validBanner, title: bilingual("Tiêu đề") }))).toBe(
-      true,
-    );
+      ok(
+        bannerSchema.safeParse({
+          ...validBanner,
+          title: bilingual(""),
+          eyebrow: bilingual(""),
+          subtitle: bilingual(""),
+          ctaLabel: bilingual(""),
+        }),
+      ),
+    ).toBe(true);
   });
 
   it("EN được nhập vẫn hợp lệ (song ngữ đầy đủ)", () => {

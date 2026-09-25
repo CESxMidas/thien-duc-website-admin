@@ -268,10 +268,10 @@ describe("Form banner — phần “Thời gian hiển thị”", () => {
     }
 
     expect(
-      within(dialog).getByText("Bỏ trống: banner có hiệu lực ngay."),
+      within(dialog).getByText("Không nhập phần này thì banner có thể hiện ngay sau khi bật."),
     ).toBeInTheDocument();
     expect(
-      within(dialog).getByText(/Bỏ trống: không giới hạn ngày kết thúc/),
+      within(dialog).getByText("Không nhập phần này thì banner không tự hết hạn."),
     ).toBeInTheDocument();
   });
 

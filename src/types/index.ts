@@ -211,7 +211,7 @@ export interface Banner {
   id: string;
   image: string;
   eyebrow: Bilingual | null;
-  title: Bilingual;
+  title: Bilingual | null;
   subtitle: Bilingual | null;
   href: string;
   ctaLabel: Bilingual | null;
