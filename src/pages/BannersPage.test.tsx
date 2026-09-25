@@ -283,6 +283,39 @@ describe("BannersPage — nội dung banner đã seed", () => {
     });
   });
 
+  it("xoá chữ overlay rồi lưu: gửi null để backend xoá nội dung cũ", async () => {
+    const user = userEvent.setup();
+    renderPage(<BannersPage />);
+
+    await user.click(screen.getAllByRole("button", { name: "Sửa banner" })[0]);
+    const dialog = await screen.findByRole("dialog");
+    const banner = seededBanners[0];
+
+    for (const text of [
+      banner.title!.vi,
+      banner.eyebrow!.vi,
+      banner.subtitle!.vi,
+      banner.ctaLabel!.vi,
+    ]) {
+      await user.clear(within(dialog).getByDisplayValue(text));
+    }
+
+    await user.click(
+      within(dialog).getByRole("button", { name: "Lưu thay đổi" }),
+    );
+    await waitFor(() => expect(updateBanner).toHaveBeenCalledTimes(1));
+
+    expect(updateBanner).toHaveBeenCalledWith({
+      id: banner.id,
+      data: expect.objectContaining({
+        title: null,
+        eyebrow: null,
+        subtitle: null,
+        ctaLabel: null,
+      }),
+    });
+  });
+
   it("validate vẫn chặn: href không bắt đầu bằng '/' thì không gửi", async () => {
     const user = userEvent.setup();
     renderPage(<BannersPage />);

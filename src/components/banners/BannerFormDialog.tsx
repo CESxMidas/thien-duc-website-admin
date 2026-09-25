@@ -53,10 +53,14 @@ function toFormValues(banner?: Banner): BannerFormValues {
   };
 }
 
-/** Field tùy chọn: bỏ hẳn khỏi payload khi tiếng Việt trống. */
-function optionalPayload(value: BannerFormValues["eyebrow"]) {
+/** Field tùy chọn: tạo mới thì bỏ qua ô trống, sửa thì gửi null để xoá nội dung cũ. */
+function optionalPayload(
+  value: BannerFormValues["eyebrow"],
+  mode: "create" | "update",
+) {
   const payload = toBilingualPayload(value);
-  return payload.vi ? payload : undefined;
+  if (payload.vi) return payload;
+  return mode === "update" ? null : undefined;
 }
 
 export function BannerFormDialog({ trigger, banner }: BannerFormDialogProps) {
@@ -87,10 +91,10 @@ export function BannerFormDialog({ trigger, banner }: BannerFormDialogProps) {
     const payload = {
       image: values.image,
       href: values.href,
-      title: optionalPayload(values.title),
-      eyebrow: optionalPayload(values.eyebrow),
-      subtitle: optionalPayload(values.subtitle),
-      ctaLabel: optionalPayload(values.ctaLabel),
+      title: optionalPayload(values.title, isEdit ? "update" : "create"),
+      eyebrow: optionalPayload(values.eyebrow, isEdit ? "update" : "create"),
+      subtitle: optionalPayload(values.subtitle, isEdit ? "update" : "create"),
+      ctaLabel: optionalPayload(values.ctaLabel, isEdit ? "update" : "create"),
       objectPosition: values.objectPosition || undefined,
       // GỬI `null` TƯỜNG MINH, không phải `undefined`: đó là cách duy nhất nói
       // với backend "xoá biên này". Bỏ field đi có nghĩa "giữ nguyên", nên xoá
