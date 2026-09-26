@@ -19,7 +19,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
-import { ImagePickerField } from "@/components/ui/ImagePickerField";
+import { MultiImagePickerField } from "@/components/ui/ImagePickerField";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -88,7 +88,7 @@ export function ProjectGalleryTab({ project }: { project: ProjectDetail }) {
   // bản (backend trả 403 trên thêm / sửa / xóa / sắp xếp). Vẫn cho xem ảnh.
   const canEdit = canEditProject(user?.role, project);
 
-  const [url, setUrl] = useState("");
+  const [urls, setUrls] = useState<string[]>([]);
   const [caption, setCaption] = useState("");
   const [itemSlug, setItemSlug] = useState<string>(NO_ITEM);
   const [toDelete, setToDelete] = useState<ProjectGalleryImage | null>(null);
@@ -100,24 +100,41 @@ export function ProjectGalleryTab({ project }: { project: ProjectDetail }) {
 
   async function onAdd(event: React.FormEvent) {
     event.preventDefault();
-    if (!url.trim()) return;
-    try {
-      await addImage.mutateAsync({
-        slug: project.slug,
-        data: {
-          url: url.trim(),
-          ...(caption.trim() && { caption: { vi: caption.trim() } }),
-          ...(itemSlug !== NO_ITEM && { itemSlug }),
-        },
-      });
-      toast.success("Đã thêm ảnh vào thư viện.");
-      setUrl("");
-      setCaption("");
-    } catch (error) {
-      toast.error(
-        resolveApiError(error, "Không thêm được ảnh. Vui lòng thử lại."),
+    if (urls.length === 0) return;
+
+    let added = 0;
+    const failed: string[] = [];
+    for (const url of urls) {
+      try {
+        await addImage.mutateAsync({
+          slug: project.slug,
+          data: {
+            url,
+            ...(caption.trim() && { caption: { vi: caption.trim() } }),
+            ...(itemSlug !== NO_ITEM && { itemSlug }),
+          },
+        });
+        added += 1;
+      } catch (error) {
+        failed.push(url);
+        toast.error(
+          resolveApiError(
+            error,
+            `Không thêm được ảnh ${url.split("/").pop() || url}.`,
+          ),
+        );
+      }
+    }
+
+    if (added > 0) {
+      toast.success(
+        added === 1
+          ? "Đã thêm 1 ảnh vào thư viện dự án."
+          : `Đã thêm ${added} ảnh vào thư viện dự án.`,
       );
     }
+    setUrls(failed);
+    if (failed.length === 0) setCaption("");
   }
 
   async function onMove(index: number, delta: -1 | 1) {
@@ -179,23 +196,26 @@ export function ProjectGalleryTab({ project }: { project: ProjectDetail }) {
           className="space-y-3 rounded-xl border border-line bg-cream/40 p-4"
         >
           <div className="space-y-1.5">
-            <Label>Thêm ảnh con</Label>
-            <ImagePickerField
-              value={url}
-              onChange={setUrl}
+            <Label>Thêm ảnh vào thư viện dự án</Label>
+            <MultiImagePickerField
+              value={urls}
+              onChange={setUrls}
               folder="projects"
-              aspect="3/2"
-              alt="Ảnh con đã chọn"
             />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="gallery-caption">Chú thích (không bắt buộc)</Label>
+            <Label htmlFor="gallery-caption">
+              Chú thích chung (không bắt buộc)
+            </Label>
             <Input
               id="gallery-caption"
               value={caption}
               onChange={(e) => setCaption(e.target.value)}
               placeholder="Phối cảnh mặt tiền"
             />
+            <p className="text-xs text-slate">
+              Nếu chọn nhiều ảnh, chú thích và hạng mục sẽ được áp dụng cho tất cả.
+            </p>
           </div>
 
           <div className="flex flex-wrap items-end justify-between gap-3">
@@ -215,13 +235,18 @@ export function ProjectGalleryTab({ project }: { project: ProjectDetail }) {
                 </SelectContent>
               </Select>
             </div>
-            <Button type="submit" disabled={!url.trim() || addImage.isPending}>
+            <Button type="submit" disabled={urls.length === 0 || addImage.isPending}>
               {addImage.isPending ? (
                 <Loader2 className="size-4 animate-spin" />
               ) : (
                 <Plus className="size-4" />
               )}
               Thêm ảnh
+              {urls.length > 0 && (
+                <span className="rounded-full bg-white/20 px-1.5 text-xs">
+                  {urls.length}
+                </span>
+              )}
             </Button>
           </div>
         </form>

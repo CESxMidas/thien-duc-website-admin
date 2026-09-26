@@ -1,5 +1,14 @@
-import { useRef, useState } from "react";
-import { ImageOff, Library, Loader2, Trash2, Upload } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import {
+  Check,
+  ImageOff,
+  Images,
+  Library,
+  Loader2,
+  Trash2,
+  Upload,
+  X,
+} from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -7,6 +16,7 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -100,26 +110,53 @@ export function ImagePickerField({
   const inputRef = useRef<HTMLInputElement>(null);
   const upload = useUploadMedia();
   const [libraryOpen, setLibraryOpen] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<{
+    current: number;
+    total: number;
+  } | null>(null);
   const aspectClass = ASPECT_CLASS[aspect];
   const fitClass = PREVIEW_FIT_CLASS[previewFit];
 
-  async function handleFile(file: File | undefined) {
-    if (!file) return;
-    const reason = validateFile(file);
-    if (reason) {
-      toast.error(reason);
-      return;
-    }
+  async function handleFiles(files: FileList | File[] | null) {
+    if (!files?.length) return;
+    const chosen = Array.from(files);
+    const accepted = chosen.filter((file) => {
+      const reason = validateFile(file);
+      if (reason) toast.error(reason);
+      return reason === null;
+    });
+    if (accepted.length === 0) return;
+
+    const uploaded: MediaAsset[] = [];
     try {
-      const asset = await upload.mutateAsync({ file, folder });
-      onChange(asset.url);
-      toast.success("Đã tải ảnh lên.");
-    } catch (error) {
-      toast.error(resolveApiError(error, "Không tải lên được ảnh."));
+      for (let index = 0; index < accepted.length; index += 1) {
+        const file = accepted[index];
+        setUploadProgress({ current: index + 1, total: accepted.length });
+        try {
+          uploaded.push(await upload.mutateAsync({ file, folder }));
+        } catch (error) {
+          toast.error(resolveApiError(error, `Không tải lên được ${file.name}.`));
+        }
+      }
+
+      if (uploaded.length > 0) {
+        onChange(uploaded[0].url);
+        toast.success(
+          uploaded.length === 1
+            ? "Đã tải lên và chọn ảnh."
+            : `Đã tải lên ${uploaded.length} ảnh. Ảnh đầu tiên được chọn; các ảnh còn lại đã lưu trong thư viện.`,
+        );
+      }
     } finally {
+      setUploadProgress(null);
       if (inputRef.current) inputRef.current.value = "";
     }
   }
+
+  const isUploading = uploadProgress !== null || upload.isPending;
+  const uploadLabel = uploadProgress
+    ? `Đang tải ${uploadProgress.current}/${uploadProgress.total}`
+    : null;
 
   return (
     <div className="space-y-2">
@@ -127,8 +164,9 @@ export function ImagePickerField({
         ref={inputRef}
         type="file"
         accept={ACCEPTED_MIME.join(",")}
+        multiple
         className="hidden"
-        onChange={(event) => void handleFile(event.target.files?.[0])}
+        onChange={(event) => void handleFiles(event.target.files)}
       />
 
       {value ? (
@@ -146,15 +184,15 @@ export function ImagePickerField({
               type="button"
               variant="outline"
               size="sm"
-              disabled={upload.isPending}
+              disabled={isUploading}
               onClick={() => inputRef.current?.click()}
             >
-              {upload.isPending ? (
+              {isUploading ? (
                 <Loader2 className="size-4 animate-spin" />
               ) : (
                 <Upload className="size-4" />
               )}
-              Đổi ảnh khác
+              {uploadLabel ?? "Đổi hoặc tải thêm ảnh"}
             </Button>
             <Button
               type="button"
@@ -180,27 +218,27 @@ export function ImagePickerField({
           onDragOver={(event) => event.preventDefault()}
           onDrop={(event) => {
             event.preventDefault();
-            void handleFile(event.dataTransfer.files?.[0]);
+            void handleFiles(event.dataTransfer.files);
           }}
           className="grid place-items-center gap-3 rounded-lg border border-dashed border-line bg-cream/40 px-4 py-8 text-center"
         >
           <ImageOff className="size-8 text-slate/40" aria-hidden />
           <p className="text-sm text-slate">
-            Kéo ảnh vào đây, hoặc chọn cách bên dưới.
+            Kéo một hoặc nhiều ảnh vào đây, hoặc chọn cách bên dưới.
           </p>
           <div className="flex flex-wrap justify-center gap-2">
             <Button
               type="button"
               size="sm"
-              disabled={upload.isPending}
+              disabled={isUploading}
               onClick={() => inputRef.current?.click()}
             >
-              {upload.isPending ? (
+              {isUploading ? (
                 <Loader2 className="size-4 animate-spin" />
               ) : (
                 <Upload className="size-4" />
               )}
-              Tải ảnh từ máy
+              {uploadLabel ?? "Tải một hoặc nhiều ảnh"}
             </Button>
             <Button
               type="button"
@@ -218,8 +256,171 @@ export function ImagePickerField({
         open={libraryOpen}
         onOpenChange={setLibraryOpen}
         folder={folder}
-        onSelect={(asset) => {
+        onSelect={(assets) => {
+          const asset = assets[0];
+          if (!asset) return;
           onChange(asset.url);
+          setLibraryOpen(false);
+        }}
+      />
+    </div>
+  );
+}
+
+interface MultiImagePickerFieldProps {
+  value: string[];
+  onChange: (urls: string[]) => void;
+  folder?: string;
+  disabled?: boolean;
+}
+
+/** Bộ chọn theo lô cho gallery: tải/chọn nhiều ảnh rồi thêm tất cả cùng lúc. */
+export function MultiImagePickerField({
+  value,
+  onChange,
+  folder = "projects",
+  disabled = false,
+}: MultiImagePickerFieldProps) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const upload = useUploadMedia();
+  const [libraryOpen, setLibraryOpen] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<{
+    current: number;
+    total: number;
+  } | null>(null);
+
+  function appendUrls(urls: string[]) {
+    onChange(Array.from(new Set([...value, ...urls])));
+  }
+
+  async function handleFiles(files: FileList | null) {
+    if (!files?.length) return;
+    const chosen = Array.from(files);
+    const accepted = chosen.filter((file) => {
+      const reason = validateFile(file);
+      if (reason) toast.error(reason);
+      return reason === null;
+    });
+    if (accepted.length === 0) return;
+
+    const urls: string[] = [];
+    try {
+      for (let index = 0; index < accepted.length; index += 1) {
+        const file = accepted[index];
+        setUploadProgress({ current: index + 1, total: accepted.length });
+        try {
+          const asset = await upload.mutateAsync({ file, folder });
+          urls.push(asset.url);
+        } catch (error) {
+          toast.error(resolveApiError(error, `Không tải lên được ${file.name}.`));
+        }
+      }
+      if (urls.length > 0) {
+        appendUrls(urls);
+        toast.success(
+          urls.length === 1
+            ? "Đã chọn 1 ảnh."
+            : `Đã tải lên và chọn ${urls.length} ảnh.`,
+        );
+      }
+    } finally {
+      setUploadProgress(null);
+      if (inputRef.current) inputRef.current.value = "";
+    }
+  }
+
+  const isUploading = uploadProgress !== null || upload.isPending;
+
+  return (
+    <div className="space-y-3">
+      <input
+        ref={inputRef}
+        type="file"
+        accept={ACCEPTED_MIME.join(",")}
+        multiple
+        className="hidden"
+        onChange={(event) => void handleFiles(event.target.files)}
+      />
+
+      <div
+        onDragOver={(event) => event.preventDefault()}
+        onDrop={(event) => {
+          event.preventDefault();
+          if (!disabled && !isUploading) void handleFiles(event.dataTransfer.files);
+        }}
+        className="rounded-lg border border-dashed border-line bg-white p-4"
+      >
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2 text-sm text-slate">
+            <Images className="size-5 text-brand" aria-hidden />
+            <span>Kéo thả hoặc chọn nhiều ảnh trong một lần.</span>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              type="button"
+              size="sm"
+              disabled={disabled || isUploading}
+              onClick={() => inputRef.current?.click()}
+            >
+              {isUploading ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <Upload className="size-4" />
+              )}
+              {uploadProgress
+                ? `Đang tải ${uploadProgress.current}/${uploadProgress.total}`
+                : "Tải nhiều ảnh"}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={disabled || isUploading}
+              onClick={() => setLibraryOpen(true)}
+            >
+              <Library className="size-4" /> Chọn nhiều từ thư viện
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {value.length > 0 && (
+        <div>
+          <p className="mb-2 text-xs font-medium text-slate">
+            Đã chọn {value.length} ảnh
+          </p>
+          <ul className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+            {value.map((url, index) => (
+              <li
+                key={url}
+                className="group relative overflow-hidden rounded-lg border border-line bg-cream"
+              >
+                <img
+                  src={resolveAssetUrl(url)}
+                  alt={`Ảnh đã chọn ${index + 1}`}
+                  className="aspect-3/2 w-full object-cover"
+                />
+                <button
+                  type="button"
+                  aria-label={`Bỏ ảnh đã chọn ${index + 1}`}
+                  className="absolute right-1.5 top-1.5 grid size-8 place-items-center rounded-md bg-white/90 text-slate shadow-sm transition hover:text-red-600"
+                  onClick={() => onChange(value.filter((item) => item !== url))}
+                >
+                  <X className="size-4" />
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      <MediaLibraryDialog
+        open={libraryOpen}
+        onOpenChange={setLibraryOpen}
+        folder={folder}
+        multiple
+        onSelect={(assets) => {
+          appendUrls(assets.map((asset) => asset.url));
           setLibraryOpen(false);
         }}
       />
@@ -231,7 +432,8 @@ interface MediaLibraryDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   folder: string;
-  onSelect: (asset: MediaAsset) => void;
+  multiple?: boolean;
+  onSelect: (assets: MediaAsset[]) => void;
 }
 
 /** Lưới ảnh có sẵn trong một thư mục để chọn lại, không cần tải mới. */
@@ -239,10 +441,28 @@ function MediaLibraryDialog({
   open,
   onOpenChange,
   folder,
+  multiple = false,
   onSelect,
 }: MediaLibraryDialogProps) {
   // Chỉ gọi API khi dialog mở — tránh nạp thư viện lúc chưa cần.
   const { data: media = [], isLoading } = useMedia(open ? folder : undefined);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (!open) setSelectedIds([]);
+  }, [open]);
+
+  function choose(asset: MediaAsset) {
+    if (!multiple) {
+      onSelect([asset]);
+      return;
+    }
+    setSelectedIds((current) =>
+      current.includes(asset.id)
+        ? current.filter((id) => id !== asset.id)
+        : [...current, asset.id],
+    );
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -250,8 +470,9 @@ function MediaLibraryDialog({
         <DialogHeader>
           <DialogTitle>Chọn ảnh từ thư viện</DialogTitle>
           <DialogDescription>
-            Bấm vào một ảnh để sử dụng. Muốn thêm ảnh mới thì đóng cửa sổ này và
-            bấm “Tải ảnh từ máy”.
+            {multiple
+              ? "Chọn một hoặc nhiều ảnh, sau đó bấm “Dùng ảnh đã chọn”."
+              : "Bấm vào một ảnh để sử dụng. Muốn thêm ảnh mới thì đóng cửa sổ này và bấm “Tải ảnh từ máy”."}
           </DialogDescription>
         </DialogHeader>
 
@@ -274,8 +495,13 @@ function MediaLibraryDialog({
               <button
                 key={asset.id}
                 type="button"
-                onClick={() => onSelect(asset)}
-                className="group overflow-hidden rounded-lg border border-line bg-cream text-left transition hover:border-brand focus-visible:border-brand focus-visible:outline-none"
+                onClick={() => choose(asset)}
+                aria-pressed={multiple ? selectedIds.includes(asset.id) : undefined}
+                className={`group relative overflow-hidden rounded-lg border bg-cream text-left transition hover:border-brand focus-visible:border-brand focus-visible:outline-none ${
+                  selectedIds.includes(asset.id)
+                    ? "border-brand ring-2 ring-gold/50"
+                    : "border-line"
+                }`}
                 title={fileNameOf(asset)}
               >
                 <img
@@ -284,9 +510,28 @@ function MediaLibraryDialog({
                   loading="lazy"
                   className="aspect-3/2 w-full object-cover transition group-hover:opacity-90"
                 />
+                {selectedIds.includes(asset.id) && (
+                  <span className="absolute right-2 top-2 grid size-7 place-items-center rounded-full bg-brand text-white shadow">
+                    <Check className="size-4" aria-hidden />
+                    <span className="sr-only">Đã chọn</span>
+                  </span>
+                )}
               </button>
             ))}
           </div>
+        )}
+        {multiple && media.length > 0 && (
+          <DialogFooter>
+            <Button
+              type="button"
+              disabled={selectedIds.length === 0}
+              onClick={() =>
+                onSelect(media.filter((asset) => selectedIds.includes(asset.id)))
+              }
+            >
+              Dùng {selectedIds.length} ảnh đã chọn
+            </Button>
+          </DialogFooter>
         )}
       </DialogContent>
     </Dialog>
