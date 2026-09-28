@@ -87,6 +87,7 @@ const validNews = {
   categoryId: "cat-1",
   author: "",
   image: "",
+  gallery: [],
   eventDate: "",
 };
 
@@ -550,6 +551,10 @@ describe("Tạo mới vs sửa — cùng một schema, không có nhánh riêng"
           categoryId: "cat-1",
           author: "Ban biên tập",
           image: "https://res.cloudinary.com/demo/image/upload/x.jpg",
+          gallery: [
+            "https://res.cloudinary.com/demo/image/upload/y.jpg",
+            "/uploads/news/z.jpg",
+          ],
           eventDate: "2026-07-31",
         }),
       ),

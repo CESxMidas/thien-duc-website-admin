@@ -13,6 +13,7 @@ import {
   MAX_CATEGORY_ID_LENGTH,
   bilingualText,
   optionalDateField,
+  optionalImageGalleryField,
   optionalImageField,
   slugField,
 } from "@/lib/form-validation";
@@ -49,6 +50,7 @@ export const newsSchema = z.object({
     .trim()
     .max(MAX_AUTHOR_LENGTH, `Tối đa ${MAX_AUTHOR_LENGTH} ký tự.`),
   image: optionalImageField(),
+  gallery: optionalImageGalleryField(),
   eventDate: optionalDateField(),
 });
 

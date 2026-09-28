@@ -37,7 +37,10 @@ import { canScheduleRole } from "@/lib/news-schedule";
 import { formatVietnamSentence } from "@/lib/vietnam-time";
 import { contentStatusActions } from "@/lib/content-status-actions";
 import { BilingualField } from "@/components/ui/BilingualField";
-import { ImagePickerField } from "@/components/ui/ImagePickerField";
+import {
+  ImagePickerField,
+  MultiImagePickerField,
+} from "@/components/ui/ImagePickerField";
 import { useAuth } from "@/context/AuthContext";
 import { resolveApiError } from "@/lib/api-error-message";
 import { toBilingualPayload, toBilingualValue } from "@/lib/bilingual";
@@ -69,6 +72,7 @@ function toFormValues(post?: NewsPost): NewsFormValues {
     categoryId: post?.categoryId ?? "",
     author: post?.author ?? "",
     image: post?.image ?? "",
+    gallery: post?.gallery ?? [],
     // `<input type="date">` chỉ nhận `YYYY-MM-DD`, backend trả ISO đầy đủ.
     eventDate: post?.eventDate?.slice(0, 10) ?? "",
   };
@@ -130,6 +134,7 @@ export function NewsFormDialog({ trigger, post }: NewsFormDialogProps) {
       categoryId: values.categoryId,
       author: values.author || undefined,
       image: values.image || undefined,
+      gallery: values.gallery,
       eventDate: values.eventDate || undefined,
       // KHÔNG có `scheduledAt` ở đây — xem `CreateNewsPostInput`. Lịch đăng đi
       // qua lệnh riêng bên dưới.
@@ -306,6 +311,33 @@ export function NewsFormDialog({ trigger, post }: NewsFormDialogProps) {
                       folder="news"
                       aspect="16/9"
                       alt="Ảnh chính bài viết"
+                      onBatchUploaded={(urls) => {
+                        const current = form.getValues("gallery") ?? [];
+                        form.setValue(
+                          "gallery",
+                          Array.from(new Set([...current, ...urls])),
+                          {
+                            shouldDirty: true,
+                            shouldValidate: true,
+                          },
+                        );
+                      }}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="gallery"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <MultiImagePickerField
+                      value={field.value ?? []}
+                      onChange={field.onChange}
+                      folder="news"
                     />
                   </FormControl>
                   <FormMessage />

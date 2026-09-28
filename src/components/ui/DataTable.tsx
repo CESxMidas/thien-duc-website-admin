@@ -39,9 +39,8 @@ export function DataTable<T extends { id: string }>({
   onRowClick?: (row: T) => void;
 }) {
   return (
-    // Không đặt `min-w-*` cho bảng: sàn bề rộng cứng khiến bảng luôn tràn ở
-    // màn hình hẹp. Bảng co theo khung, cột dài tự xuống dòng; `overflow-x-auto`
-    // của <Table> chỉ còn là lưới an toàn cho màn hình rất nhỏ.
+    // Không đặt `min-w-*` cho bảng: chuỗi dài như slug/URL tự xuống dòng trong ô,
+    // thay vì kéo cả CSM sinh thanh cuộn ngang.
     <div className="overflow-hidden rounded-xl border border-line bg-white">
       <Table>
         <TableHeader>

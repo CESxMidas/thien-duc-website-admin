@@ -29,6 +29,7 @@ export interface CreateNewsPostInput {
   categoryId?: string;
   author?: string;
   image?: string;
+  gallery?: string[];
   /** ISO date, vd `2021-03-31`. */
   eventDate?: string;
   // CỐ Ý không có `scheduledAt`: backend đã gỡ field này khỏi DTO nội dung

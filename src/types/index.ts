@@ -129,7 +129,7 @@ export interface Project {
   /** Thông số nhanh (nhãn/giá trị). */
   quickFacts: ProjectFact[] | null;
   /** Ảnh gallery cấp dự án (mảng URL) — khác `galleryImages` (bản ghi đầy đủ). */
-  gallery: string[];
+  gallery?: string[];
   gallerySections: ProjectGallerySection[] | null;
   mapLocation: ProjectMapLocation | null;
   order: number;
@@ -179,6 +179,7 @@ export interface NewsPost {
   category: NewsCategory | null;
   author: string | null;
   image: string | null;
+  gallery?: string[];
   eventDate: string | null;
   publishedAt: string | null;
   scheduledAt: string | null;

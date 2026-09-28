@@ -133,6 +133,22 @@ export function optionalImageField() {
 }
 
 /** Ảnh bắt buộc (banner) — cùng ràng buộc, nhưng không cho rỗng. */
+export function optionalImageGalleryField() {
+  return z
+    .array(
+      z
+        .string()
+        .trim()
+        .min(1, "Ảnh không được để trống.")
+        .max(MAX_URL_LENGTH, `Đường dẫn tối đa ${MAX_URL_LENGTH} ký tự.`)
+        .refine(isSafeImageRef, {
+          message:
+            "Ảnh phải là đường dẫn nội bộ bắt đầu bằng “/” hoặc URL https://.",
+        }),
+    )
+    .max(50, "Tối đa 50 ảnh phụ.");
+}
+
 export function requiredImageField(message: string) {
   return z
     .string()

@@ -54,6 +54,7 @@ interface ImagePickerFieldProps {
   previewFit?: PreviewFit;
   /** Class bổ sung cho khung xem trước. */
   previewClassName?: string;
+  onBatchUploaded?: (urls: string[]) => void;
 }
 
 /** Ảnh xem trước, tự đổi sang ô giữ chỗ khi URL hỏng. */
@@ -106,6 +107,7 @@ export function ImagePickerField({
   alt = "Ảnh đã chọn",
   previewFit = "cover",
   previewClassName,
+  onBatchUploaded,
 }: ImagePickerFieldProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const upload = useUploadMedia();
@@ -144,6 +146,7 @@ export function ImagePickerField({
         if (uploaded.length === 1) {
           onChange(uploaded[0].url);
         } else {
+          onBatchUploaded?.(uploaded.map((asset) => asset.url));
           setUploadedChoices(uploaded);
         }
         toast.success(
