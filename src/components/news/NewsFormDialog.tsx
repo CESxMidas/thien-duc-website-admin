@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { newsSchema, type NewsFormValues } from "./news-schema";
 import { toast } from "sonner";
-import { CalendarClock, Loader2, Send } from "lucide-react";
+import { CalendarClock, Loader2, Star, Trash2, Send } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -39,10 +39,10 @@ import { contentStatusActions } from "@/lib/content-status-actions";
 import { BilingualField } from "@/components/ui/BilingualField";
 import {
   ImagePickerField,
-  MultiImagePickerField,
 } from "@/components/ui/ImagePickerField";
 import { useAuth } from "@/context/AuthContext";
 import { resolveApiError } from "@/lib/api-error-message";
+import { resolveAssetUrl } from "@/lib/asset-url";
 import { toBilingualPayload, toBilingualValue } from "@/lib/bilingual";
 import {
   paragraphsToText,
@@ -61,6 +61,79 @@ interface NewsFormDialogProps {
 function uniqueImageList(images: Array<string | null | undefined>) {
   return Array.from(
     new Set(images.filter((image): image is string => Boolean(image))),
+  );
+}
+
+function NewsImagesPreview({
+  images,
+  cover,
+  onSetCover,
+  onRemove,
+}: {
+  images: string[];
+  cover: string;
+  onSetCover: (url: string) => void;
+  onRemove: (url: string) => void;
+}) {
+  if (images.length === 0) {
+    return (
+      <p className="text-xs leading-relaxed text-slate">
+        Chưa có ảnh nào khác. Dùng nút phía trên để tải hoặc chọn nhiều ảnh.
+      </p>
+    );
+  }
+
+  return (
+    <div className="space-y-2">
+      <p className="text-xs font-medium text-slate">
+        Đã chọn {images.length} ảnh
+      </p>
+      <ul className="grid grid-cols-3 gap-2">
+        {images.map((url) => {
+          const active = url === cover;
+          return (
+            <li
+              key={url}
+              className={`group relative overflow-hidden rounded-md border bg-white ${
+                active ? "border-brand ring-2 ring-gold/45" : "border-line"
+              }`}
+            >
+              <button
+                type="button"
+                className="block w-full"
+                onClick={() => onSetCover(url)}
+                title={active ? "Ảnh đại diện" : "Chọn làm ảnh đại diện"}
+              >
+                <img
+                  src={resolveAssetUrl(url)}
+                  alt=""
+                  className="aspect-4/3 w-full object-cover"
+                  loading="lazy"
+                />
+              </button>
+              <div className="absolute inset-x-1.5 top-1.5 flex items-start justify-between gap-1">
+                {active ? (
+                  <span className="inline-flex size-7 items-center justify-center rounded-md bg-brand text-white shadow-sm">
+                    <Star className="size-3.5 fill-current" aria-hidden />
+                    <span className="sr-only">Ảnh đại diện</span>
+                  </span>
+                ) : (
+                  <span />
+                )}
+                <button
+                  type="button"
+                  className="grid size-7 place-items-center rounded-md bg-white/92 text-slate opacity-0 shadow-sm transition hover:text-red-600 group-hover:opacity-100 focus-visible:opacity-100"
+                  onClick={() => onRemove(url)}
+                  aria-label="Bỏ ảnh"
+                >
+                  <Trash2 className="size-3.5" aria-hidden />
+                </button>
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
   );
 }
 
@@ -352,10 +425,27 @@ export function NewsFormDialog({ trigger, post }: NewsFormDialogProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormControl>
-                    <MultiImagePickerField
-                      value={field.value ?? []}
-                      onChange={field.onChange}
-                      folder="news"
+                    <NewsImagesPreview
+                      images={field.value ?? []}
+                      cover={form.watch("image")}
+                      onSetCover={(url) => {
+                        form.setValue("image", url, {
+                          shouldDirty: true,
+                          shouldValidate: true,
+                        });
+                      }}
+                      onRemove={(url) => {
+                        const next = (field.value ?? []).filter(
+                          (item) => item !== url,
+                        );
+                        field.onChange(next);
+                        if (form.getValues("image") === url) {
+                          form.setValue("image", next[0] ?? "", {
+                            shouldDirty: true,
+                            shouldValidate: true,
+                          });
+                        }
+                      }}
                     />
                   </FormControl>
                   <FormMessage />
