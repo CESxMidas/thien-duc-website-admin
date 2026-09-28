@@ -84,6 +84,7 @@ describe("ImagePickerField", () => {
     uploadMedia.mockImplementation(async ({ file }: { file: File }) => ({
       ...media[0],
       id: file.name,
+      publicId: file.name,
       url: `https://cdn.example/${file.name}.webp`,
     }));
 
@@ -103,7 +104,16 @@ describe("ImagePickerField", () => {
     });
 
     await waitFor(() => expect(uploadMedia).toHaveBeenCalledTimes(2));
-    expect(onChange).toHaveBeenCalledWith("https://cdn.example/anh-1.png.webp");
+    expect(onChange).not.toHaveBeenCalled();
+    expect(screen.getByRole("dialog")).toHaveTextContent("Chọn ảnh đại diện");
+
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: "Chọn anh-2.png làm ảnh đại diện",
+      }),
+    );
+
+    expect(onChange).toHaveBeenCalledWith("https://cdn.example/anh-2.png.webp");
   });
 
   it("chọn nhiều ảnh từ thư viện cho gallery trong một thao tác", async () => {

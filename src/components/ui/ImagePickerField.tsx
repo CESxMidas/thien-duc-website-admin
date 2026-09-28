@@ -110,6 +110,7 @@ export function ImagePickerField({
   const inputRef = useRef<HTMLInputElement>(null);
   const upload = useUploadMedia();
   const [libraryOpen, setLibraryOpen] = useState(false);
+  const [uploadedChoices, setUploadedChoices] = useState<MediaAsset[]>([]);
   const [uploadProgress, setUploadProgress] = useState<{
     current: number;
     total: number;
@@ -140,11 +141,15 @@ export function ImagePickerField({
       }
 
       if (uploaded.length > 0) {
-        onChange(uploaded[0].url);
+        if (uploaded.length === 1) {
+          onChange(uploaded[0].url);
+        } else {
+          setUploadedChoices(uploaded);
+        }
         toast.success(
           uploaded.length === 1
             ? "Đã tải lên và chọn ảnh."
-            : `Đã tải lên ${uploaded.length} ảnh. Ảnh đầu tiên được chọn; các ảnh còn lại đã lưu trong thư viện.`,
+            : `Đã tải lên ${uploaded.length} ảnh. Hãy chọn ảnh đại diện trong danh sách xem trước.`,
         );
       }
     } finally {
@@ -263,7 +268,70 @@ export function ImagePickerField({
           setLibraryOpen(false);
         }}
       />
+      <UploadedImageChoiceDialog
+        assets={uploadedChoices}
+        open={uploadedChoices.length > 1}
+        onOpenChange={(open) => {
+          if (!open) setUploadedChoices([]);
+        }}
+        onSelect={(asset) => {
+          onChange(asset.url);
+          setUploadedChoices([]);
+        }}
+      />
     </div>
+  );
+}
+
+function UploadedImageChoiceDialog({
+  assets,
+  open,
+  onOpenChange,
+  onSelect,
+}: {
+  assets: MediaAsset[];
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSelect: (asset: MediaAsset) => void;
+}) {
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-h-[88vh] overflow-y-auto sm:max-w-4xl">
+        <DialogHeader>
+          <DialogTitle>Chọn ảnh đại diện</DialogTitle>
+          <DialogDescription>
+            Các ảnh vừa tải lên đã được lưu vào thư viện. Chọn ảnh muốn dùng làm ảnh chính.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {assets.map((asset) => (
+            <button
+              key={asset.id}
+              type="button"
+              className="group overflow-hidden rounded-lg border border-line bg-white text-left transition hover:border-brand focus-visible:border-brand focus-visible:outline-none"
+              aria-label={`Chọn ${fileNameOf(asset)} làm ảnh đại diện`}
+              onClick={() => onSelect(asset)}
+            >
+              <span className="grid aspect-3/2 place-items-center bg-cream/50">
+                <img
+                  src={resolveAssetUrl(asset.url)}
+                  alt={fileNameOf(asset)}
+                  className="max-h-full max-w-full object-contain transition group-hover:opacity-90"
+                />
+              </span>
+              <span className="block truncate px-3 py-2 text-xs text-slate">
+                {fileNameOf(asset)}
+              </span>
+            </button>
+          ))}
+        </div>
+        <DialogFooter>
+          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            Chọn sau
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -508,7 +576,7 @@ function MediaLibraryDialog({
                   src={resolveAssetUrl(asset.url)}
                   alt={fileNameOf(asset)}
                   loading="lazy"
-                  className="aspect-3/2 w-full object-cover transition group-hover:opacity-90"
+                  className="aspect-3/2 w-full bg-white object-contain transition group-hover:opacity-90"
                 />
                 {selectedIds.includes(asset.id) && (
                   <span className="absolute right-2 top-2 grid size-7 place-items-center rounded-full bg-brand text-white shadow">
