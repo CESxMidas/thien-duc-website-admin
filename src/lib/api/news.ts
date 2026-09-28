@@ -18,7 +18,7 @@
 // công khai. Admin CMS luôn phải gọi `/news/admin`, nếu không sẽ không thấy bài
 // nháp của chính mình.
 
-import { ApiRequestError, apiFetch } from "./client";
+import { apiFetch } from "./client";
 import type { Bilingual, ContentStatus, NewsCategory, NewsPost } from "@/types";
 
 export interface CreateNewsPostInput {
@@ -40,19 +40,6 @@ export interface CreateNewsPostInput {
 
 export type UpdateNewsPostInput = Partial<CreateNewsPostInput>;
 
-function withoutGallery<T extends { gallery?: string[] }>(input: T): Omit<T, "gallery"> {
-  const { gallery: _gallery, ...rest } = input;
-  return rest;
-}
-
-function isLegacyGalleryWhitelistError(error: unknown) {
-  return (
-    error instanceof ApiRequestError &&
-    error.status === 400 &&
-    /gallery should not exist/i.test(error.message)
-  );
-}
-
 export function listNews(): Promise<NewsPost[]> {
   return apiFetch<NewsPost[]>("/news/admin");
 }
@@ -61,12 +48,6 @@ export function createNews(input: CreateNewsPostInput): Promise<NewsPost> {
   return apiFetch<NewsPost>("/news", {
     method: "POST",
     body: JSON.stringify(input),
-  }).catch((error: unknown) => {
-    if (!isLegacyGalleryWhitelistError(error)) throw error;
-    return apiFetch<NewsPost>("/news", {
-      method: "POST",
-      body: JSON.stringify(withoutGallery(input)),
-    });
   });
 }
 
@@ -77,12 +58,6 @@ export function updateNews(
   return apiFetch<NewsPost>(`/news/${encodeURIComponent(slug)}`, {
     method: "PATCH",
     body: JSON.stringify(input),
-  }).catch((error: unknown) => {
-    if (!isLegacyGalleryWhitelistError(error)) throw error;
-    return apiFetch<NewsPost>(`/news/${encodeURIComponent(slug)}`, {
-      method: "PATCH",
-      body: JSON.stringify(withoutGallery(input)),
-    });
   });
 }
 
