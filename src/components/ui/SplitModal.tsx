@@ -71,12 +71,12 @@ export function SplitModal({
           SIZE[resolvedSize],
         )}
       >
-        <DialogHeader className="shrink-0 border-b border-line bg-white px-6 py-4 pr-12 text-left">
-          <DialogTitle className="font-display text-lg text-ink">
+        <DialogHeader className="min-w-0 shrink-0 overflow-x-hidden border-b border-line bg-white px-6 py-4 pr-12 text-left">
+          <DialogTitle className="min-w-0 break-words font-display text-lg text-ink">
             {title}
           </DialogTitle>
           {description ? (
-            <DialogDescription className="text-slate">
+            <DialogDescription className="min-w-0 break-words text-slate">
               {description}
             </DialogDescription>
           ) : null}
@@ -87,18 +87,22 @@ export function SplitModal({
           // vẫn ưu tiên không gian cho các trường nhập.
           // Desktop: mỗi cột cuộn riêng (ảnh luôn thấy). Mobile: xếp dọc, cả
           // thân cuộn chung để tránh hai vùng cuộn lồng nhau.
-          <div className="grid min-h-0 flex-1 overflow-y-auto md:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] md:overflow-hidden">
-            <aside className="space-y-5 border-b border-line bg-cream/40 p-5 md:min-h-0 md:overflow-y-auto md:border-b-0 md:border-r">
+          <div className="grid min-h-0 min-w-0 flex-1 overflow-y-auto overflow-x-hidden md:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] md:overflow-hidden">
+            <aside className="min-w-0 space-y-5 overflow-x-hidden border-b border-line bg-cream/40 p-5 md:min-h-0 md:overflow-y-auto md:border-b-0 md:border-r">
               {media}
             </aside>
-            <div className="p-6 md:min-h-0 md:overflow-y-auto">{children}</div>
+            <div className="min-w-0 overflow-x-hidden p-6 md:min-h-0 md:overflow-y-auto">
+              {children}
+            </div>
           </div>
         ) : (
-          <div className="min-h-0 flex-1 overflow-y-auto p-6">{children}</div>
+          <div className="min-h-0 min-w-0 flex-1 overflow-y-auto overflow-x-hidden p-6">
+            {children}
+          </div>
         )}
 
         {footer ? (
-          <DialogFooter className="shrink-0 border-t border-line bg-white px-6 py-4">
+          <DialogFooter className="min-w-0 shrink-0 overflow-x-hidden border-t border-line bg-white px-6 py-4">
             {footer}
           </DialogFooter>
         ) : null}
@@ -125,8 +129,8 @@ export function MediaSection({
   children: ReactNode;
 }) {
   return (
-    <section className="space-y-2">
-      <div className="flex min-h-6 items-center justify-between gap-2">
+    <section className="min-w-0 space-y-2 overflow-x-hidden">
+      <div className="flex min-h-6 min-w-0 items-center justify-between gap-2">
         <h3 className="text-[11px] font-semibold tracking-[0.14em] text-slate uppercase">
           {label}
           {/*

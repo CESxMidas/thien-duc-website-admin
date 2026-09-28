@@ -58,6 +58,12 @@ interface NewsFormDialogProps {
   post?: NewsPost;
 }
 
+function uniqueImageList(images: Array<string | null | undefined>) {
+  return Array.from(
+    new Set(images.filter((image): image is string => Boolean(image))),
+  );
+}
+
 function toFormValues(post?: NewsPost): NewsFormValues {
   return {
     title: toBilingualValue(post?.title),
@@ -72,7 +78,7 @@ function toFormValues(post?: NewsPost): NewsFormValues {
     categoryId: post?.categoryId ?? "",
     author: post?.author ?? "",
     image: post?.image ?? "",
-    gallery: post?.gallery ?? [],
+    gallery: uniqueImageList([post?.image, ...(post?.gallery ?? [])]),
     // `<input type="date">` chỉ nhận `YYYY-MM-DD`, backend trả ISO đầy đủ.
     eventDate: post?.eventDate?.slice(0, 10) ?? "",
   };
@@ -134,7 +140,7 @@ export function NewsFormDialog({ trigger, post }: NewsFormDialogProps) {
       categoryId: values.categoryId,
       author: values.author || undefined,
       image: values.image || undefined,
-      gallery: values.gallery,
+      gallery: uniqueImageList([values.image, ...values.gallery]),
       eventDate: values.eventDate || undefined,
       // KHÔNG có `scheduledAt` ở đây — xem `CreateNewsPostInput`. Lịch đăng đi
       // qua lệnh riêng bên dưới.
@@ -296,8 +302,8 @@ export function NewsFormDialog({ trigger, post }: NewsFormDialogProps) {
         }
         media={
           <MediaSection
-            label="Ảnh chính"
-            hint="Ảnh đại diện bài viết"
+            label="Ảnh bài viết"
+            hint="Chọn ảnh đại diện và quản lý toàn bộ ảnh hiển thị trong bài."
           >
             <FormField
               control={form.control}
@@ -307,7 +313,19 @@ export function NewsFormDialog({ trigger, post }: NewsFormDialogProps) {
                   <FormControl>
                     <ImagePickerField
                       value={field.value ?? ""}
-                      onChange={field.onChange}
+                      onChange={(url) => {
+                        field.onChange(url);
+                        if (!url) return;
+                        const current = form.getValues("gallery") ?? [];
+                        form.setValue(
+                          "gallery",
+                          uniqueImageList([url, ...current]),
+                          {
+                            shouldDirty: true,
+                            shouldValidate: true,
+                          },
+                        );
+                      }}
                       folder="news"
                       aspect="16/9"
                       alt="Ảnh chính bài viết"
@@ -315,7 +333,7 @@ export function NewsFormDialog({ trigger, post }: NewsFormDialogProps) {
                         const current = form.getValues("gallery") ?? [];
                         form.setValue(
                           "gallery",
-                          Array.from(new Set([...current, ...urls])),
+                          uniqueImageList([...current, ...urls]),
                           {
                             shouldDirty: true,
                             shouldValidate: true,
@@ -394,7 +412,12 @@ export function NewsFormDialog({ trigger, post }: NewsFormDialogProps) {
           </>
         }
       >
-        <form id={formId} onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4" noValidate>
+        <form
+          id={formId}
+          onSubmit={form.handleSubmit(onSubmit)}
+          className="grid min-w-0 gap-4 overflow-x-hidden"
+          noValidate
+        >
             <FormField
               control={form.control}
               name="title"

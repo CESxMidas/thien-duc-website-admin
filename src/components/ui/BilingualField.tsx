@@ -73,8 +73,8 @@ export function BilingualField({
   const missingEnglish = value.vi.trim() !== "" && value.en.trim() === "";
 
   return (
-    <div className="space-y-2">
-      <div className="flex gap-1" role="group" aria-label="Chọn ngôn ngữ">
+    <div className="min-w-0 space-y-2">
+      <div className="flex min-w-0 gap-1" role="group" aria-label="Chọn ngôn ngữ">
         {(["vi", "en"] as const).map((item) => {
           const active = item === lang;
           return (

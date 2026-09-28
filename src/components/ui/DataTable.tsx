@@ -14,9 +14,7 @@ export interface Column<T> {
   /** Ẩn cột trên màn hình hẹp. */
   hideOnMobile?: boolean;
   /**
-   * Lớp thêm cho ô của cột. Ô mặc định `whitespace-nowrap`; cột chứa văn bản
-   * dài (địa chỉ dự án) phải tự mở `whitespace-normal` kèm giới hạn bề rộng,
-   * nếu không bảng bị đẩy rộng ra và sinh thanh cuộn ngang.
+   * Lớp thêm cho ô của cột khi cần canh phải, ẩn mobile, hoặc giới hạn dòng.
    */
   cellClassName?: string;
   /** Lớp thêm cho ô tiêu đề — dùng khi cần canh phải cho khớp nội dung ô. */

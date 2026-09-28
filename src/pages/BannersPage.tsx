@@ -171,8 +171,7 @@ export function BannersPage() {
     {
       key: "displayWindow",
       header: "Thời gian hiển thị",
-      // Ô mặc định `whitespace-nowrap`; hai mốc ngày-giờ là chuỗi dài nên phải
-      // tự mở cho xuống dòng, nếu không bảng bị đẩy rộng và sinh cuộn ngang.
+      // Hai mốc ngày-giờ là chuỗi dài, nên giữ cho xuống dòng trong ô.
       cellClassName: "whitespace-normal",
       render: (banner) => {
         const state = deriveDisplayState(banner, now);
