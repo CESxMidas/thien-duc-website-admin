@@ -39,6 +39,7 @@ vi.mock("@/lib/api/queries", () => {
     useAddGalleryImage: mutation,
     useDeleteGalleryImage: mutation,
     useUpdateGalleryImage: mutation,
+    useUpdateProject: mutation,
     useReorderGallery: mutation,
     useMedia: () => ({ data: [], isLoading: false }),
     useUploadMedia: mutation,

@@ -35,6 +35,7 @@ import {
   useDeleteGalleryImage,
   useReorderGallery,
   useUpdateGalleryImage,
+  useUpdateProject,
 } from "@/lib/api/queries";
 import { resolveApiError } from "@/lib/api-error-message";
 import { resolveAssetUrl } from "@/lib/asset-url";
@@ -81,6 +82,7 @@ export function ProjectGalleryTab({ project }: { project: ProjectDetail }) {
   const addImage = useAddGalleryImage();
   const deleteImage = useDeleteGalleryImage();
   const updateImage = useUpdateGalleryImage();
+  const updateProject = useUpdateProject();
   const reorder = useReorderGallery();
 
   // Ảnh thư viện — kể cả THỨ TỰ của chúng — là nội dung công khai của dự án cha,
@@ -182,6 +184,23 @@ export function ProjectGalleryTab({ project }: { project: ProjectDetail }) {
     }
   }
 
+  async function setCoverImage(image: ProjectGalleryImage) {
+    try {
+      await updateProject.mutateAsync({
+        slug: project.slug,
+        data: { image: image.url },
+      });
+      toast.success("Đã đặt ảnh này làm ảnh đại diện dự án.");
+    } catch (error) {
+      toast.error(
+        resolveApiError(
+          error,
+          "Không đặt được ảnh đại diện. Vui lòng thử lại.",
+        ),
+      );
+    }
+  }
+
   return (
     <div className="space-y-5">
       {!canEdit && (
@@ -260,6 +279,7 @@ export function ProjectGalleryTab({ project }: { project: ProjectDetail }) {
         <ul className="space-y-2">
           {images.map((image, index) => {
             const isActive = image.isActive !== false;
+            const isCover = project.image === image.url;
             return (
             <li
               key={image.id}
@@ -293,6 +313,26 @@ export function ProjectGalleryTab({ project }: { project: ProjectDetail }) {
               </div>
               {canEdit && (
                 <div className="flex shrink-0 items-center gap-0.5">
+                  <Button
+                    variant={isCover ? "outline" : "ghost"}
+                    size="sm"
+                    aria-label={
+                      isCover
+                        ? "Ảnh này đang là ảnh đại diện"
+                        : "Đặt làm ảnh đại diện"
+                    }
+                    title={
+                      !isActive
+                        ? "Hãy hiện ảnh trước khi đặt làm ảnh đại diện"
+                        : isCover
+                          ? "Ảnh này đang là ảnh đại diện"
+                          : "Đặt làm ảnh đại diện"
+                    }
+                    disabled={!isActive || isCover || updateProject.isPending}
+                    onClick={() => void setCoverImage(image)}
+                  >
+                    {isCover ? "Cover" : "Đại diện"}
+                  </Button>
                   <Button
                     variant="ghost"
                     size="sm"

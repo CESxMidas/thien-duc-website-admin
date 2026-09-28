@@ -5,8 +5,9 @@ import { describe, expect, it, vi } from "vitest";
 import { ProjectGalleryTab } from "@/components/projects/ProjectGalleryTab";
 import type { ProjectDetail } from "@/types";
 
-const { addGalleryImage } = vi.hoisted(() => ({
+const { addGalleryImage, updateProject } = vi.hoisted(() => ({
   addGalleryImage: vi.fn(async () => ({})),
+  updateProject: vi.fn(async () => ({})),
 }));
 
 vi.mock("@/components/ui/ImagePickerField", () => ({
@@ -43,6 +44,10 @@ vi.mock("@/lib/api/queries", () => {
     useDeleteGalleryImage: () => idleMutation,
     useUpdateGalleryImage: () => idleMutation,
     useReorderGallery: () => idleMutation,
+    useUpdateProject: () => ({
+      mutateAsync: updateProject,
+      isPending: false,
+    }),
   };
 });
 
@@ -93,5 +98,40 @@ describe("ProjectGalleryTab — thêm ảnh theo lô", () => {
       slug: "du-an",
       data: { url: "/images/b.webp" },
     });
+  });
+
+  it("đặt một ảnh trong gallery làm ảnh đại diện dự án", async () => {
+    const user = userEvent.setup();
+    updateProject.mockClear();
+    render(
+      <ProjectGalleryTab
+        project={{
+          ...project,
+          galleryImages: [
+            {
+              id: "img-1",
+              projectId: "p1",
+              projectItemId: null,
+              url: "/images/a.webp",
+              caption: null,
+              order: 0,
+              isActive: true,
+              createdAt: "2026-09-26T00:00:00Z",
+            },
+          ],
+        }}
+      />,
+    );
+
+    await user.click(
+      screen.getByRole("button", { name: "Đặt làm ảnh đại diện" }),
+    );
+
+    await waitFor(() =>
+      expect(updateProject).toHaveBeenCalledWith({
+        slug: "du-an",
+        data: { image: "/images/a.webp" },
+      }),
+    );
   });
 });
