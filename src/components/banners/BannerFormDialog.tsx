@@ -201,7 +201,7 @@ export function BannerFormDialog({ trigger, banner }: BannerFormDialogProps) {
                       value={field.value}
                       onChange={field.onChange}
                       placeholder={{
-                        vi: "Dự án tiêu biểu",
+                        vi: "Dự án tiêu biểu",  
                         en: "Featured project",
                       }}
                     />
