@@ -31,7 +31,7 @@ import type { Banner } from "@/types";
 
 interface BannerFormDialogProps {
   trigger: ReactNode;
-  /** Có `banner` = chế độ sửa; không có = tạo mới. */
+
   banner?: Banner;
 }
 
@@ -44,8 +44,7 @@ function toFormValues(banner?: Banner): BannerFormValues {
     subtitle: toBilingualValue(banner?.subtitle),
     ctaLabel: toBilingualValue(banner?.ctaLabel),
     objectPosition: banner?.objectPosition ?? "",
-    // Cửa sổ đang lưu (UTC) nạp lên thành GIỜ VIỆT NAM. Banner mới thì bốn ô
-    // rỗng — nghĩa là "hiện ngay, không hạn", đúng hành vi trước Batch 12.
+    
     ...toDisplayWindowFields({
       displayFrom: banner?.displayFrom ?? null,
       displayUntil: banner?.displayUntil ?? null,
@@ -53,7 +52,6 @@ function toFormValues(banner?: Banner): BannerFormValues {
   };
 }
 
-/** Field tùy chọn: tạo mới thì bỏ qua ô trống, sửa thì gửi null để xoá nội dung cũ. */
 function optionalPayload(
   value: BannerFormValues["eyebrow"],
   mode: "create" | "update",
@@ -79,9 +77,7 @@ export function BannerFormDialog({ trigger, banner }: BannerFormDialogProps) {
   }, [open, banner, form]);
 
   async function onSubmit(values: BannerFormValues) {
-    // Schema đã chạy đúng hàm này nên nhánh lỗi ở đây trên thực tế không tới —
-    // nhưng nó là thứ thu hẹp kiểu, và là lưới an toàn nếu ai đó tháo
-    // `superRefine` ra khỏi schema.
+    
     const window = validateDisplayWindowFields(values);
     if (!window.ok) {
       form.setError(window.field, { message: window.message });
@@ -96,9 +92,7 @@ export function BannerFormDialog({ trigger, banner }: BannerFormDialogProps) {
       subtitle: optionalPayload(values.subtitle, isEdit ? "update" : "create"),
       ctaLabel: optionalPayload(values.ctaLabel, isEdit ? "update" : "create"),
       objectPosition: values.objectPosition || undefined,
-      // GỬI `null` TƯỜNG MINH, không phải `undefined`: đó là cách duy nhất nói
-      // với backend "xoá biên này". Bỏ field đi có nghĩa "giữ nguyên", nên xoá
-      // cửa sổ ở form sẽ im lặng không có tác dụng.
+ 
       displayFrom: window.window.displayFrom,
       displayUntil: window.window.displayUntil,
     };
@@ -213,7 +207,7 @@ export function BannerFormDialog({ trigger, banner }: BannerFormDialogProps) {
                     />
                   </FormControl>
                   <FormDescription>
-                    Ví dụ: Dự án tiêu biểu, Ưu đãi, Thông báo. Không cần thì bỏ trống.
+                    Ví dụ: Dự án tiêu biểu, Ưu đãi, Thông báo.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
