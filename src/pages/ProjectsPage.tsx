@@ -4,6 +4,7 @@ import {
   CalendarClock,
   CalendarX2,
   EyeOff,
+  ImageOff,
   Loader2,
   Pencil,
   Plus,
@@ -15,6 +16,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { ContentListCell } from "@/components/ui/ContentListCell";
 import { DataTable, type Column } from "@/components/ui/DataTable";
 import { ProjectFormDialog } from "@/components/projects/ProjectFormDialog";
 import { ProjectDetailDialog } from "@/components/projects/ProjectDetailDialog";
@@ -169,10 +171,15 @@ export function ProjectsPage() {
       key: "title",
       header: "Dự án",
       render: (p) => (
-        <div>
-          <p className="font-medium text-ink">{p.title.vi}</p>
-          <p className="text-xs text-slate">/{p.slug}</p>
-        </div>
+        <ContentListCell
+          title={p.title.vi}
+          image={p.image}
+          imageAlt={`Ảnh đại diện dự án ${p.title.vi}`}
+          fallbackIcon={ImageOff}
+          fallbackTitle="Chưa có ảnh đại diện"
+          metadata={`/${p.slug}`}
+          detail={p.category?.vi ?? p.location?.vi}
+        />
       ),
     },
     {

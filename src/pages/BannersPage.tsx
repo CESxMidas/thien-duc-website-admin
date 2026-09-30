@@ -6,6 +6,7 @@ import { BannerFormDialog } from "@/components/banners/BannerFormDialog";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { ContentListCell } from "@/components/ui/ContentListCell";
 import { DataTable, type Column } from "@/components/ui/DataTable";
 import {
   useBanners,
@@ -13,7 +14,6 @@ import {
   useUpdateBanner,
 } from "@/lib/api/queries";
 import { resolveApiError } from "@/lib/api-error-message";
-import { resolveAssetUrl } from "@/lib/asset-url";
 import {
   DISPLAY_STATE_LABEL,
   DISPLAY_STATE_TONE,
@@ -124,24 +124,15 @@ export function BannersPage() {
       key: "title",
       header: "Banner",
       render: (banner) => (
-        <div className="flex items-center gap-3">
-          <div className="size-12 shrink-0 overflow-hidden rounded-md bg-cream">
-            {banner.image ? (
-              <img
-                src={resolveAssetUrl(banner.image)}
-                alt=""
-                loading="lazy"
-                className="size-full object-cover"
-              />
-            ) : (
-              <ImageOff className="m-3 size-6 text-slate/40" />
-            )}
-          </div>
-          <div>
-            <p className="font-medium text-ink">{bannerListTitle(banner)}</p>
-            <p className="text-xs text-slate">{banner.href}</p>
-          </div>
-        </div>
+        <ContentListCell
+          title={bannerListTitle(banner)}
+          image={banner.image}
+          imageAlt={`Ảnh banner ${bannerListTitle(banner)}`}
+          fallbackIcon={ImageOff}
+          fallbackTitle="Chưa có ảnh banner"
+          metadata={banner.href}
+          detail={banner.subtitle?.vi}
+        />
       ),
     },
     // HAI CỘT TÁCH BẠCH, có chủ ý. "Công tắc" là thứ biên tập viên bật/tắt

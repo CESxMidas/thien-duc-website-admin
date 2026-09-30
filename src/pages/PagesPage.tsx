@@ -2,6 +2,7 @@ import { useState } from "react";
 import {
   CalendarClock,
   CalendarX2,
+  FileText,
   Loader2,
   Pencil,
   Plus,
@@ -16,6 +17,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { DetailDialog } from "@/components/ui/DetailDialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { ContentListCell } from "@/components/ui/ContentListCell";
 import { DataTable, type Column } from "@/components/ui/DataTable";
 import { useAuth } from "@/context/AuthContext";
 import {
@@ -111,10 +113,13 @@ export function PagesPage() {
       key: "title",
       header: "Trang",
       render: (page) => (
-        <div>
-          <p className="font-medium text-ink">{page.title.vi}</p>
-          <p className="text-xs text-slate">/{page.slug}</p>
-        </div>
+        <ContentListCell
+          title={page.title.vi}
+          fallbackIcon={FileText}
+          fallbackTitle="Trang nội dung"
+          metadata={`/${page.slug}`}
+          detail={`${page.content?.length ?? 0} đoạn nội dung`}
+        />
       ),
     },
     {

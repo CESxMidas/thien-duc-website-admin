@@ -4,6 +4,7 @@ import {
   CalendarClock,
   CalendarX2,
   EyeOff,
+  ImageOff,
   Loader2,
   Pencil,
   Plus,
@@ -17,6 +18,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { ContentListCell } from "@/components/ui/ContentListCell";
 import { DataTable, type Column } from "@/components/ui/DataTable";
 import { NewsFormDialog } from "@/components/news/NewsFormDialog";
 import { SchedulePublishDialog } from "@/components/content/SchedulePublishDialog";
@@ -166,10 +168,15 @@ export function NewsPage() {
       key: "title",
       header: "Tiêu đề",
       render: (post) => (
-        <div>
-          <p className="font-medium text-ink">{post.title.vi}</p>
-          <p className="text-xs text-slate">/{post.slug}</p>
-        </div>
+        <ContentListCell
+          title={post.title.vi}
+          image={post.image}
+          imageAlt={`Ảnh đại diện bài viết ${post.title.vi}`}
+          fallbackIcon={ImageOff}
+          fallbackTitle="Chưa có ảnh đại diện"
+          metadata={`/${post.slug}`}
+          detail={post.category?.name.vi ?? "Chưa phân loại"}
+        />
       ),
     },
     {

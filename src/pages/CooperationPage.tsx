@@ -20,6 +20,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { ContentListCell } from "@/components/ui/ContentListCell";
 import { DataTable, type Column } from "@/components/ui/DataTable";
 import { useAuth } from "@/context/AuthContext";
 import {
@@ -31,7 +32,6 @@ import {
   useUpdateCooperationStatus,
 } from "@/lib/api/queries";
 import { resolveApiError } from "@/lib/api-error-message";
-import { resolveAssetUrl } from "@/lib/asset-url";
 import { canEditCooperation } from "@/lib/content-editing";
 import { contentStatusActions } from "@/lib/content-status-actions";
 import {
@@ -219,29 +219,15 @@ export function CooperationPage() {
       key: "name",
       header: "Dự án",
       render: (project) => (
-        <div className="flex items-center gap-3">
-          {project.image ? (
-            <img
-              src={resolveAssetUrl(project.image)}
-              alt=""
-              loading="lazy"
-              className="size-11 shrink-0 rounded-lg border border-line bg-cream object-cover"
-            />
-          ) : (
-            <div
-              className="grid size-11 shrink-0 place-items-center rounded-lg bg-cream text-slate/50"
-              title="Chưa có ảnh phối cảnh"
-            >
-              <Handshake className="size-5" aria-hidden />
-            </div>
-          )}
-          <div className="min-w-0">
-            <p className="font-medium text-ink">{project.name.vi}</p>
-            <p className="text-xs text-slate">
-              {project.location.vi} · {project.role.vi}
-            </p>
-          </div>
-        </div>
+        <ContentListCell
+          title={project.name.vi}
+          image={project.image}
+          imageAlt={`Ảnh phối cảnh dự án hợp tác ${project.name.vi}`}
+          fallbackIcon={Handshake}
+          fallbackTitle="Chưa có ảnh phối cảnh"
+          metadata={project.location.vi}
+          detail={project.role.vi}
+        />
       ),
     },
     {
