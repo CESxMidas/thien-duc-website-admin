@@ -26,17 +26,10 @@ import { NotFoundPage } from "@/pages/NotFoundPage";
 export default function App() {
   return (
     <AuthProvider>
-      {/* basename lấy từ `import.meta.env.BASE_URL` (Batch 15B): Admin chạy
-          dưới `/admin` trên production. Nhờ đó MỌI `<Link>`, `<Navigate>`,
-          `navigate()` bên dưới vẫn viết path theo gốc app (`/dang-nhap`,
-          `/du-an`…) — React Router tự gắn tiền tố. Tuyệt đối KHÔNG gõ `/admin`
-          vào từng route. */}
       <BrowserRouter basename={toRouterBasename()}>
         <Routes>
           <Route path="/dang-nhap" element={<LoginPage />} />
-          {/* Trang CÔNG KHAI: người được mời tự đặt mật khẩu (ngoài ProtectedRoute). */}
           <Route path="/thiet-lap-tai-khoan" element={<AccountSetupPage />} />
-          {/* Trang CÔNG KHAI: quên / đặt lại mật khẩu (ngoài ProtectedRoute). */}
           <Route path="/quen-mat-khau" element={<ForgotPasswordPage />} />
           <Route path="/dat-lai-mat-khau" element={<ResetPasswordPage />} />
           <Route path="/403" element={<ForbiddenPage />} />
@@ -50,14 +43,8 @@ export default function App() {
             <Route index element={<DashboardPage />} />
             <Route path="du-an" element={<ProjectsPage />} />
             <Route path="tin-tuc" element={<NewsPage />} />
-            {/* Trang con của Tin tức — cố ý KHÔNG thêm mục sidebar: 4 chuyên
-                mục không đáng một mục điều hướng cấp một. Vào từ trang Tin tức. */}
-            <Route
-              path="tin-tuc/chuyen-muc"
-              element={<NewsCategoriesPage />}
-            />
+            <Route path="tin-tuc/chuyen-muc" element={<NewsCategoriesPage />} />
             <Route path="trang" element={<PagesPage />} />
-            {/* Banner là nội dung trang chủ — chỉ Admin/Super Admin quản lý. */}
             <Route
               path="banner"
               element={
@@ -67,7 +54,6 @@ export default function App() {
               }
             />
             <Route path="du-an-hop-tac" element={<CooperationPage />} />
-            {/* Form liên hệ (lead) chỉ dành cho Admin/Super Admin. */}
             <Route
               path="lien-he"
               element={
@@ -85,9 +71,7 @@ export default function App() {
                 </ProtectedRoute>
               }
             />
-            {/* Hồ sơ cá nhân — mọi vai trò. */}
             <Route path="ho-so" element={<ProfilePage />} />
-            {/* Duyệt cập nhật hồ sơ — chỉ Admin/Super Admin. */}
             <Route
               path="duyet-ho-so"
               element={
@@ -96,7 +80,6 @@ export default function App() {
                 </ProtectedRoute>
               }
             />
-            {/* Quản lý tài khoản chỉ dành cho Admin/Super Admin. */}
             <Route
               path="tai-khoan"
               element={
