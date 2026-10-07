@@ -147,6 +147,14 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+.text-balanced {
+  text-wrap: balance;
+}
+
+.text-pretty-flow {
+  text-wrap: pretty;
+}
+
 /* Bôi đen chọn chữ mang màu thương hiệu thay vì xanh mặc định của hệ điều
    hành — chi tiết nhỏ nhưng giữ nhận diện xuyên suốt. */
 ::selection {

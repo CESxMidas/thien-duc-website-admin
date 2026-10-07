@@ -289,9 +289,6 @@ export function ProjectGalleryTab({
             <h3 className="font-display text-sm font-semibold text-ink">
               Hình ảnh {coverLabel}
             </h3>
-            <p className="mt-1 text-xs text-slate">
-              Quản lý ảnh chính, ảnh con, thứ tự và trạng thái hiển thị trong cùng một khu.
-            </p>
           </div>
           <div className="flex flex-wrap gap-2">
             <Badge variant="gray">
@@ -316,7 +313,7 @@ export function ProjectGalleryTab({
 
         {!canEdit && (
           <p className="rounded-lg border border-line bg-cream/40 px-3 py-2 text-xs text-slate">
-            Dự án đã xuất bản — chỉ quản trị viên sửa được thư viện ảnh.
+            Dự án đã xuất bản, chỉ quản trị viên sửa được thư viện ảnh.
           </p>
         )}
 
@@ -327,9 +324,6 @@ export function ProjectGalleryTab({
               <Label className="font-display text-sm font-semibold text-ink">
                 Thêm và quản lý ảnh {item ? "hạng mục" : "dự án"}
               </Label>
-              <p className="mt-1 text-xs text-slate">
-                Chọn ảnh mới, đặt ảnh chính, sắp xếp và ẩn hoặc hiện ảnh bên dưới.
-              </p>
             </div>
             <MultiImagePickerField
               value={urls}
@@ -347,9 +341,6 @@ export function ProjectGalleryTab({
                       onChange={(e) => setCaption(e.target.value)}
                       placeholder="Phối cảnh mặt tiền"
                     />
-                    <p className="text-xs text-slate">
-                      Nếu chọn nhiều ảnh, chú thích sẽ được áp dụng cho tất cả.
-                    </p>
                   </div>
                   <Button
                     type="submit"
@@ -513,13 +504,6 @@ export function ProjectGalleryTab({
           </ul>
         )}
       </section>
-
-      {!projectOnly && images.length === 0 && project.items.length === 0 && (
-        <p className="flex items-center justify-center gap-2 text-xs text-slate">
-          <ImageOff className="size-3.5" />
-          Tạo hạng mục trước nếu muốn gắn ảnh vào từng hạng mục.
-        </p>
-      )}
 
       <ConfirmDialog
         open={toDelete !== null}

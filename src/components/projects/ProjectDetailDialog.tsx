@@ -209,9 +209,6 @@ function EntityGalleryStrip({
           ))}
         </div>
       )}
-      <p className="text-xs leading-5 text-slate">
-        Quản lý thêm, ẩn, hiện và gắn ảnh ở phần Hình ảnh trong tab Dự án.
-      </p>
     </div>
   );
 }
@@ -263,9 +260,6 @@ function ProjectWorkspace({ project }: { project: ProjectDetail }) {
             <div>
               <p className="font-display text-sm font-semibold text-ink">
                 Đang chỉnh sửa dự án
-              </p>
-              <p className="text-xs text-slate">
-                Dự án đang ở chế độ chỉnh sửa.
               </p>
             </div>
             <Button
@@ -401,10 +395,6 @@ function ProjectReadOnlyOverview({ project }: { project: ProjectDetail }) {
             : []),
         ]}
       />
-      <p className="rounded-lg border border-dashed border-line bg-cream/40 px-3 py-3 text-sm text-slate">
-        Bấm “Sửa thông tin” để mở các phần chỉnh sửa nội dung, hình ảnh và hạng
-        mục.
-      </p>
     </div>
   );
 }
@@ -490,9 +480,6 @@ function ProjectItemWorkspace({
             <h3 className="font-display text-sm font-semibold text-ink">
               Nội dung hạng mục
             </h3>
-            <p className="mt-1 text-xs text-slate">
-              Dữ liệu, ảnh chính và thư viện bên trái đang theo hạng mục này.
-            </p>
           </div>
           {canEdit ? (
             <Button
@@ -522,10 +509,6 @@ function ProjectItemWorkspace({
                 aspect="3/2"
                 alt="Ảnh chính hạng mục"
               />
-              <p className="text-xs text-slate">
-                Ảnh này thay đổi phần ảnh đại diện bên trái khi chọn tab hạng
-                mục.
-              </p>
             </div>
 
             <div className="space-y-1.5">
@@ -791,9 +774,6 @@ function InfoTab({
             <h3 className="font-display text-sm font-semibold text-ink">
               Thông tin cơ bản của dự án
             </h3>
-            <p className="mt-1 text-xs text-slate">
-              Dùng chung cho danh sách dự án, đầu trang chi tiết và SEO cơ bản.
-            </p>
           </div>
           {canEdit && !hideEditToggle ? (
             <Button
@@ -911,8 +891,8 @@ function InfoTab({
               { label: "Tên dự án", value: project.title.vi },
               { label: "Slug", value: `/${project.slug}` },
               { label: "Mô tả ngắn", value: project.summary.vi, block: true },
-              { label: "Vị trí", value: project.location?.vi ?? "—" },
-              { label: "Phân loại", value: project.category?.vi ?? "—" },
+              { label: "Vị trí", value: project.location?.vi ?? "Chưa nhập" },
+              { label: "Phân loại", value: project.category?.vi ?? "Chưa nhập" },
               {
                 label: "Tình trạng",
                 value: projectStatusLabel[project.status],

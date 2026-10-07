@@ -136,8 +136,8 @@ export function ProjectContentTab({ project }: { project: ProjectDetail }) {
           value={description}
           onChange={setDescription}
           placeholder={{
-            vi: "Giới thiệu tổng quan về quy mô, vị trí, hạ tầng và tiến độ dự án…",
-            en: "An overview of the project's scale, location, infrastructure, and progress…",
+            vi: "Giới thiệu tổng quan về quy mô, vị trí, hạ tầng và tiến độ dự án",
+            en: "An overview of the project's scale, location, infrastructure, and progress",
           }}
         />
       </section>
@@ -183,9 +183,9 @@ export function ProjectContentTab({ project }: { project: ProjectDetail }) {
                         highlights.map((h, i) => (i === index ? next : h)),
                       )
                     }
-                    placeholder={{
-                      vi: "Mặt tiền đường lớn, sổ hồng lâu dài…",
-                      en: "Main road frontage, long-term title…",
+                      placeholder={{
+                      vi: "Mặt tiền đường lớn, sổ hồng lâu dài",
+                      en: "Main road frontage, long-term title",
                     }}
                   />
                 </div>
@@ -345,7 +345,7 @@ export function ProjectContentTab({ project }: { project: ProjectDetail }) {
                 id="map-url"
                 value={map.googleMapsUrl}
                 onChange={(e) => patchMap({ googleMapsUrl: e.target.value })}
-                placeholder="https://www.google.com/maps/…"
+                placeholder="https://www.google.com/maps"
               />
             </div>
 
@@ -356,8 +356,8 @@ export function ProjectContentTab({ project }: { project: ProjectDetail }) {
                 value={toBilingualLoose(map.heading)}
                 onChange={(next) => patchMap({ heading: next })}
                 placeholder={{
-                  vi: "Tọa lạc tại trung tâm thành phố…",
-                  en: "Located in the heart of the city…",
+                  vi: "Tọa lạc tại trung tâm thành phố",
+                  en: "Located in the heart of the city",
                 }}
               />
             </div>
@@ -371,8 +371,8 @@ export function ProjectContentTab({ project }: { project: ProjectDetail }) {
                 value={toBilingualLoose(map.description)}
                 onChange={(next) => patchMap({ description: next })}
                 placeholder={{
-                  vi: "Vài câu mô tả vị trí, tiện ích xung quanh…",
-                  en: "A few sentences about the location and nearby amenities…",
+                  vi: "Vài câu mô tả vị trí, tiện ích xung quanh",
+                  en: "A few sentences about the location and nearby amenities",
                 }}
               />
             </div>
@@ -384,15 +384,15 @@ export function ProjectContentTab({ project }: { project: ProjectDetail }) {
                 value={toBilingualLoose(map.address)}
                 onChange={(next) => patchMap({ address: next })}
                 placeholder={{
-                  vi: "Phường …, thành phố …, tỉnh …",
-                  en: "… Ward, … City, … Province",
+                  vi: "Phường, thành phố, tỉnh",
+                  en: "Ward, city, province",
                 }}
               />
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label htmlFor="map-left">Vị trí marker – ngang (%)</Label>
+                <Label htmlFor="map-left">Vị trí marker ngang (%)</Label>
                 <Input
                   id="map-left"
                   type="number"
@@ -405,7 +405,7 @@ export function ProjectContentTab({ project }: { project: ProjectDetail }) {
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="map-top">Vị trí marker – dọc (%)</Label>
+                <Label htmlFor="map-top">Vị trí marker dọc (%)</Label>
                 <Input
                   id="map-top"
                   type="number"
@@ -421,8 +421,7 @@ export function ProjectContentTab({ project }: { project: ProjectDetail }) {
 
             {map.labels && map.labels.length > 0 && (
               <p className="text-xs text-slate">
-                Có {map.labels.length} nhãn chữ trên bản đồ — giữ nguyên khi lưu.
-                Chỉnh chi tiết từng nhãn thực hiện qua seed.
+                Có {map.labels.length} nhãn chữ trên bản đồ. Nhãn được giữ nguyên khi lưu.
               </p>
             )}
           </div>
@@ -436,7 +435,7 @@ export function ProjectContentTab({ project }: { project: ProjectDetail }) {
       <div className="flex items-center justify-end gap-3 border-t border-line pt-4">
         {!canEdit && (
           <p className="text-xs text-slate">
-            Dự án đã xuất bản — chỉ quản trị viên sửa được nội dung.
+            Dự án đã xuất bản, chỉ quản trị viên sửa được nội dung.
           </p>
         )}
         <Button

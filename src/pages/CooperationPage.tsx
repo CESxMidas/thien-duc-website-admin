@@ -108,7 +108,10 @@ export function CooperationPage() {
 
   // Thao tác trạng thái theo bậc thang DRAFT → PENDING → PUBLISHED, dùng chung
   // helper với Tin tức/Dự án/Trang. Nút và trạng thái đích do vai trò quyết định.
-  async function changeStatus(project: CooperationProject, status: ContentStatus) {
+  async function changeStatus(
+    project: CooperationProject,
+    status: ContentStatus,
+  ) {
     setBusyId(project.id);
     try {
       await updateStatus.mutateAsync({ id: project.id, status });
@@ -373,7 +376,11 @@ export function CooperationPage() {
             <CooperationFormDialog
               project={project}
               trigger={
-                <Button variant="ghost" size="sm" aria-label="Sửa dự án hợp tác">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  aria-label="Sửa dự án hợp tác"
+                >
                   <Pencil className="size-4" />
                 </Button>
               }
@@ -399,7 +406,7 @@ export function CooperationPage() {
     <div>
       <PageHeader
         title="Dự án hợp tác"
-        description="Dự án đồng phát triển cùng đối tác, hiển thị ở trang chủ. Thứ tự trong bảng là thứ tự chạy trên slider."
+        description="Dự án đồng phát triển cùng đối tác."
         actions={
           <CooperationFormDialog
             trigger={

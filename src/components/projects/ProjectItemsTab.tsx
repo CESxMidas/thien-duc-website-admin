@@ -313,7 +313,7 @@ export function ProjectItemsTab({ project }: { project: ProjectDetail }) {
     <div className="space-y-4">
       {!canEdit && (
         <p className="rounded-lg border border-line bg-cream/40 px-3 py-2 text-xs text-slate">
-          Dự án đã xuất bản — chỉ quản trị viên sửa được hạng mục.
+          Dự án đã xuất bản, chỉ quản trị viên sửa được hạng mục.
         </p>
       )}
 
@@ -352,10 +352,6 @@ export function ProjectItemsTab({ project }: { project: ProjectDetail }) {
               aspect="3/2"
               alt="Ảnh chính hạng mục"
             />
-            <p className="text-xs text-slate/80">
-              Ảnh này hiển thị đầu tiên khi chọn tab hạng mục. Ảnh con của hạng
-              mục được quản lý trong tab riêng của từng hạng mục.
-            </p>
           </div>
 
           <div className="grid gap-3 sm:grid-cols-2">
@@ -398,9 +394,6 @@ export function ProjectItemsTab({ project }: { project: ProjectDetail }) {
               <h4 className="font-display text-sm font-semibold text-ink">
                 Mô tả chi tiết
               </h4>
-              <p className="text-xs text-slate">
-                Nội dung tổng quan trên trang chi tiết hạng mục.
-              </p>
             </div>
             <BilingualField
               multiline
@@ -408,8 +401,8 @@ export function ProjectItemsTab({ project }: { project: ProjectDetail }) {
               value={form.description}
               onChange={editDescription}
               placeholder={{
-                vi: "Giới thiệu quy mô, tiện ích và tiến độ của hạng mục…",
-                en: "An overview of the item's scale, amenities, and progress…",
+                vi: "Giới thiệu quy mô, tiện ích và tiến độ của hạng mục",
+                en: "An overview of the item's scale, amenities, and progress",
               }}
             />
           </section>
@@ -420,9 +413,6 @@ export function ProjectItemsTab({ project }: { project: ProjectDetail }) {
                 <h4 className="font-display text-sm font-semibold text-ink">
                   Điểm nổi bật
                 </h4>
-                <p className="text-xs text-slate">
-                  Các gạch đầu dòng trên trang chi tiết hạng mục.
-                </p>
               </div>
               <Button
                 type="button"
@@ -469,8 +459,8 @@ export function ProjectItemsTab({ project }: { project: ProjectDetail }) {
                           )
                         }
                         placeholder={{
-                          vi: "Tiện ích nội khu đã vận hành…",
-                          en: "On-site amenities are in operation…",
+                          vi: "Tiện ích nội khu đã vận hành",
+                          en: "On-site amenities are in operation",
                         }}
                       />
                     </div>
@@ -501,9 +491,6 @@ export function ProjectItemsTab({ project }: { project: ProjectDetail }) {
                 <h4 className="font-display text-sm font-semibold text-ink">
                   Thông số nhanh
                 </h4>
-                <p className="text-xs text-slate">
-                  Cặp nhãn và giá trị song ngữ, ví dụ “Quy mô – 5 tầng”.
-                </p>
               </div>
               <Button
                 type="button"

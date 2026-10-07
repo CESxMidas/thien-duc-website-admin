@@ -231,9 +231,7 @@ export function ImagePickerField({
           className="grid place-items-center gap-3 rounded-lg border border-dashed border-line bg-cream/40 px-4 py-8 text-center"
         >
           <ImageOff className="size-8 text-slate/40" aria-hidden />
-          <p className="text-sm text-slate">
-            Kéo một hoặc nhiều ảnh vào đây, hoặc chọn cách bên dưới.
-          </p>
+          <p className="text-sm text-slate">Thêm ảnh</p>
           <div className="flex flex-wrap justify-center gap-2">
             <Button
               type="button"
@@ -246,7 +244,7 @@ export function ImagePickerField({
               ) : (
                 <Upload className="size-4" />
               )}
-              {uploadLabel ?? "Tải một hoặc nhiều ảnh"}
+              {uploadLabel ?? "Tải ảnh"}
             </Button>
             <Button
               type="button"
@@ -302,9 +300,7 @@ function UploadedImageChoiceDialog({
       <DialogContent className="max-h-[88vh] overflow-y-auto sm:max-w-4xl">
         <DialogHeader>
           <DialogTitle>Chọn ảnh đại diện</DialogTitle>
-          <DialogDescription>
-            Các ảnh vừa tải lên đã được lưu vào thư viện. Chọn ảnh muốn dùng làm ảnh chính.
-          </DialogDescription>
+          <DialogDescription>Chọn ảnh chính.</DialogDescription>
         </DialogHeader>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {assets.map((asset) => (
@@ -426,7 +422,7 @@ export function MultiImagePickerField({
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2 text-sm text-slate">
             <Images className="size-5 text-brand" aria-hidden />
-            <span>Kéo thả hoặc chọn nhiều ảnh trong một lần.</span>
+            <span>Thêm nhiều ảnh</span>
           </div>
           <div className="flex flex-wrap gap-2">
             <Button
@@ -545,11 +541,7 @@ function MediaLibraryDialog({
       <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>Chọn ảnh từ thư viện</DialogTitle>
-          <DialogDescription>
-            {multiple
-              ? "Chọn một hoặc nhiều ảnh, sau đó bấm “Dùng ảnh đã chọn”."
-              : "Bấm vào một ảnh để sử dụng. Muốn thêm ảnh mới thì đóng cửa sổ này và bấm “Tải ảnh từ máy”."}
-          </DialogDescription>
+          <DialogDescription>Thư viện media</DialogDescription>
         </DialogHeader>
 
         {isLoading ? (

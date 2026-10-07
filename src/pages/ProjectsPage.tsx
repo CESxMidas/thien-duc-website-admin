@@ -194,7 +194,7 @@ export function ProjectsPage() {
           className="line-clamp-2 text-slate"
           title={p.location?.vi ?? undefined}
         >
-          {p.location?.vi ?? "—"}
+          {p.location?.vi ?? "Chưa nhập"}
         </span>
       ),
     },
