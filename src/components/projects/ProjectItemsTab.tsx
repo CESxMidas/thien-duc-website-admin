@@ -343,6 +343,21 @@ export function ProjectItemsTab({ project }: { project: ProjectDetail }) {
             </Button>
           </div>
 
+          <div className="space-y-1.5">
+            <Label>Ảnh chính của hạng mục</Label>
+            <ImagePickerField
+              value={form.image}
+              onChange={(image) => setForm({ ...form, image })}
+              folder="projects"
+              aspect="3/2"
+              alt="Ảnh chính hạng mục"
+            />
+            <p className="text-xs text-slate/80">
+              Ảnh này hiển thị đầu tiên khi chọn tab hạng mục. Ảnh con của hạng
+              mục được quản lý trong tab riêng của từng hạng mục.
+            </p>
+          </div>
+
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="space-y-1.5">
               <Label htmlFor="item-title">Tên hạng mục</Label>
@@ -597,19 +612,6 @@ export function ProjectItemsTab({ project }: { project: ProjectDetail }) {
                   ))}
                 </SelectContent>
               </Select>
-            </div>
-            <div className="space-y-1.5">
-              <Label>Ảnh chính của hạng mục</Label>
-              <ImagePickerField
-                value={form.image}
-                onChange={(image) => setForm({ ...form, image })}
-                folder="projects"
-                aspect="3/2"
-                alt="Ảnh chính hạng mục"
-              />
-              <p className="text-xs text-slate/80">
-                Ảnh con của hạng mục: thêm ở cột ảnh, chọn “Thuộc hạng mục”.
-              </p>
             </div>
           </div>
 

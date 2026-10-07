@@ -250,8 +250,9 @@ export function ProjectsPage() {
       key: "updatedAt",
       header: "Cập nhật",
       hideOnMobile: true,
+      cellClassName: "min-w-36 whitespace-nowrap pr-5",
       render: (p) => (
-        <span className="text-xs text-slate">
+        <span className="block text-xs leading-5 text-slate tabular-nums">
           {formatDateTime(p.updatedAt)}
         </span>
       ),
@@ -259,7 +260,8 @@ export function ProjectsPage() {
     {
       key: "actions",
       header: "Thao tác",
-      headerClassName: "text-right",
+      headerClassName: "border-l border-line/70 text-right",
+      cellClassName: "min-w-72 border-l border-line/70 pl-5",
       render: (p) => {
         const busy = busySlug === p.slug;
         const state = deriveProjectPublicationState(p, now);
@@ -275,7 +277,7 @@ export function ProjectsPage() {
           // stopPropagation: hàng đã bấm được để mở chi tiết — các nút thao tác
           // không được kích hoạt luôn cả modal.
           <div
-            className="flex flex-wrap items-center justify-end gap-1 xl:flex-nowrap"
+            className="flex flex-wrap items-center justify-end gap-1.5"
             onClick={(e) => e.stopPropagation()}
           >
             {busy && <Loader2 className="size-4 animate-spin text-slate" />}
@@ -335,15 +337,14 @@ export function ProjectsPage() {
             {/* EDITOR mất quyền sửa từ lúc dự án được hẹn giờ hoặc đã từng công
                 khai — backend trả 403, nên không hiện nút. */}
             {canEditProject(user?.role, p) && (
-              <ProjectFormDialog
-                project={p}
-                trigger={
-                  <Button variant="ghost" size="sm">
-                    <Pencil className="size-4" />
-                    Sửa
-                  </Button>
-                }
-              />
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setDetailSlug(p.slug)}
+              >
+                <Pencil className="size-4" />
+                Sửa
+              </Button>
             )}
             {canDelete && (
               <Button

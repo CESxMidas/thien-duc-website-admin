@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
   Check,
   ImageOff,
@@ -343,6 +343,7 @@ interface MultiImagePickerFieldProps {
   onChange: (urls: string[]) => void;
   folder?: string;
   disabled?: boolean;
+  footer?: ReactNode;
 }
 
 /** Bộ chọn theo lô cho gallery: tải/chọn nhiều ảnh rồi thêm tất cả cùng lúc. */
@@ -351,6 +352,7 @@ export function MultiImagePickerField({
   onChange,
   folder = "projects",
   disabled = false,
+  footer,
 }: MultiImagePickerFieldProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const upload = useUploadMedia();
@@ -453,6 +455,9 @@ export function MultiImagePickerField({
             </Button>
           </div>
         </div>
+        {footer ? (
+          <div className="mt-4 border-t border-line/70 pt-4">{footer}</div>
+        ) : null}
       </div>
 
       {value.length > 0 && (

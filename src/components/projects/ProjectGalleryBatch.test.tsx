@@ -11,17 +11,25 @@ const { addGalleryImage, updateProject } = vi.hoisted(() => ({
 }));
 
 vi.mock("@/components/ui/ImagePickerField", () => ({
+  ImagePickerField: ({ value }: { value: string }) => (
+    <div data-testid="image-picker-field">{value || "Chưa có ảnh chính"}</div>
+  ),
   MultiImagePickerField: ({
     onChange,
+    footer,
   }: {
     onChange: (urls: string[]) => void;
+    footer?: React.ReactNode;
   }) => (
-    <button
-      type="button"
-      onClick={() => onChange(["/images/a.webp", "/images/b.webp"])}
-    >
-      Chọn 2 ảnh giả
-    </button>
+    <div>
+      <button
+        type="button"
+        onClick={() => onChange(["/images/a.webp", "/images/b.webp"])}
+      >
+        Chọn 2 ảnh giả
+      </button>
+      {footer}
+    </div>
   ),
 }));
 
@@ -48,6 +56,7 @@ vi.mock("@/lib/api/queries", () => {
       mutateAsync: updateProject,
       isPending: false,
     }),
+    useUpdateProjectItem: () => idleMutation,
   };
 });
 

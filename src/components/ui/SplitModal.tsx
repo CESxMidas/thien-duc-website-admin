@@ -46,6 +46,8 @@ interface SplitModalProps {
   footer?: ReactNode;
   /** Mặc định: có ảnh ⇒ "split", không ảnh ⇒ "wide". */
   size?: SplitModalSize;
+  /** Giữ chiều rộng và chiều cao modal ổn định, phần thân tự cuộn bên trong. */
+  stableDimensions?: boolean;
 }
 
 export function SplitModal({
@@ -58,6 +60,7 @@ export function SplitModal({
   children,
   footer,
   size,
+  stableDimensions = false,
 }: SplitModalProps) {
   const resolvedSize = size ?? (media ? "split" : "wide");
 
@@ -69,6 +72,8 @@ export function SplitModal({
           // p-0 + flex cột: header/footer cố định, thân ở giữa co giãn.
           "flex max-h-[92vh] flex-col gap-0 overflow-hidden p-0",
           SIZE[resolvedSize],
+          stableDimensions &&
+            "h-[92vh] sm:w-[calc(100vw-2rem)] sm:max-w-none xl:w-[72rem]",
         )}
       >
         <DialogHeader className="min-w-0 shrink-0 overflow-x-hidden border-b border-line bg-white px-6 py-4 pr-12 text-left">
