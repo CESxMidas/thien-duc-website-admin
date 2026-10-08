@@ -28,6 +28,7 @@ export interface CreateNewsPostInput {
   content?: Bilingual[];
   categoryId?: string;
   author?: string;
+  referenceUrl?: string | null;
   image?: string;
   gallery?: string[];
   /** ISO date, vd `2021-03-31`. */

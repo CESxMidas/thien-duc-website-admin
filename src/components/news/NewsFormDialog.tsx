@@ -150,6 +150,7 @@ function toFormValues(post?: NewsPost): NewsFormValues {
     // nhưng schema buộc chọn chuyên mục trước khi lưu.
     categoryId: post?.categoryId ?? "",
     author: post?.author ?? "",
+    referenceUrl: post?.referenceUrl ?? "",
     image: post?.image ?? "",
     gallery: uniqueImageList([post?.image, ...(post?.gallery ?? [])]),
     // `<input type="date">` chỉ nhận `YYYY-MM-DD`, backend trả ISO đầy đủ.
@@ -212,6 +213,7 @@ export function NewsFormDialog({ trigger, post }: NewsFormDialogProps) {
       content: toParagraphPayload(values.content),
       categoryId: values.categoryId,
       author: values.author || undefined,
+      referenceUrl: values.referenceUrl || null,
       image: values.image || undefined,
       gallery: uniqueImageList([values.image, ...values.gallery]),
       eventDate: values.eventDate || undefined,
@@ -647,6 +649,27 @@ export function NewsFormDialog({ trigger, post }: NewsFormDialogProps) {
                     <FormControl>
                       <Input placeholder="Thiên Đức" {...field} />
                     </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="referenceUrl"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Link tham khảo</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="https://example.com/bai-viet"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      Hien thi rieng o cuoi trang chi tiet, khong tron vao
+                      noi dung bai viet.
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}

@@ -178,6 +178,7 @@ export interface NewsPost {
   categoryId: string | null;
   category: NewsCategory | null;
   author: string | null;
+  referenceUrl?: string | null;
   image: string | null;
   gallery?: string[];
   eventDate: string | null;

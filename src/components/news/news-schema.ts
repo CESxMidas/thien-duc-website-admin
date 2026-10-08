@@ -15,6 +15,7 @@ import {
   optionalDateField,
   optionalImageGalleryField,
   optionalImageField,
+  optionalReferenceUrlField,
   slugField,
 } from "@/lib/form-validation";
 import { longFormContentSchema } from "@/lib/long-form-content";
@@ -49,6 +50,7 @@ export const newsSchema = z.object({
     .string()
     .trim()
     .max(MAX_AUTHOR_LENGTH, `Tối đa ${MAX_AUTHOR_LENGTH} ký tự.`),
+  referenceUrl: optionalReferenceUrlField(),
   image: optionalImageField(),
   gallery: optionalImageGalleryField(),
   eventDate: optionalDateField(),

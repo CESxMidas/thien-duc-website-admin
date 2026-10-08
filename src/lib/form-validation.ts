@@ -84,6 +84,21 @@ export function isSafeImageRef(value: unknown): boolean {
   }
 }
 
+export function isSafeReferenceUrl(value: unknown): boolean {
+  if (typeof value !== "string") return false;
+  const v = collapse(value);
+  if (!/^https?:\/\//i.test(v)) return false;
+  try {
+    const url = new URL(v);
+    return (
+      (url.protocol === "https:" || url.protocol === "http:") &&
+      url.hostname.length > 0
+    );
+  } catch {
+    return false;
+  }
+}
+
 /* ---------------------------------------------------------------------------
    Mảnh schema dùng lại
    --------------------------------------------------------------------------- */
@@ -173,6 +188,16 @@ export function internalHrefField() {
 }
 
 /** Ngày `YYYY-MM-DD` tùy chọn — rỗng nghĩa là không đặt. */
+export function optionalReferenceUrlField() {
+  return z
+    .string()
+    .trim()
+    .max(MAX_URL_LENGTH, `Duong dan toi da ${MAX_URL_LENGTH} ky tu.`)
+    .refine((value) => value === "" || isSafeReferenceUrl(value), {
+      message: "Link tham khao phai la URL http:// hoac https:// hop le.",
+    });
+}
+
 export function optionalDateField() {
   return z
     .string()

@@ -86,6 +86,7 @@ const validNews = {
   // chuyên mục không xuất hiện ở trang danh mục nào cả.
   categoryId: "cat-1",
   author: "",
+  referenceUrl: "",
   image: "",
   gallery: [],
   eventDate: "",
@@ -524,6 +525,27 @@ describe("news.eventDate — khớp @IsDateString()", () => {
    Chế độ tạo mới vs sửa
    ========================================================================= */
 
+describe("news.referenceUrl - link tham khao rieng", () => {
+  it.each([
+    ["rong", ""],
+    ["https", "https://example.com/bai-viet"],
+    ["http", "http://example.com/bai-viet-cu"],
+  ])("%s hop le", (_label, referenceUrl) => {
+    expect(ok(newsSchema.safeParse({ ...validNews, referenceUrl }))).toBe(true);
+  });
+
+  it.each([
+    ["javascript", "javascript:alert(1)"],
+    ["data", "data:text/html,<h1>x</h1>"],
+    ["duong dan noi bo", "/tin-tuc/noi-bo"],
+    ["thieu scheme", "example.com/bai-viet"],
+  ])("%s bi chan", (_label, referenceUrl) => {
+    expect(
+      errorPaths(newsSchema.safeParse({ ...validNews, referenceUrl })),
+    ).toContain("referenceUrl");
+  });
+});
+
 describe("Tạo mới vs sửa — cùng một schema, không có nhánh riêng", () => {
   it("schema KHÔNG đổi theo chế độ: cùng payload cho kết quả giống nhau", () => {
     // Các dialog dùng đúng MỘT schema cho cả hai nhánh; khác biệt chỉ ở giá trị
@@ -550,6 +572,7 @@ describe("Tạo mới vs sửa — cùng một schema, không có nhánh riêng"
           content: bilingual("Đoạn 1.\n\nĐoạn 2.", "Para 1.\n\nPara 2."),
           categoryId: "cat-1",
           author: "Ban biên tập",
+          referenceUrl: "https://example.com/bai-viet-goc",
           image: "https://res.cloudinary.com/demo/image/upload/x.jpg",
           gallery: [
             "https://res.cloudinary.com/demo/image/upload/y.jpg",
