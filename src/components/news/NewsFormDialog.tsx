@@ -37,17 +37,12 @@ import { canScheduleRole } from "@/lib/news-schedule";
 import { formatVietnamSentence } from "@/lib/vietnam-time";
 import { contentStatusActions } from "@/lib/content-status-actions";
 import { BilingualField } from "@/components/ui/BilingualField";
-import {
-  ImagePickerField,
-} from "@/components/ui/ImagePickerField";
+import { ImagePickerField } from "@/components/ui/ImagePickerField";
 import { useAuth } from "@/context/AuthContext";
 import { resolveApiError } from "@/lib/api-error-message";
 import { resolveAssetUrl } from "@/lib/asset-url";
 import { toBilingualPayload, toBilingualValue } from "@/lib/bilingual";
-import {
-  paragraphsToText,
-  toParagraphPayload,
-} from "@/lib/long-form-content";
+import { paragraphsToText, toParagraphPayload } from "@/lib/long-form-content";
 import type { NewsPost } from "@/types";
 
 /** Giá trị Select không nhận chuỗi rỗng, nên "không chuyên mục" cần một token. */
@@ -184,8 +179,9 @@ export function NewsFormDialog({ trigger, post }: NewsFormDialogProps) {
 
   // Giá trị form đã qua validate, chờ người dùng chọn mốc giờ ở hộp thoại lịch.
   // Có giá trị KHÔNG có nghĩa là đã tạo bài — mới chỉ là "sẵn sàng tạo".
-  const [pendingSchedule, setPendingSchedule] =
-    useState<NewsFormValues | null>(null);
+  const [pendingSchedule, setPendingSchedule] = useState<NewsFormValues | null>(
+    null,
+  );
 
   // Cờ chạy chuỗi lệnh. `useState` để vẽ lại nút, `useRef` để chặn ngay trong
   // cùng một tick — hai cú click liên tiếp xảy ra trước khi React kịp render
@@ -327,7 +323,10 @@ export function NewsFormDialog({ trigger, post }: NewsFormDialogProps) {
       return;
     }
     try {
-      await updateNews.mutateAsync({ slug: post.slug, data: toPayload(values) });
+      await updateNews.mutateAsync({
+        slug: post.slug,
+        data: toPayload(values),
+      });
       toast.success("Đã lưu thay đổi.");
       setOpen(false);
     } catch (error) {
@@ -510,186 +509,184 @@ export function NewsFormDialog({ trigger, post }: NewsFormDialogProps) {
           className="grid min-w-0 gap-4 overflow-x-hidden"
           noValidate
         >
-            <FormField
-              control={form.control}
-              name="title"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Tiêu đề</FormLabel>
-                  <FormControl>
-                    <BilingualField
-                      value={field.value}
-                      onChange={field.onChange}
-                      placeholder={{
-                        vi: "Lễ khởi công Fancy Tower",
-                        en: "Fancy Tower groundbreaking ceremony",
-                      }}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+          <FormField
+            control={form.control}
+            name="title"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Tiêu đề</FormLabel>
+                <FormControl>
+                  <BilingualField
+                    value={field.value}
+                    onChange={field.onChange}
+                    placeholder={{
+                      vi: "Lễ khởi công Fancy Tower",
+                      en: "Fancy Tower groundbreaking ceremony",
+                    }}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-            <FormField
-              control={form.control}
-              name="slug"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Đường dẫn</FormLabel>
-                  <FormControl>
-                    <Input placeholder="le-khoi-cong-fancy-tower" {...field} />
-                  </FormControl>
-                  <FormDescription>
-                    Bài đã đăng thì đổi đường dẫn sẽ làm hỏng link cũ.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+          <FormField
+            control={form.control}
+            name="slug"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Đường dẫn</FormLabel>
+                <FormControl>
+                  <Input placeholder="le-khoi-cong-fancy-tower" {...field} />
+                </FormControl>
+                <FormDescription>
+                  Bài đã đăng thì đổi đường dẫn sẽ làm hỏng link cũ.
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-            <FormField
-              control={form.control}
-              name="summary"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Tóm tắt</FormLabel>
-                  <FormControl>
-                    <BilingualField
-                      multiline
-                      rows={2}
-                      value={field.value}
-                      onChange={field.onChange}
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    Hiển thị ở thẻ tin ngoài trang danh sách.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+          <FormField
+            control={form.control}
+            name="summary"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Tóm tắt</FormLabel>
+                <FormControl>
+                  <BilingualField
+                    multiline
+                    rows={2}
+                    value={field.value}
+                    onChange={field.onChange}
+                  />
+                </FormControl>
+                <FormDescription>
+                  Hiển thị ở thẻ tin ngoài trang danh sách.
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-            <FormField
-              control={form.control}
-              name="content"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Nội dung</FormLabel>
-                  <FormControl>
-                    <BilingualField
-                      multiline
-                      rows={8}
-                      value={field.value}
-                      onChange={field.onChange}
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    Cách nhau một dòng trống để tách đoạn. Bản tiếng Anh nên giữ
-                    đúng số đoạn như tiếng Việt — hai bản ghép theo thứ tự đoạn.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+          <FormField
+            control={form.control}
+            name="content"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Nội dung</FormLabel>
+                <FormControl>
+                  <BilingualField
+                    multiline
+                    rows={8}
+                    value={field.value}
+                    onChange={field.onChange}
+                  />
+                </FormControl>
 
-            <FormField
-              control={form.control}
-              name="categoryId"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Chuyên mục</FormLabel>
-                  {/* Cố ý KHÔNG có mục "Chưa phân loại": bài không chuyên mục
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="categoryId"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Chuyên mục</FormLabel>
+                {/* Cố ý KHÔNG có mục "Chưa phân loại": bài không chuyên mục
                       không xuất hiện ở trang danh mục nào cả. Cũng KHÔNG cho
                       tạo chuyên mục ngay tại đây — việc đó vượt qua phân quyền
                       (EDITOR sẽ tạo được chuyên mục mà không nhìn thấy toàn
                       cảnh) và tạo đồng bộ trạng thái giữa hai form. */}
-                  <Select
-                    onValueChange={field.onChange}
-                    value={field.value}
-                    disabled={!hasCategories}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Chọn chuyên mục" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {categories.map((category) => (
-                        <SelectItem key={category.id} value={category.id}>
-                          {category.name.vi}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  {hasCategories ? null : (
-                    <FormDescription>
-                      Chưa có chuyên mục nào.{" "}
-                      <Link
-                        to="/tin-tuc/chuyen-muc"
-                        className="font-medium text-brand underline underline-offset-2"
-                      >
-                        Tạo chuyên mục
-                      </Link>{" "}
-                      trước khi viết bài.
-                    </FormDescription>
-                  )}
+                <Select
+                  onValueChange={field.onChange}
+                  value={field.value}
+                  disabled={!hasCategories}
+                >
+                  <FormControl>
+                    <SelectTrigger className="h-10 w-full">
+                      <SelectValue placeholder="Chọn chuyên mục" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {categories.map((category) => (
+                      <SelectItem key={category.id} value={category.id}>
+                        {category.name.vi}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {hasCategories ? null : (
+                  <FormDescription>
+                    Chưa có chuyên mục nào.{" "}
+                    <Link
+                      to="/tin-tuc/chuyen-muc"
+                      className="font-medium text-brand underline underline-offset-2"
+                    >
+                      Tạo chuyên mục
+                    </Link>{" "}
+                    trước khi viết bài.
+                  </FormDescription>
+                )}
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <FormField
+              control={form.control}
+              name="author"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Nguồn</FormLabel>
+                  <FormControl>
+                    <Input
+                      className="h-10 w-full"
+                      placeholder="Thiên Đức"
+                      {...field}
+                    />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
 
-            <div className="grid gap-4 sm:grid-cols-2">
-              <FormField
-                control={form.control}
-                name="author"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Nguồn</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Thiên Đức" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+            <FormField
+              control={form.control}
+              name="referenceUrl"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Link tham khảo</FormLabel>
+                  <FormControl>
+                    <Input
+                      className="h-10 w-full"
+                      placeholder="https://example.com/bai-viet"
+                      {...field}
+                    />
+                  </FormControl>
 
-              <FormField
-                control={form.control}
-                name="referenceUrl"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Link tham khảo</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="https://example.com/bai-viet"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormDescription>
-                      Hien thi rieng o cuoi trang chi tiet, khong tron vao
-                      noi dung bai viet.
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-              <FormField
-                control={form.control}
-                name="eventDate"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Ngày sự kiện</FormLabel>
-                    <FormControl>
-                      <Input type="date" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
+            <FormField
+              control={form.control}
+              name="eventDate"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Ngày sự kiện</FormLabel>
+                  <FormControl>
+                    <Input className="h-10 w-full" type="date" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
         </form>
       </SplitModal>
 
