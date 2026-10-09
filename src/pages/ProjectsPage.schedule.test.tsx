@@ -301,11 +301,11 @@ describe("ProjectsPage — ma trận thao tác của ADMIN/SUPER_ADMIN", () => {
     expect(labels).toContain("Trả về nháp");
   });
 
-  it("nháp TỪNG đăng: không có Lên lịch (v1 không hẹn giờ đăng lại)", () => {
+  it("nháp TỪNG đăng: có Lên lịch để hẹn giờ đăng lại", () => {
     renderPage();
     const labels = buttonNames("Dự án từng đăng");
 
-    expect(labels).not.toContain("Lên lịch");
+    expect(labels).toContain("Lên lịch");
     expect(labels).toContain("Đăng ngay");
   });
 });

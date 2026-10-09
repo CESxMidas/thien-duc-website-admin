@@ -128,8 +128,8 @@ export function updateProjectStatus(
  * khai*.
  *
  * Backend ghi nguyên tử `contentStatus = PENDING`, `scheduledAt` và
- * `publishedAt` cùng bằng mốc đã hẹn. Chỉ dành cho lần công khai ĐẦU TIÊN — dự
- * án đã/từng đăng trả 409.
+ * `publishedAt` cùng bằng mốc đã hẹn. Dự án đã trả về nháp vẫn được đặt lịch
+ * đăng lại; dự án đang công khai hoặc lịch đã tới hạn vẫn bị backend từ chối.
  */
 export function scheduleProjectPublication(
   slug: string,

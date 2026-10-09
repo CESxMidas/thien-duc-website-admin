@@ -132,9 +132,9 @@ describe("canScheduleProject", () => {
     expect(canScheduleProject("ADMIN", states["đang đăng"], NOW)).toBe(false);
   });
 
-  it("nháp TỪNG đăng → không hẹn giờ (v1 chỉ lần công khai đầu)", () => {
+  it("nháp TỪNG đăng → vẫn hẹn giờ đăng lại được", () => {
     expect(canScheduleProject("ADMIN", states["nháp từng đăng"], NOW)).toBe(
-      false,
+      true,
     );
   });
 
@@ -148,6 +148,16 @@ describe("canScheduleProject", () => {
 describe("projectScheduleActions", () => {
   it("nháp sạch: chỉ có Lên lịch", () => {
     expect(projectScheduleActions("ADMIN", states["nháp sạch"], NOW)).toEqual({
+      schedule: true,
+      reschedule: false,
+      cancel: false,
+    });
+  });
+
+  it("nháp từng đăng: vẫn có Lên lịch để hẹn giờ đăng lại", () => {
+    expect(
+      projectScheduleActions("ADMIN", states["nháp từng đăng"], NOW),
+    ).toEqual({
       schedule: true,
       reschedule: false,
       cancel: false,

@@ -84,12 +84,13 @@ export function projectHasHistoricalPublication(
 }
 
 /**
- * Dự án này có đặt / đổi lịch được không (luật v1 — CHỈ lần công khai đầu).
+ * Dự án này có đặt / đổi lịch được không.
  *
  * - Đang PUBLISHED: không. Một slug là một URL đang phục vụ công khai.
  * - Đang giữ lịch tương lai hợp lệ: có — đây là luồng **đổi lịch**.
- * - Từng công khai thật (kể cả đã gỡ về nháp, kể cả lịch đã tới hạn): không.
- *   Backend từ chối 409.
+ * - Đã trả về DRAFT: có thể đặt lịch đăng lại, kể cả từng công khai.
+ * - PENDING từng công khai / lịch đã tới hạn: không, vì bản ghi đã hoặc đang
+ *   hiển thị công khai theo vị từ public.
  */
 export function canScheduleProject(
   role: Role | undefined | null,
@@ -99,6 +100,7 @@ export function canScheduleProject(
   if (!canScheduleRole(role)) return false;
   if (project.contentStatus === "PUBLISHED") return false;
   if (isActiveFutureProjectSchedule(project, now)) return true;
+  if (project.contentStatus === "DRAFT") return true;
   return !projectHasHistoricalPublication(project, now);
 }
 
