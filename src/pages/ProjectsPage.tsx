@@ -260,8 +260,8 @@ export function ProjectsPage() {
     {
       key: "actions",
       header: "Thao tác",
-      headerClassName: "border-l border-line/70 text-right",
-      cellClassName: "min-w-72 border-l border-line/70 pl-5",
+      headerClassName: "border-l border-line/70 pr-4 text-right",
+      cellClassName: "w-52 border-l border-line/70 px-3",
       render: (p) => {
         const busy = busySlug === p.slug;
         const state = deriveProjectPublicationState(p, now);
@@ -277,7 +277,7 @@ export function ProjectsPage() {
           // stopPropagation: hàng đã bấm được để mở chi tiết — các nút thao tác
           // không được kích hoạt luôn cả modal.
           <div
-            className="flex flex-wrap items-center justify-end gap-1.5"
+            className="flex max-w-full items-center justify-end gap-1.5 overflow-x-auto py-1"
             onClick={(e) => e.stopPropagation()}
           >
             {busy && <Loader2 className="size-4 animate-spin text-slate" />}
@@ -292,6 +292,7 @@ export function ProjectsPage() {
                     : "ghost"
                 }
                 size="sm"
+                className="h-8 px-2.5 text-xs"
                 disabled={busy}
                 onClick={() => void changeStatus(p, action.to)}
               >
@@ -311,6 +312,7 @@ export function ProjectsPage() {
               <Button
                 variant="ghost"
                 size="sm"
+                className="h-8 px-2.5 text-xs"
                 disabled={busy}
                 onClick={() => {
                   setScheduleError(null);
@@ -326,6 +328,7 @@ export function ProjectsPage() {
               <Button
                 variant="ghost"
                 size="sm"
+                className="h-8 px-2.5 text-xs"
                 disabled={busy}
                 onClick={() => void handleCancelSchedule(p)}
               >
@@ -340,6 +343,7 @@ export function ProjectsPage() {
               <Button
                 variant="ghost"
                 size="sm"
+                className="h-8 px-2.5 text-xs text-ink hover:bg-cream"
                 onClick={() => setDetailSlug(p.slug)}
               >
                 <Pencil className="size-4" />
@@ -349,9 +353,9 @@ export function ProjectsPage() {
             {canDelete && (
               <Button
                 variant="ghost"
-                size="sm"
+                size="icon"
                 aria-label="Ẩn dự án"
-                className="text-red-600 hover:bg-red-50 hover:text-red-700"
+                className="size-8 rounded-full text-red-600 hover:bg-red-50 hover:text-red-700"
                 onClick={() => setToDelete(p)}
               >
                 <EyeOff className="size-4" />
