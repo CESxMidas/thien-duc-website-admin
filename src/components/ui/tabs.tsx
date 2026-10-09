@@ -48,45 +48,49 @@ export function Tabs<T extends string>({
     // rộng nội dung. Một dòng URL `truncate` (tức `white-space:nowrap`) vì thế
     // kéo giãn cả hộp thoại và sinh thanh cuộn ngang.
     <div className="min-w-0">
-      <div
-        ref={listRef}
-        role="tablist"
-        onKeyDown={onKeyDown}
-        className="flex gap-1 border-b border-line"
-      >
-        {tabs.map((tab) => {
-          const active = tab.value === value;
-          return (
-            <button
-              key={tab.value}
-              type="button"
-              role="tab"
-              data-value={tab.value}
-              aria-selected={active}
-              tabIndex={active ? 0 : -1}
-              onClick={() => onChange(tab.value)}
-              className={cn(
-                "-mb-px flex items-center gap-1.5 border-b-2 px-3 py-2 text-sm font-medium transition-colors duration-150",
-                "focus-visible:ring-2 focus-visible:ring-brand/40 focus-visible:outline-none",
-                active
-                  ? "border-brand text-ink"
-                  : "border-transparent text-slate hover:text-ink",
-              )}
-            >
-              {tab.label}
-              {tab.count !== undefined && (
-                <span
-                  className={cn(
-                    "rounded-full px-1.5 py-0.5 text-[11px] tabular-nums transition-colors duration-150",
-                    active ? "bg-brand/12 text-brand" : "bg-cream text-slate",
-                  )}
-                >
-                  {tab.count}
-                </span>
-              )}
-            </button>
-          );
-        })}
+      <div className="border-b border-line">
+        <div
+          ref={listRef}
+          role="tablist"
+          onKeyDown={onKeyDown}
+          className="flex min-w-0 gap-1 overflow-x-auto overflow-y-hidden scroll-smooth px-1 pt-1"
+        >
+          {tabs.map((tab) => {
+            const active = tab.value === value;
+            return (
+              <button
+                key={tab.value}
+                type="button"
+                role="tab"
+                data-value={tab.value}
+                aria-selected={active}
+                tabIndex={active ? 0 : -1}
+                onClick={() => onChange(tab.value)}
+                className={cn(
+                  "-mb-px inline-flex h-12 shrink-0 items-center gap-2 border-b-2 px-4 text-[13px] font-semibold leading-none whitespace-nowrap transition-colors duration-150",
+                  "focus-visible:ring-2 focus-visible:ring-brand/40 focus-visible:outline-none",
+                  active
+                    ? "border-brand text-ink"
+                    : "border-transparent text-slate hover:border-line-strong hover:text-ink",
+                )}
+              >
+                <span>{tab.label}</span>
+                {tab.count !== undefined && (
+                  <span
+                    className={cn(
+                      "inline-flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[10px] font-bold tabular-nums transition-colors duration-150",
+                      active
+                        ? "bg-brand/12 text-brand"
+                        : "bg-cream text-slate",
+                    )}
+                  >
+                    {tab.count}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
       </div>
       {/* `key` theo tab đang chọn: đổi tab thì panel dựng lại nên nội dung mới
           mờ dần vào thay vì thay thế đột ngột. Chỉ mờ, không trượt ngang —
