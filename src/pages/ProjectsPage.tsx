@@ -170,6 +170,8 @@ export function ProjectsPage() {
     {
       key: "title",
       header: "Dự án",
+      headerClassName: "w-48",
+      cellClassName: "w-48",
       render: (p) => (
         <ContentListCell
           title={p.title.vi}
@@ -188,7 +190,8 @@ export function ProjectsPage() {
       hideOnMobile: true,
       // Địa chỉ đầy đủ dài hơn mọi cột khác — cho xuống dòng trong bề rộng trần,
       // cắt ở dòng thứ hai. `title` giữ lại toàn văn cho ai cần đọc đủ.
-      cellClassName: "max-w-64 whitespace-normal",
+      headerClassName: "w-36",
+      cellClassName: "w-36 whitespace-normal",
       render: (p) => (
         <span
           className="line-clamp-2 text-slate"
@@ -202,6 +205,8 @@ export function ProjectsPage() {
       // TÌNH TRẠNG THI CÔNG — giữ nguyên, không dính dáng gì tới lịch đăng.
       key: "status",
       header: "Tình trạng",
+      headerClassName: "w-28",
+      cellClassName: "w-28",
       render: (p) => (
         <span className="text-sm">{projectStatusLabel[p.status]}</span>
       ),
@@ -210,7 +215,8 @@ export function ProjectsPage() {
       key: "contentStatus",
       header: "Trạng thái đăng",
       // Dòng phụ (mốc hẹn / ghi chú đồng bộ) cần xuống dòng được.
-      cellClassName: "whitespace-normal",
+      headerClassName: "w-36",
+      cellClassName: "w-36 whitespace-normal",
       render: (p) => {
         const state = deriveProjectPublicationState(p, now);
         const scheduledLabel = p.scheduledAt
@@ -240,6 +246,8 @@ export function ProjectsPage() {
       key: "counts",
       header: "Hạng mục / Ảnh",
       hideOnMobile: true,
+      headerClassName: "w-28",
+      cellClassName: "w-28",
       render: (p) => (
         <span className="text-xs text-slate tabular-nums">
           {p.items.length} / {p._count.galleryImages}
@@ -250,7 +258,8 @@ export function ProjectsPage() {
       key: "updatedAt",
       header: "Cập nhật",
       hideOnMobile: true,
-      cellClassName: "min-w-36 whitespace-nowrap pr-5",
+      headerClassName: "w-32",
+      cellClassName: "w-32 whitespace-nowrap pr-3",
       render: (p) => (
         <span className="block text-xs leading-5 text-slate tabular-nums">
           {formatDateTime(p.updatedAt)}
@@ -260,8 +269,8 @@ export function ProjectsPage() {
     {
       key: "actions",
       header: "Thao tác",
-      headerClassName: "border-l border-line/70 pr-4 text-right",
-      cellClassName: "w-52 border-l border-line/70 px-3",
+      headerClassName: "w-64 border-l border-line/70 pr-4 text-right",
+      cellClassName: "w-64 border-l border-line/70 px-3",
       render: (p) => {
         const busy = busySlug === p.slug;
         const state = deriveProjectPublicationState(p, now);
@@ -277,7 +286,7 @@ export function ProjectsPage() {
           // stopPropagation: hàng đã bấm được để mở chi tiết — các nút thao tác
           // không được kích hoạt luôn cả modal.
           <div
-            className="flex max-w-full items-center justify-end gap-1.5 overflow-x-auto py-1"
+            className="flex max-w-full items-center justify-end gap-1.5 whitespace-nowrap py-1"
             onClick={(e) => e.stopPropagation()}
           >
             {busy && <Loader2 className="size-4 animate-spin text-slate" />}
