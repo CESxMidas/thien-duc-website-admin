@@ -368,7 +368,7 @@ export function ProjectItemsTab({ project }: { project: ProjectDetail }) {
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="item-slug">Slug</Label>
+              <Label htmlFor="item-slug">Slug hạng mục</Label>
               <Input
                 id="item-slug"
                 value={form.slug}
@@ -379,7 +379,7 @@ export function ProjectItemsTab({ project }: { project: ProjectDetail }) {
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="item-summary">Mô tả ngắn</Label>
+            <Label htmlFor="item-summary">Mô tả ngắn cho thẻ hạng mục</Label>
             <BilingualField
               id="item-summary"
               multiline
@@ -392,7 +392,7 @@ export function ProjectItemsTab({ project }: { project: ProjectDetail }) {
           <section className="space-y-2 border-t border-line pt-4">
             <div>
               <h4 className="font-display text-sm font-semibold text-ink">
-                Mô tả chi tiết
+                Nội dung chi tiết hạng mục
               </h4>
             </div>
             <BilingualField
@@ -527,7 +527,7 @@ export function ProjectItemsTab({ project }: { project: ProjectDetail }) {
                   >
                     <div className="min-w-0 flex-1 space-y-2">
                       <div className="space-y-1">
-                        <Label className="text-xs text-slate">Nhãn</Label>
+                        <Label className="text-xs text-slate">Tên thông số</Label>
                         <BilingualField
                           value={fact.label}
                           onChange={(label) =>
@@ -541,7 +541,7 @@ export function ProjectItemsTab({ project }: { project: ProjectDetail }) {
                         />
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-xs text-slate">Giá trị</Label>
+                        <Label className="text-xs text-slate">Giá trị thông số</Label>
                         <BilingualField
                           multiline
                           rows={2}
@@ -580,7 +580,7 @@ export function ProjectItemsTab({ project }: { project: ProjectDetail }) {
 
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="space-y-1.5">
-              <Label>Tình trạng</Label>
+              <Label>Tình trạng thi công hạng mục</Label>
               <Select
                 value={form.status}
                 onValueChange={(status) => setForm({ ...form, status })}

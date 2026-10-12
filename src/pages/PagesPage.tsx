@@ -320,7 +320,7 @@ export function PagesPage() {
         fields={
           detail
             ? [
-                { label: "Đường dẫn", value: `/${detail.slug}` },
+                { label: "Đường dẫn trang", value: `/${detail.slug}` },
                 {
                   label: "Trạng thái",
                   value: (

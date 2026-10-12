@@ -397,7 +397,7 @@ export function ProjectFormDialog({ trigger, project }: ProjectFormDialogProps) 
             name="slug"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Slug (đường dẫn)</FormLabel>
+                <FormLabel>Slug dự án</FormLabel>
                 <FormControl>
                   <Input placeholder="khu-do-thi-hung-phu" {...field} />
                 </FormControl>
@@ -416,7 +416,7 @@ export function ProjectFormDialog({ trigger, project }: ProjectFormDialogProps) 
             name="summary"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Mô tả ngắn</FormLabel>
+                <FormLabel>Mô tả ngắn cho thẻ dự án</FormLabel>
                 <FormControl>
                   <BilingualField
                     multiline
@@ -440,7 +440,7 @@ export function ProjectFormDialog({ trigger, project }: ProjectFormDialogProps) 
               name="location"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Vị trí</FormLabel>
+                  <FormLabel>Vị trí dự án</FormLabel>
                   <FormControl>
                     <BilingualField
                       value={field.value}
@@ -458,7 +458,7 @@ export function ProjectFormDialog({ trigger, project }: ProjectFormDialogProps) 
               name="category"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Phân loại</FormLabel>
+                  <FormLabel>Loại hình dự án</FormLabel>
                   <FormControl>
                     <BilingualField
                       value={field.value}
@@ -477,7 +477,7 @@ export function ProjectFormDialog({ trigger, project }: ProjectFormDialogProps) 
             name="status"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Tình trạng</FormLabel>
+                <FormLabel>Tình trạng thi công</FormLabel>
                 <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
                     <SelectTrigger>

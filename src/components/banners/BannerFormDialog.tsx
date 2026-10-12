@@ -171,7 +171,7 @@ export function BannerFormDialog({ trigger, banner }: BannerFormDialogProps) {
               name="title"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Tiêu đề</FormLabel>
+                  <FormLabel>Tiêu đề chính trên banner</FormLabel>
                   <FormControl>
                     <BilingualField
                       value={field.value}
@@ -219,13 +219,17 @@ export function BannerFormDialog({ trigger, banner }: BannerFormDialogProps) {
               name="subtitle"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Mô tả</FormLabel>
+                  <FormLabel>Mô tả phụ trên banner</FormLabel>
                   <FormControl>
                     <BilingualField
                       multiline
                       rows={2}
                       value={field.value}
                       onChange={field.onChange}
+                      placeholder={{
+                        vi: "Không gian đô thị hiện đại tại trung tâm Bến Tre",
+                        en: "A modern urban space in central Ben Tre",
+                      }}
                     />
                   </FormControl>
                   <FormDescription>
@@ -241,7 +245,7 @@ export function BannerFormDialog({ trigger, banner }: BannerFormDialogProps) {
               name="ctaLabel"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Chữ trên nút</FormLabel>
+                  <FormLabel>Nhãn nút CTA trên banner</FormLabel>
                   <FormControl>
                     <BilingualField
                       value={field.value}
@@ -262,7 +266,7 @@ export function BannerFormDialog({ trigger, banner }: BannerFormDialogProps) {
               name="href"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Liên kết của nút</FormLabel>
+                  <FormLabel>Đường dẫn khi bấm nút CTA</FormLabel>
                   <FormControl>
                     <Input placeholder="/du-an/khu-do-thi-hung-phu" {...field} />
                   </FormControl>
@@ -279,9 +283,9 @@ export function BannerFormDialog({ trigger, banner }: BannerFormDialogProps) {
               name="objectPosition"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Canh khung ảnh</FormLabel>
+                  <FormLabel>Vị trí canh ảnh banner</FormLabel>
                   <FormControl>
-                    <Input placeholder="center center" {...field} />
+                    <Input placeholder="center 55%" {...field} />
                   </FormControl>
                   <FormDescription>
                     Để trống là canh giữa. Nếu ảnh bị lệch, nhập ví dụ center 55%.

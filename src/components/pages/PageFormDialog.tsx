@@ -323,7 +323,7 @@ export function PageFormDialog({ trigger, page }: PageFormDialogProps) {
               name="slug"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Slug (đường dẫn)</FormLabel>
+                  <FormLabel>Slug trang nội dung</FormLabel>
                   <FormControl>
                     <Input placeholder="gioi-thieu" {...field} disabled={isEdit} />
                   </FormControl>
@@ -341,7 +341,7 @@ export function PageFormDialog({ trigger, page }: PageFormDialogProps) {
               name="title"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Tiêu đề</FormLabel>
+                  <FormLabel>Tiêu đề trang</FormLabel>
                   <FormControl>
                     <BilingualField
                       value={field.value}
@@ -362,13 +362,17 @@ export function PageFormDialog({ trigger, page }: PageFormDialogProps) {
               name="content"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Nội dung</FormLabel>
+                  <FormLabel>Nội dung trang</FormLabel>
                   <FormControl>
                     <BilingualField
                       multiline
                       rows={8}
                       value={field.value}
                       onChange={field.onChange}
+                      placeholder={{
+                        vi: "Đoạn đầu làm mô tả dưới tiêu đề trang. Các đoạn sau là nội dung chính.",
+                        en: "The first paragraph becomes the page intro. Later paragraphs become the main body.",
+                      }}
                     />
                   </FormControl>
                   <FormDescription>

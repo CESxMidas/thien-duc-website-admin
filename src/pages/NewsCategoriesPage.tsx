@@ -174,7 +174,7 @@ export function NewsCategoriesPage() {
     },
     {
       key: "slug",
-      header: "Đường dẫn",
+      header: "Đường dẫn chuyên mục",
       hideOnMobile: true,
       render: (category) => (
         <code className="text-xs text-slate">/{category.slug}</code>

@@ -98,13 +98,13 @@ export function BrandingSettingsPage() {
                 htmlFor="branding-logo-alt"
                 className="text-sm font-medium text-ink"
               >
-                Mô tả ảnh logo
+                Mô tả thay thế cho logo
               </label>
               <Input
                 id="branding-logo-alt"
                 value={logoAlt}
                 onChange={(event) => setLogoAlt(event.target.value)}
-                placeholder="Logo công ty"
+                placeholder="Logo Công ty Thiên Đức"
               />
             </div>
 
@@ -119,7 +119,7 @@ export function BrandingSettingsPage() {
                 id="branding-favicon"
                 value={faviconUrl}
                 onChange={(event) => setFaviconUrl(event.target.value)}
-                placeholder="https://..."
+                placeholder="https://res.cloudinary.com/thienduc/image/upload/logo-thien-duc.png"
               />
               <p className="text-xs leading-5 text-slate">
                 Có thể để trống nếu dự án chưa cần thay favicon.

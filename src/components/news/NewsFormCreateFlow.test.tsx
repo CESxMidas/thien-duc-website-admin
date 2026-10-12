@@ -150,15 +150,15 @@ async function fillValidForm(
   // ngữ đều mang cùng một tên. Nay tên truy cập là nhãn của field, nên test
   // bám vào ý nghĩa thay vì thứ tự xuất hiện trong DOM.
   await user.type(
-    within(dialog).getByRole("textbox", { name: "Tiêu đề" }),
+    within(dialog).getByRole("textbox", { name: "Tiêu đề bài viết" }),
     "Bài mới",
   );
   await user.type(
-    within(dialog).getByRole("textbox", { name: "Tóm tắt" }),
+    within(dialog).getByRole("textbox", { name: "Tóm tắt bài viết" }),
     "Tóm tắt bài mới đủ dài.",
   );
   await user.type(
-    within(dialog).getByLabelText("Đường dẫn"),
+    within(dialog).getByLabelText("Đường dẫn bài viết"),
     "slug-nguoi-dung-go",
   );
   await user.click(

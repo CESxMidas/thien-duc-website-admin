@@ -288,11 +288,11 @@ function ProfileContent({ profile }: { profile: MyProfile }) {
                 name="bio"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Giới thiệu</FormLabel>
+                    <FormLabel>Giới thiệu hồ sơ cá nhân</FormLabel>
                     <FormControl>
                       <Textarea
                         rows={2}
-                        placeholder="Vài dòng giới thiệu về bạn."
+                        placeholder="Vài dòng về vai trò, kinh nghiệm hoặc phạm vi phụ trách của bạn."
                         {...field}
                       />
                     </FormControl>

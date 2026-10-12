@@ -125,7 +125,7 @@ describe("NewsFormDialog — chuyên mục bắt buộc", () => {
 
     // Gọi thẳng tên field thay vì đếm chỉ số trong danh sách ô song ngữ.
     await user.type(
-      within(dialog).getByRole("textbox", { name: "Tiêu đề" }),
+      within(dialog).getByRole("textbox", { name: "Tiêu đề bài viết" }),
       "Tiêu đề bài mới",
     );
     // Nút chính của form tạo (ADMIN): lưu bài ở dạng nháp. Các nút phụ

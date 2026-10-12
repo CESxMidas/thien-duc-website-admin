@@ -514,7 +514,7 @@ export function NewsFormDialog({ trigger, post }: NewsFormDialogProps) {
             name="title"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Tiêu đề</FormLabel>
+                <FormLabel>Tiêu đề bài viết</FormLabel>
                 <FormControl>
                   <BilingualField
                     value={field.value}
@@ -535,7 +535,7 @@ export function NewsFormDialog({ trigger, post }: NewsFormDialogProps) {
             name="slug"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Đường dẫn</FormLabel>
+                <FormLabel>Đường dẫn bài viết</FormLabel>
                 <FormControl>
                   <Input placeholder="le-khoi-cong-fancy-tower" {...field} />
                 </FormControl>
@@ -552,13 +552,17 @@ export function NewsFormDialog({ trigger, post }: NewsFormDialogProps) {
             name="summary"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Tóm tắt</FormLabel>
+                <FormLabel>Tóm tắt bài viết</FormLabel>
                 <FormControl>
                   <BilingualField
                     multiline
                     rows={2}
                     value={field.value}
                     onChange={field.onChange}
+                    placeholder={{
+                      vi: "Một đoạn ngắn giới thiệu nội dung chính của bài viết.",
+                      en: "A short summary of the article's main content.",
+                    }}
                   />
                 </FormControl>
                 <FormDescription>
@@ -574,13 +578,17 @@ export function NewsFormDialog({ trigger, post }: NewsFormDialogProps) {
             name="content"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Nội dung</FormLabel>
+                <FormLabel>Nội dung bài viết</FormLabel>
                 <FormControl>
                   <BilingualField
                     multiline
                     rows={8}
                     value={field.value}
                     onChange={field.onChange}
+                    placeholder={{
+                      vi: "Nhập nội dung bài viết. Cách nhau một dòng trống để tách đoạn.",
+                      en: "Enter the article body. Use a blank line to separate paragraphs.",
+                    }}
                   />
                 </FormControl>
 
@@ -594,7 +602,7 @@ export function NewsFormDialog({ trigger, post }: NewsFormDialogProps) {
             name="categoryId"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Chuyên mục</FormLabel>
+                <FormLabel>Chuyên mục tin tức</FormLabel>
                 {/* Cố ý KHÔNG có mục "Chưa phân loại": bài không chuyên mục
                       không xuất hiện ở trang danh mục nào cả. Cũng KHÔNG cho
                       tạo chuyên mục ngay tại đây — việc đó vượt qua phân quyền
@@ -641,7 +649,7 @@ export function NewsFormDialog({ trigger, post }: NewsFormDialogProps) {
               name="author"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Nguồn</FormLabel>
+                  <FormLabel>Nguồn hoặc tác giả</FormLabel>
                   <FormControl>
                     <Input
                       className="h-10 w-full"
@@ -659,7 +667,7 @@ export function NewsFormDialog({ trigger, post }: NewsFormDialogProps) {
               name="referenceUrl"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Link tham khảo</FormLabel>
+                  <FormLabel>URL nguồn tham khảo</FormLabel>
                   <FormControl>
                     <Input
                       className="h-10 w-full"
@@ -678,7 +686,7 @@ export function NewsFormDialog({ trigger, post }: NewsFormDialogProps) {
               name="eventDate"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Ngày sự kiện</FormLabel>
+                  <FormLabel>Ngày diễn ra sự kiện</FormLabel>
                   <FormControl>
                     <Input className="h-10 w-full" type="date" {...field} />
                   </FormControl>

@@ -364,7 +364,7 @@ function ProjectReadOnlyOverview({ project }: { project: ProjectDetail }) {
           ...(project.description?.vi
             ? [
                 {
-                  label: "Nội dung chi tiết",
+                  label: "Nội dung tổng quan dự án",
                   value: project.description.vi,
                   block: true,
                 },
@@ -525,7 +525,7 @@ function ProjectItemWorkspace({
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-1.5">
-                <Label htmlFor={`item-slug-${item.id}`}>Slug</Label>
+              <Label htmlFor={`item-slug-${item.id}`}>Slug hạng mục</Label>
                 <Input
                   id={`item-slug-${item.id}`}
                   value={slug}
@@ -534,7 +534,7 @@ function ProjectItemWorkspace({
                 />
               </div>
               <div className="space-y-1.5">
-                <Label>Tình trạng</Label>
+              <Label>Tình trạng thi công hạng mục</Label>
                 <Select value={status} onValueChange={setStatus}>
                   <SelectTrigger>
                     <SelectValue />
@@ -554,7 +554,7 @@ function ProjectItemWorkspace({
             </div>
 
             <div className="space-y-1.5">
-              <Label>Mô tả ngắn</Label>
+              <Label>Mô tả ngắn cho thẻ hạng mục</Label>
               <BilingualField
                 multiline
                 rows={3}
@@ -568,7 +568,7 @@ function ProjectItemWorkspace({
             </div>
 
             <div className="space-y-1.5">
-              <Label>Nội dung chi tiết</Label>
+              <Label>Nội dung chi tiết hạng mục</Label>
               <BilingualField
                 multiline
                 rows={5}
@@ -604,14 +604,14 @@ function ProjectItemWorkspace({
           <DetailList
             fields={[
               { label: "Tên hạng mục", value: item.title.vi },
-              { label: "Slug", value: `/${project.slug}/${item.slug}` },
+              { label: "Slug hạng mục", value: `/${project.slug}/${item.slug}` },
               {
-                label: "Mô tả ngắn",
+                label: "Mô tả ngắn cho thẻ hạng mục",
                 value: item.summary?.vi ?? "Chưa có mô tả ngắn",
                 block: true,
               },
               {
-                label: "Tình trạng",
+                label: "Tình trạng thi công hạng mục",
                 value: item.status
                   ? projectStatusLabel[item.status]
                   : `Theo dự án (${projectStatusLabel[project.status]})`,
@@ -644,7 +644,7 @@ function ProjectItemWorkspace({
           ...(toBilingualLoose(item.description).vi
             ? [
                 {
-                  label: "Nội dung chi tiết",
+                  label: "Nội dung chi tiết hạng mục",
                   value: toBilingualLoose(item.description).vi,
                   block: true,
                 },
@@ -807,7 +807,7 @@ function InfoTab({
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="project-slug">Slug</Label>
+                <Label htmlFor="project-slug">Slug dự án</Label>
                 <Input
                   id="project-slug"
                   value={slug}
@@ -836,7 +836,7 @@ function InfoTab({
             </div>
 
             <div className="space-y-1.5">
-              <Label>Mô tả ngắn</Label>
+              <Label>Mô tả ngắn cho thẻ dự án</Label>
               <BilingualField
                 multiline
                 rows={3}
@@ -851,7 +851,7 @@ function InfoTab({
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-1.5">
-                <Label>Vị trí</Label>
+                <Label>Vị trí dự án</Label>
                 <BilingualField
                   value={location}
                   onChange={setLocation}
@@ -859,7 +859,7 @@ function InfoTab({
                 />
               </div>
               <div className="space-y-1.5">
-                <Label>Phân loại</Label>
+                <Label>Loại hình dự án</Label>
                 <BilingualField
                   value={category}
                   onChange={setCategory}
@@ -889,12 +889,19 @@ function InfoTab({
           <DetailList
             fields={[
               { label: "Tên dự án", value: project.title.vi },
-              { label: "Slug", value: `/${project.slug}` },
-              { label: "Mô tả ngắn", value: project.summary.vi, block: true },
-              { label: "Vị trí", value: project.location?.vi ?? "Chưa nhập" },
-              { label: "Phân loại", value: project.category?.vi ?? "Chưa nhập" },
+              { label: "Slug dự án", value: `/${project.slug}` },
               {
-                label: "Tình trạng",
+                label: "Mô tả ngắn cho thẻ dự án",
+                value: project.summary.vi,
+                block: true,
+              },
+              { label: "Vị trí dự án", value: project.location?.vi ?? "Chưa nhập" },
+              {
+                label: "Loại hình dự án",
+                value: project.category?.vi ?? "Chưa nhập",
+              },
+              {
+                label: "Tình trạng thi công",
                 value: projectStatusLabel[project.status],
               },
             ]}
@@ -924,7 +931,7 @@ function InfoTab({
           ...(project.description?.vi
             ? [
                 {
-                  label: "Mô tả chi tiết",
+                  label: "Nội dung tổng quan dự án",
                   value: project.description.vi,
                   block: true,
                 },

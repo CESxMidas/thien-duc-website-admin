@@ -348,7 +348,7 @@ export function CooperationFormDialog({
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Tên dự án</FormLabel>
+                  <FormLabel>Tên dự án hợp tác</FormLabel>
                   <FormControl>
                     <BilingualField
                       value={field.value}
@@ -366,7 +366,7 @@ export function CooperationFormDialog({
               name="location"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Địa điểm</FormLabel>
+                  <FormLabel>Địa điểm dự án hợp tác</FormLabel>
                   <FormControl>
                     <BilingualField
                       value={field.value}
@@ -384,7 +384,7 @@ export function CooperationFormDialog({
               name="partner"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Đối tác</FormLabel>
+                  <FormLabel>Đối tác phát triển</FormLabel>
                   <FormControl>
                     <BilingualField
                       value={field.value}
@@ -426,7 +426,7 @@ export function CooperationFormDialog({
               name="scale"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Quy mô</FormLabel>
+                  <FormLabel>Quy mô dự án hợp tác</FormLabel>
                   <FormControl>
                     <BilingualField
                       value={field.value}
@@ -450,7 +450,7 @@ export function CooperationFormDialog({
               name="status"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Trạng thái dự án</FormLabel>
+                  <FormLabel>Tiến độ hiển thị trên website</FormLabel>
                   <FormControl>
                     <BilingualField
                       value={field.value}

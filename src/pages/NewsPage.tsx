@@ -166,7 +166,7 @@ export function NewsPage() {
   const columns: Column<NewsPost>[] = [
     {
       key: "title",
-      header: "Tiêu đề",
+      header: "Tiêu đề bài viết",
       render: (post) => (
         <ContentListCell
           title={post.title.vi}
@@ -181,7 +181,7 @@ export function NewsPage() {
     },
     {
       key: "category",
-      header: "Chuyên mục",
+      header: "Chuyên mục tin tức",
       hideOnMobile: true,
       render: (post) => (
         <span className="text-slate">

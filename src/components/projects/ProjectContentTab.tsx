@@ -122,11 +122,11 @@ export function ProjectContentTab({ project }: { project: ProjectDetail }) {
 
   return (
     <div className="space-y-6">
-      {/* ------------------------ Mô tả tổng quan ------------------------ */}
+      {/* -------------------- Nội dung tổng quan dự án -------------------- */}
       <section className="space-y-3">
         <div>
           <h3 className="font-display text-sm font-semibold text-ink">
-            Mô tả tổng quan
+            Nội dung tổng quan dự án
           </h3>
         
         </div>
@@ -242,7 +242,7 @@ export function ProjectContentTab({ project }: { project: ProjectDetail }) {
               >
                 <div className="flex-1 space-y-2">
                   <div className="space-y-1">
-                    <Label className="text-xs text-slate">Nhãn</Label>
+                    <Label className="text-xs text-slate">Tên thông số</Label>
                     <BilingualField
                       value={fact.label}
                       onChange={(next) =>
@@ -256,7 +256,7 @@ export function ProjectContentTab({ project }: { project: ProjectDetail }) {
                     />
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-xs text-slate">Giá trị</Label>
+                    <Label className="text-xs text-slate">Giá trị thông số</Label>
                     <BilingualField
                       multiline
                       rows={2}
@@ -340,17 +340,17 @@ export function ProjectContentTab({ project }: { project: ProjectDetail }) {
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="map-url">Link Google Maps</Label>
+              <Label htmlFor="map-url">URL Google Maps của dự án</Label>
               <Input
                 id="map-url"
                 value={map.googleMapsUrl}
                 onChange={(e) => patchMap({ googleMapsUrl: e.target.value })}
-                placeholder="https://www.google.com/maps"
+                placeholder="https://www.google.com/maps/place/Khu+do+thi+Hung+Phu"
               />
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="map-heading">Tiêu đề</Label>
+              <Label htmlFor="map-heading">Tiêu đề khối bản đồ</Label>
               <BilingualField
                 id="map-heading"
                 value={toBilingualLoose(map.heading)}
@@ -363,7 +363,7 @@ export function ProjectContentTab({ project }: { project: ProjectDetail }) {
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="map-desc">Mô tả</Label>
+              <Label htmlFor="map-desc">Mô tả vị trí</Label>
               <BilingualField
                 id="map-desc"
                 multiline
@@ -378,7 +378,7 @@ export function ProjectContentTab({ project }: { project: ProjectDetail }) {
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="map-address">Địa chỉ</Label>
+              <Label htmlFor="map-address">Địa chỉ hiển thị trên bản đồ</Label>
               <BilingualField
                 id="map-address"
                 value={toBilingualLoose(map.address)}
