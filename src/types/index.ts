@@ -51,7 +51,7 @@ export interface ProjectMapLabel {
 
 /** Khối bản đồ vị trí (`map_location`) — ảnh nền + marker + nhãn. */
 export interface ProjectMapLocation {
-  image: string;
+  image?: string | null;
   googleMapsUrl: string;
   // Prose song ngữ (EN-FULL-C5a); chấp nhận `string` cho dữ liệu cũ chưa migrate.
   heading?: Bilingual | string;

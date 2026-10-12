@@ -331,7 +331,7 @@ export function ProjectContentTab({ project }: { project: ProjectDetail }) {
             <div className="space-y-1.5">
               <Label>Ảnh nền bản đồ</Label>
               <ImagePickerField
-                value={map.image}
+                value={map.image ?? ""}
                 onChange={(url) => patchMap({ image: url })}
                 folder="projects"
                 aspect="16/9"
