@@ -12,7 +12,7 @@
  * backend sinh, client không có cách nào biết trước.
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { render, screen, within } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
@@ -112,12 +112,12 @@ async function openAndFill(user: ReturnType<typeof userEvent.setup>) {
   };
 
   // BilingualField hiện ô tiếng Việt với nhãn của chính trường đó.
-  await fill("Tên dự án", "Vista Verde");
-  await fill("Địa điểm", "Quận 2, TP.HCM");
-  await fill("Đối tác", "CapitaLand");
+  await fill("Tên dự án hợp tác", "Vista Verde");
+  await fill("Địa điểm dự án hợp tác", "Quận 2, TP.HCM");
+  await fill("Đối tác phát triển", "CapitaLand");
   await fill("Vai trò của Thiên Đức", "Đồng chủ đầu tư");
-  await fill("Quy mô", "4 tòa tháp");
-  await fill("Trạng thái dự án", "Đã bàn giao");
+  await fill("Quy mô dự án hợp tác", "4 tòa tháp");
+  await fill("Tiến độ hiển thị trên website", "Đã bàn giao");
   return dialog;
 }
 
@@ -173,10 +173,7 @@ describe("tạo + đặt lịch — §43, §55", () => {
       within(scheduleDialog).getByLabelText("Ngày đăng"),
       "2026-08-20",
     );
-    await user.type(
-      within(scheduleDialog).getByLabelText("Giờ đăng"),
-      "08:00",
-    );
+    await user.type(within(scheduleDialog).getByLabelText("Giờ đăng"), "08:00");
     await user.click(
       within(scheduleDialog).getByRole("button", { name: /Lên lịch/ }),
     );
@@ -204,9 +201,10 @@ describe("tạo + đặt lịch — §43, §55", () => {
     expect(createProject).not.toHaveBeenCalled();
     expect(schedulePublication).not.toHaveBeenCalled();
     // Form vẫn còn dữ liệu đang gõ.
-    expect(within(dialog).getByLabelText("Tên dự án")).toHaveValue(
-      "Vista Verde",
-    );
+    await waitFor(() => expect(dialog).toHaveAttribute("data-state", "open"));
+    expect(
+      within(dialog).getByRole("textbox", { name: "Tên dự án hợp tác" }),
+    ).toHaveValue("Vista Verde");
   });
 });
 
@@ -235,7 +233,9 @@ describe("tạo + Đăng ngay / Gửi duyệt — §44", () => {
     expect(
       within(dialog).getByRole("button", { name: /Gửi duyệt/ }),
     ).toBeInTheDocument();
-    expect(within(dialog).queryByRole("button", { name: "Đặt lịch" })).toBeNull();
+    expect(
+      within(dialog).queryByRole("button", { name: "Đặt lịch" }),
+    ).toBeNull();
   });
 
   it("EDITOR: Gửi duyệt gọi lệnh trạng thái PENDING", async () => {
@@ -276,10 +276,7 @@ describe("hỏng giữa chừng — §45, §60", () => {
       within(scheduleDialog).getByLabelText("Ngày đăng"),
       "2026-08-20",
     );
-    await user.type(
-      within(scheduleDialog).getByLabelText("Giờ đăng"),
-      "08:00",
-    );
+    await user.type(within(scheduleDialog).getByLabelText("Giờ đăng"), "08:00");
     await user.click(
       within(scheduleDialog).getByRole("button", { name: /Lên lịch/ }),
     );
@@ -311,7 +308,12 @@ describe("hỏng giữa chừng — §45, §60", () => {
   });
 
   it("tạo xong nhưng đổi trạng thái hỏng → giữ bản nháp, báo rõ", async () => {
-    updateStatus.mockRejectedValueOnce(new ApiRequestError(403, { code: "FORBIDDEN", message: "Không có quyền." }));
+    updateStatus.mockRejectedValueOnce(
+      new ApiRequestError(403, {
+        code: "FORBIDDEN",
+        message: "Không có quyền.",
+      }),
+    );
     const user = renderDialog();
     const dialog = await openAndFill(user);
 

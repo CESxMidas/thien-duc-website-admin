@@ -39,7 +39,13 @@ const spies = vi.hoisted(() => ({
 }));
 
 const categories: NewsCategory[] = [
-  { id: "c1", slug: "tin-du-an", name: { vi: "Tin dự án" }, order: 0, publishedCount: 0 },
+  {
+    id: "c1",
+    slug: "tin-du-an",
+    name: { vi: "Tin dự án" },
+    order: 0,
+    publishedCount: 0,
+  },
 ];
 
 vi.mock("@/lib/api/queries", () => {
@@ -117,7 +123,7 @@ const FORMS = [
     name: "Trang nội dung",
     open: "Tạo trang",
     submit: "Lưu nháp",
-    field: "Tiêu đề",
+    field: "Tiêu đề trang",
     message: "Tiêu đề tối thiểu 3 ký tự.",
     valid: "Giới thiệu công ty",
     create: spies.createPage,
@@ -127,7 +133,7 @@ const FORMS = [
     name: "Tin tức",
     open: "Viết tin",
     submit: "Lưu nháp",
-    field: "Tiêu đề",
+    field: "Tiêu đề bài viết",
     message: "Tiêu đề tối thiểu 3 ký tự.",
     valid: "Bài viết mới của Thiên Đức",
     create: spies.createNews,
@@ -173,7 +179,9 @@ describe.each(FORMS)(
       expect(describedTextOf(control)).toContain(message);
       // Batch 13A không bị kéo lùi.
       expect(control).not.toHaveAttribute("aria-label");
-      expect(within(dialog).getByRole("textbox", { name: field })).toBe(control);
+      expect(within(dialog).getByRole("textbox", { name: field })).toBe(
+        control,
+      );
       expect(describedTextOf(control)).toContain("Tiếng Việt");
     });
 
@@ -204,7 +212,9 @@ describe("Banner — chữ phủ lên ảnh là tùy chọn", () => {
     await user.click(screen.getByRole("button", { name: "Thêm banner" }));
     const dialog = await screen.findByRole("dialog");
 
-    await user.click(within(dialog).getByRole("button", { name: "Thêm banner" }));
+    await user.click(
+      within(dialog).getByRole("button", { name: "Thêm banner" }),
+    );
     await within(dialog).findByText("Cần URL ảnh banner.");
 
     expect(

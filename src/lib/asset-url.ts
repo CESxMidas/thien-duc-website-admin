@@ -14,9 +14,45 @@ const configuredSiteUrl = (import.meta.env.VITE_SITE_URL ?? "").replace(
 const SITE_URL =
   configuredSiteUrl || (import.meta.env.DEV ? "http://localhost:3000" : "");
 
-export function resolveAssetUrl(url: string): string {
+export const legacyNewsImageFallback =
+  "/images/news/legacy/tin-tuc-thien-duc-placeholder-01.jpg";
 
-  if (/^(https?:|data:|blob:)/i.test(url)) return url;
-  if (!SITE_URL || !url.startsWith("/")) return url;
-  return `${SITE_URL}${url}`;
+const legacyNewsImageMap: Record<string, string> = {
+  "796930583506.jpg":
+    "/images/news/2021/le-khoi-cong-fancy-tower-2021-04-07.jpg",
+};
+
+function legacyImageFileName(url: URL): string | undefined {
+  if (
+    !["thienduccons.vn", "www.thienduccons.vn"].includes(url.hostname) ||
+    !url.pathname.startsWith("/img_data/images/")
+  ) {
+    return undefined;
+  }
+
+  return url.pathname.split("/").pop();
+}
+
+function resolveLegacyNewsImage(url: string): string {
+  try {
+    const parsed = new URL(url);
+    const fileName = legacyImageFileName(parsed);
+
+    if (fileName) {
+      return legacyNewsImageMap[fileName] ?? legacyNewsImageFallback;
+    }
+  } catch {
+    // Relative URLs are handled below.
+  }
+
+  return url;
+}
+
+export function resolveAssetUrl(url: string | null | undefined): string {
+  if (!url?.trim()) return url ?? "";
+  const resolvedUrl = resolveLegacyNewsImage(url);
+
+  if (/^(https?:|data:|blob:)/i.test(resolvedUrl)) return resolvedUrl;
+  if (!SITE_URL || !resolvedUrl.startsWith("/")) return resolvedUrl;
+  return `${SITE_URL}${resolvedUrl}`;
 }
