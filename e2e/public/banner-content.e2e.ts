@@ -266,8 +266,7 @@ test.describe('§15 — Trang chủ hiển thị banner', () => {
     await gotoFE(page, '/');
     const banner = page.getByRole('region', { name: /banner/i }).first();
     /** Nút chấm tròn của slide thứ `index` (0-based) — nhãn a11y đánh số từ 1. */
-    const dot = (index: number) =>
-      banner.getByRole('button', { name: `Chuyển tới banner ${index + 1}` });
+    const next = banner.getByRole('button', { name: 'Banner tiếp theo' });
 
     await expect(
       banner.getByRole('heading', { level: 1, name: live[0].title.vi }),
@@ -290,18 +289,16 @@ test.describe('§15 — Trang chủ hiển thị banner', () => {
     await expect(page.locator('.banner-progress')).toHaveCount(0);
 
     // Điểm xuất phát tất định: slide 0 đang hiện.
-    await expect(dot(0)).toHaveAttribute('aria-current', 'true');
+    await expect(next).toBeVisible();
 
     // Tiêu điểm nằm đúng trên điều khiển của carousel trước khi bấm phím.
-    await dot(0).focus();
-    await expect(dot(0)).toBeFocused();
+    await next.focus();
+    await expect(next).toBeFocused();
 
     await page.keyboard.press('ArrowRight');
 
     // Chỉ số slide đổi hẳn sang 1 (trạng thái, không phải hiệu ứng) rồi mới
     // khẳng định nội dung — không phụ thuộc thời lượng animation mờ chồng.
-    await expect(dot(1)).toHaveAttribute('aria-current', 'true');
-    await expect(dot(0)).toHaveAttribute('aria-current', 'false');
     await expect(
       banner.getByRole('heading', { level: 1, name: live[1].title.vi }),
     ).toBeVisible();

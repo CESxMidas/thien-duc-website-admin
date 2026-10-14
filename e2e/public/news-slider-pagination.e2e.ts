@@ -290,12 +290,17 @@ test.describe('Slider tin ở trang chủ', () => {
       .toBe(before);
   });
 
-  test('nút previous vô hiệu ở đầu dãy', async ({ page }) => {
+  test('nút previous ở đầu dãy quay vòng về cụm cuối', async ({ page }) => {
     await page.setViewportSize(VIEWPORT.desktop);
     await page.goto(`${FRONTEND_URL}/`);
     await page.locator('[data-testid="news-slider-track"]').waitFor();
+    await waitForAppHydration(page);
 
-    await expect(page.getByTestId('news-slider-previous')).toBeDisabled();
+    const before = await firstVisibleTitle(page);
+    await page.getByTestId('news-slider-previous').click();
+    await expect
+      .poll(() => firstVisibleTitle(page), { message: 'Previous phải quay vòng' })
+      .not.toBe(before);
     await expect(page.getByTestId('news-slider-next')).toBeEnabled();
   });
 
@@ -371,7 +376,9 @@ test.describe('Phân trang /tin-tuc', () => {
     const secondPageTitles = await page.locator('main h2').allTextContents();
     expect(secondPageTitles).not.toEqual(firstPageTitles);
 
-    const current = page.locator('[aria-current="page"]');
+    const current = page
+      .getByTestId('news-pagination')
+      .locator('[aria-current="page"]');
     await expect(current).toHaveText('2');
   });
 
@@ -380,10 +387,14 @@ test.describe('Phân trang /tin-tuc', () => {
   }) => {
     await page.setViewportSize(VIEWPORT.desktop);
     await page.goto(`${FRONTEND_URL}/tin-tuc?page=2`);
-    await expect(page.locator('[aria-current="page"]')).toHaveText('2');
+    await expect(
+      page.getByTestId('news-pagination').locator('[aria-current="page"]'),
+    ).toHaveText('2');
 
     await page.reload();
-    await expect(page.locator('[aria-current="page"]')).toHaveText('2');
+    await expect(
+      page.getByTestId('news-pagination').locator('[aria-current="page"]'),
+    ).toHaveText('2');
   });
 
   test('Back của trình duyệt quay lại trang 1', async ({ page }) => {
@@ -394,17 +405,23 @@ test.describe('Phân trang /tin-tuc', () => {
     // có thể xử lý lại đúng cú bấm đó → hai mục lịch sử cho cùng `?page=2`,
     // nên MỘT lần `goBack()` không quay về được trang 1.
     await waitForAppHydration(page);
-    await expect(page.locator('[aria-current="page"]')).toHaveText('1');
+    await expect(
+      page.getByTestId('news-pagination').locator('[aria-current="page"]'),
+    ).toHaveText('1');
 
     await page.getByTestId('pagination-next').click();
     await page.waitForURL(/[?&]page=2/);
     // Chốt trang 2 đã render xong rồi mới Back — Back khi mục lịch sử chưa ổn
     // định là nguồn chập chờn thứ hai.
-    await expect(page.locator('[aria-current="page"]')).toHaveText('2');
+    await expect(
+      page.getByTestId('news-pagination').locator('[aria-current="page"]'),
+    ).toHaveText('2');
 
     await page.goBack();
     await page.waitForURL((url) => !url.search.includes('page=2'));
-    await expect(page.locator('[aria-current="page"]')).toHaveText('1');
+    await expect(
+      page.getByTestId('news-pagination').locator('[aria-current="page"]'),
+    ).toHaveText('1');
   });
 
   test('Previous quay lại trang trước', async ({ page }) => {
@@ -414,21 +431,29 @@ test.describe('Phân trang /tin-tuc', () => {
 
     await page.getByTestId('pagination-previous').click();
     await page.waitForURL((url) => !url.search.includes('page=2'));
-    await expect(page.locator('[aria-current="page"]')).toHaveText('1');
+    await expect(
+      page.getByTestId('news-pagination').locator('[aria-current="page"]'),
+    ).toHaveText('1');
   });
 
   test('page không hợp lệ được chuẩn hoá về trang 1', async ({ page }) => {
     for (const bad of ['0', '-1', 'abc', '1']) {
       await page.goto(`${FRONTEND_URL}/tin-tuc?page=${bad}`);
       await page.waitForURL((url) => !url.search.includes('page='));
-      await expect(page.locator('[aria-current="page"]')).toHaveText('1');
+      await expect(
+        page.getByTestId('news-pagination').locator('[aria-current="page"]'),
+      ).toHaveText('1');
     }
   });
 
   test('page vượt quá trang cuối đưa về trang cuối có thật', async ({ page }) => {
-    await page.goto(`${FRONTEND_URL}/tin-tuc?page=999`);
+    await page.goto(`${FRONTEND_URL}/tin-tuc?page=999`, {
+      waitUntil: 'domcontentloaded',
+    });
 
-    const current = page.locator('[aria-current="page"]');
+    const current = page
+      .getByTestId('news-pagination')
+      .locator('[aria-current="page"]');
     await expect(current).toBeVisible();
     await expect(current).not.toHaveText('999');
     await expect(page.getByTestId('pagination-next')).toHaveAttribute(
@@ -454,7 +479,9 @@ test.describe('Phân trang /tin-tuc', () => {
       page.getByRole('navigation', { name: 'News pagination' }),
     ).toBeVisible();
     // Bản EN đã ổn định ở trang 1 rồi mới bấm sang trang 2.
-    await expect(page.locator('[aria-current="page"]')).toHaveText('1');
+    await expect(
+      page.getByTestId('news-pagination').locator('[aria-current="page"]'),
+    ).toHaveText('1');
 
     await page.getByTestId('pagination-next').click();
     // Chờ ĐÚNG đường dẫn + tham số của bản EN. So bằng `pathname`/`searchParams`
@@ -464,7 +491,9 @@ test.describe('Phân trang /tin-tuc', () => {
       (url) =>
         url.pathname === '/en/tin-tuc' && url.searchParams.get('page') === '2',
     );
-    await expect(page.locator('[aria-current="page"]')).toHaveText('2');
+    await expect(
+      page.getByTestId('news-pagination').locator('[aria-current="page"]'),
+    ).toHaveText('2');
     await expect(page.locator('main')).toContainText(`E2E ${RUN_ID} article`);
   });
 

@@ -1,4 +1,5 @@
 import { expect, type Page } from '@playwright/test';
+import { FRONTEND_URL } from './config';
 
 /**
  * Kiểm tràn ngang + CHẨN ĐOÁN phần tử gây tràn.
@@ -77,6 +78,41 @@ const ANIMATION_SETTLE_TIMEOUT_MS = 8_000;
 /** Các lớp bọc hiệu ứng reveal — trạng thái CHỜ của chúng nằm lệch ngoài khung. */
 const REVEAL_SELECTOR =
   '.stagger-sides, .reveal-from-left, .reveal-from-right, .reveal-sides-pair, .reveal-section, .image-reveal';
+const REVEAL_FINAL_STYLE_ID = 'e2e-reveal-final-state';
+
+async function waitForFrontendHydration(page: Page): Promise<void> {
+  if (!page.url().startsWith(FRONTEND_URL)) return;
+  await page.waitForLoadState('domcontentloaded');
+  await page.waitForFunction(
+    () =>
+      new Promise((resolve) => {
+        requestAnimationFrame(() => requestAnimationFrame(resolve));
+      }),
+    undefined,
+    { timeout: LAYOUT_SETTLE_TIMEOUT_MS },
+  );
+}
+
+async function forceRevealFinalStateForMeasurement(page: Page): Promise<void> {
+  await page.evaluate(
+    ({ id, selector }) => {
+      if (document.getElementById(id)) return;
+      const style = document.createElement('style');
+      style.id = id;
+      style.textContent = `
+        ${selector} {
+          opacity: 1 !important;
+          transform: none !important;
+          translate: none !important;
+          animation: none !important;
+          transition: none !important;
+        }
+      `;
+      document.head.appendChild(style);
+    },
+    { id: REVEAL_FINAL_STYLE_ID, selector: REVEAL_SELECTOR },
+  );
+}
 
 /**
  * Chờ các animation CÓ ĐIỂM KẾT chạy xong, BỎ QUA animation lặp vô tận.
@@ -129,11 +165,8 @@ export async function collectOverflow(page: Page): Promise<OverflowReport> {
   await page.waitForFunction(() => document.fonts.status === 'loaded', undefined, {
     timeout: 8_000,
   });
-  await page.evaluate((selector: string) => {
-    document
-      .querySelectorAll(selector)
-      .forEach((el) => el.classList.add('is-revealed'));
-  }, REVEAL_SELECTOR);
+  await waitForFrontendHydration(page);
+  await forceRevealFinalStateForMeasurement(page);
   await waitForFiniteAnimations(page);
   await waitForStableLayout(page);
 

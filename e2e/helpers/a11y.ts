@@ -1,5 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, type Page } from '@playwright/test';
+import { FRONTEND_URL } from './config';
 
 /**
  * Đưa trang về TRẠNG THÁI HÌNH ẢNH CUỐI rồi mới quét axe.
@@ -44,8 +45,17 @@ import { expect, type Page } from '@playwright/test';
 const COLOR_SETTLE_TIMEOUT_MS = 10_000;
 const STABLE_FRAMES = 4;
 
+async function waitForFrontendHydration(page: Page): Promise<void> {
+  if (!page.url().startsWith(FRONTEND_URL)) return;
+  await page.locator('next-route-announcer').waitFor({
+    state: 'attached',
+    timeout: COLOR_SETTLE_TIMEOUT_MS,
+  });
+}
+
 async function waitForStableColors(page: Page): Promise<void> {
   await page.emulateMedia({ reducedMotion: 'reduce' });
+  await waitForFrontendHydration(page);
   await page.waitForFunction(
     (stableFramesNeeded: number) => {
       // Thuộc tính mà axe dùng để tính tương phản (kể cả gián tiếp qua opacity).

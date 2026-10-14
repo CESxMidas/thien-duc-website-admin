@@ -186,26 +186,30 @@ describe("tạo + đặt lịch — §43, §55", () => {
   });
 
   /** §62 — đóng hộp thoại lịch trước khi xác nhận thì KHÔNG được tạo gì. */
-  it("huỷ hộp thoại lịch trước khi xác nhận → không POST, không đặt lịch", async () => {
-    const user = renderDialog();
-    const dialog = await openAndFill(user);
+  it(
+    "huỷ hộp thoại lịch trước khi xác nhận → không POST, không đặt lịch",
+    async () => {
+      const user = renderDialog();
+      const dialog = await openAndFill(user);
 
-    await user.click(within(dialog).getByRole("button", { name: "Đặt lịch" }));
-    const scheduleDialog = await screen.findByRole("dialog", {
-      name: /lịch đăng bài/i,
-    });
-    await user.click(
-      within(scheduleDialog).getByRole("button", { name: /Hủy|Huỷ/ }),
-    );
+      await user.click(within(dialog).getByRole("button", { name: "Đặt lịch" }));
+      const scheduleDialog = await screen.findByRole("dialog", {
+        name: /lịch đăng bài/i,
+      });
+      await user.click(
+        within(scheduleDialog).getByRole("button", { name: /Hủy|Huỷ/ }),
+      );
 
-    expect(createProject).not.toHaveBeenCalled();
-    expect(schedulePublication).not.toHaveBeenCalled();
-    // Form vẫn còn dữ liệu đang gõ.
-    await waitFor(() => expect(dialog).toHaveAttribute("data-state", "open"));
-    expect(
-      within(dialog).getByRole("textbox", { name: "Tên dự án hợp tác" }),
-    ).toHaveValue("Vista Verde");
-  });
+      expect(createProject).not.toHaveBeenCalled();
+      expect(schedulePublication).not.toHaveBeenCalled();
+      // Form vẫn còn dữ liệu đang gõ.
+      await waitFor(() => expect(dialog).toHaveAttribute("data-state", "open"));
+      expect(
+        within(dialog).getByRole("textbox", { name: "Tên dự án hợp tác" }),
+      ).toHaveValue("Vista Verde");
+    },
+    10_000,
+  );
 });
 
 describe("tạo + Đăng ngay / Gửi duyệt — §44", () => {

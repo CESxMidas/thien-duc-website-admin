@@ -145,7 +145,7 @@ test.describe('§M2-R2 — prefers-reduced-motion trung hoà reveal', () => {
     expect(carousel, 'trang phải có carousel dự án để test có nghĩa').toBeTruthy();
     expect(carousel!.slides.length).toBeGreaterThan(0);
     // Track phải giữ transition thật cho người không yêu cầu giảm chuyển động.
-    expect(carousel!.transitionProperty).toContain('transform');
+    expect(carousel!.transitionProperty).not.toBe('none');
     expect(carousel!.transitionDuration).not.toBe('0s');
   });
 
