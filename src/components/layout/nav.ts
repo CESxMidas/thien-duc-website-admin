@@ -1,5 +1,6 @@
 import {
   BadgeCheck,
+  BriefcaseBusiness,
   Building2,
   FileText,
   GalleryHorizontalEnd,
@@ -29,6 +30,7 @@ export const navItems: NavItem[] = [
   { to: "/du-an-hop-tac", label: "Dự án hợp tác", icon: Handshake },
   { to: "/tin-tuc", label: "Tin tức", icon: Newspaper },
   { to: "/trang", label: "Trang nội dung", icon: FileText },
+  { to: "/tuyen-dung", label: "Tuyển dụng", icon: BriefcaseBusiness },
   {
     to: "/banner",
     label: "Banner",

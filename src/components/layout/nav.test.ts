@@ -25,12 +25,19 @@ describe("navItems — hiển thị theo vai trò", () => {
     // Nội dung EDITOR vẫn quản lý được thì vẫn hiện.
     expect(editor).toContain("/du-an");
     expect(editor).toContain("/tin-tuc");
+    expect(editor).toContain("/tuyen-dung");
     expect(editor).toContain("/thu-vien");
   });
 
   it("ADMIN và SUPER_ADMIN: thấy mục Banner", () => {
     for (const role of ["ADMIN", "SUPER_ADMIN"] as const) {
       expect(visibleFor(role)).toContain("/banner");
+    }
+  });
+
+  it("hiển thị mục Tuyển dụng cho mọi vai trò nội dung", () => {
+    for (const role of ["EDITOR", "ADMIN", "SUPER_ADMIN"] as const) {
+      expect(visibleFor(role)).toContain("/tuyen-dung");
     }
   });
 });

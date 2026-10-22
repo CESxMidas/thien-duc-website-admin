@@ -12,6 +12,7 @@ import { ProjectsPage } from "@/pages/ProjectsPage";
 import { NewsPage } from "@/pages/NewsPage";
 import { NewsCategoriesPage } from "@/pages/NewsCategoriesPage";
 import { PagesPage } from "@/pages/PagesPage";
+import { RecruitmentPositionsPage } from "@/pages/RecruitmentPositionsPage";
 import { BannersPage } from "@/pages/BannersPage";
 import { CooperationPage } from "@/pages/CooperationPage";
 import { ContactPage } from "@/pages/ContactPage";
@@ -45,6 +46,10 @@ export default function App() {
             <Route path="tin-tuc" element={<NewsPage />} />
             <Route path="tin-tuc/chuyen-muc" element={<NewsCategoriesPage />} />
             <Route path="trang" element={<PagesPage />} />
+            <Route
+              path="tuyen-dung"
+              element={<RecruitmentPositionsPage />}
+            />
             <Route
               path="banner"
               element={

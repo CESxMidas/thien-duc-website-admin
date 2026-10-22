@@ -10,6 +10,7 @@ import * as mediaApi from "./media";
 import * as newsApi from "./news";
 import * as pagesApi from "./pages";
 import * as projectsApi from "./projects";
+import * as recruitmentPositionsApi from "./recruitment-positions";
 import * as settingsApi from "./settings";
 import * as usersApi from "./users";
 import type { ContentStatus } from "@/types";
@@ -22,6 +23,7 @@ export const queryKeys = {
   pages: ["pages"] as const,
   banners: ["banners"] as const,
   cooperation: ["cooperation"] as const,
+  recruitmentPositions: ["recruitment-positions"] as const,
   leads: ["leads"] as const,
   media: ["media"] as const,
   users: ["users"] as const,
@@ -226,6 +228,62 @@ export function useSchedulePagePublication() {
 /** Huỷ lịch chưa tới hạn — trang về nháp, mốc lịch biến mất khỏi danh sách. */
 export function useCancelPagePublication() {
   return usePagesMutation(pagesApi.cancelPagePublication);
+}
+
+/* -------------------------------------------------------------------------
+   Vị trí tuyển dụng — /recruitment-positions
+   ------------------------------------------------------------------------- */
+
+export function useRecruitmentPositions() {
+  return useQuery({
+    queryKey: queryKeys.recruitmentPositions,
+    queryFn: recruitmentPositionsApi.listRecruitmentPositions,
+  });
+}
+
+export function useRecruitmentPosition(id: string | undefined, enabled = true) {
+  return useQuery({
+    queryKey: [...queryKeys.recruitmentPositions, id],
+    queryFn: () => recruitmentPositionsApi.getRecruitmentPosition(id!),
+    enabled: Boolean(id) && enabled,
+  });
+}
+
+function useRecruitmentPositionMutation<TArgs, TResult>(
+  fn: (args: TArgs) => Promise<TResult>,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: fn,
+    onSuccess: () =>
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.recruitmentPositions,
+      }),
+  });
+}
+
+export function useCreateRecruitmentPosition() {
+  return useRecruitmentPositionMutation(
+    recruitmentPositionsApi.createRecruitmentPosition,
+  );
+}
+
+export function useUpdateRecruitmentPosition() {
+  return useRecruitmentPositionMutation(
+    ({
+      id,
+      data,
+    }: {
+      id: string;
+      data: recruitmentPositionsApi.UpdateRecruitmentPositionInput;
+    }) => recruitmentPositionsApi.updateRecruitmentPosition(id, data),
+  );
+}
+
+export function useDeleteRecruitmentPosition() {
+  return useRecruitmentPositionMutation(
+    recruitmentPositionsApi.deleteRecruitmentPosition,
+  );
 }
 
 /* -------------------------------------------------------------------------

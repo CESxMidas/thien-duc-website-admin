@@ -21,11 +21,34 @@ export interface Bilingual {
   en?: string;
 }
 
+export interface BilingualList {
+  vi: string[];
+  en?: string[];
+}
+
 export interface AuthUser {
   id: string;
   email: string;
   name: string;
   role: Role;
+}
+
+export interface RecruitmentPosition {
+  id: string;
+  slug: string;
+  title: Bilingual;
+  department: Bilingual;
+  location: Bilingual;
+  type: Bilingual;
+  summary: Bilingual;
+  responsibilities: BilingualList;
+  requirements: BilingualList;
+  benefits: BilingualList;
+  deadline: string | null;
+  status: ContentStatus;
+  order: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
 /**
