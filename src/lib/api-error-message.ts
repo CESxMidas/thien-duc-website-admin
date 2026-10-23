@@ -5,12 +5,17 @@
 // chung, tránh lộ chi tiết kỹ thuật (stack trace, lỗi SQL).
 
 import { ApiRequestError } from "@/lib/api/client";
+import { ImageUploadError } from "@/lib/image-upload";
 
 /** Các status mà message của backend là thông báo nghiệp vụ, an toàn để hiện. */
 const SAFE_TO_SHOW = new Set([400, 404, 409, 422]);
 
 export function resolveApiError(error: unknown, fallback: string): string {
+  if (error instanceof ImageUploadError) return error.message;
   if (error instanceof ApiRequestError) {
+    if (error.status === 413) {
+      return "Ảnh hoặc nội dung gửi lên vượt giới hạn dung lượng của máy chủ. Vui lòng giảm kích thước rồi thử lại.";
+    }
     if (error.status === 0) {
       return "Không thể kết nối máy chủ. Vui lòng kiểm tra mạng.";
     }

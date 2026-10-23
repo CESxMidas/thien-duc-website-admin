@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { resolveApiError } from "@/lib/api-error-message";
 import { ApiRequestError } from "@/lib/api/client";
+import { ImageUploadError } from "@/lib/image-upload";
 
 const FALLBACK = "Có lỗi xảy ra.";
 
@@ -9,6 +10,10 @@ function apiError(status: number, message = "msg"): ApiRequestError {
 }
 
 describe("resolveApiError", () => {
+  it("hiển thị lỗi xử lý ảnh và giải thích lỗi 413 kể cả khi proxy không trả JSON", () => {
+    expect(resolveApiError(new ImageUploadError("Ảnh quá lớn"), FALLBACK)).toBe("Ảnh quá lớn");
+    expect(resolveApiError(apiError(413, "Payload too large"), FALLBACK)).toMatch(/vượt giới hạn dung lượng/);
+  });
   it("returns a network message for status 0", () => {
     expect(resolveApiError(apiError(0), FALLBACK)).toMatch(/kết nối máy chủ/);
   });

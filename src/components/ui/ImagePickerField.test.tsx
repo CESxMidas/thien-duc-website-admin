@@ -7,6 +7,7 @@ import {
   MultiImagePickerField,
 } from "@/components/ui/ImagePickerField";
 import type { MediaAsset } from "@/types";
+import { toast } from "sonner";
 
 const { uploadMedia } = vi.hoisted(() => ({ uploadMedia: vi.fn() }));
 
@@ -51,6 +52,7 @@ vi.mock("sonner", () => ({
 
 describe("ImagePickerField", () => {
   beforeEach(() => {
+    vi.clearAllMocks();
     uploadMedia.mockReset();
   });
 
@@ -129,5 +131,46 @@ describe("ImagePickerField", () => {
     await user.click(screen.getByRole("button", { name: "Dùng 2 ảnh đã chọn" }));
 
     expect(onChange).toHaveBeenCalledWith(media.map((asset) => asset.url));
+  });
+
+  it("nhận ảnh gốc trên 10MB, tiếp tục tải các ảnh khác khi một ảnh lỗi", async () => {
+    const heavy = new File(["png"], "anh-lon.png", { type: "image/png" });
+    Object.defineProperty(heavy, "size", { value: 12 * 1024 * 1024 });
+    uploadMedia.mockRejectedValueOnce(new Error("failed")).mockResolvedValueOnce(media[1]);
+    const onChange = vi.fn();
+    const { container } = render(<MultiImagePickerField value={[]} onChange={onChange} />);
+    fireEvent.change(container.querySelector("input[type='file']")!, {
+      target: { files: [heavy, new File(["bad"], "sai.txt", { type: "text/plain" }), new File(["jpg"], "anh.jpg", { type: "image/jpeg" })] },
+    });
+    await waitFor(() => expect(onChange).toHaveBeenCalledWith([media[1].url]));
+    expect(uploadMedia).toHaveBeenCalledTimes(2);
+    expect(uploadMedia.mock.calls[0][0].file).toBe(heavy);
+    expect(toast.error).toHaveBeenCalledWith(expect.stringContaining("sai.txt"));
+    expect(toast.error).toHaveBeenCalledWith(expect.stringContaining("anh-lon.png"));
+  });
+
+  it("khóa toàn bộ lô và báo trạng thái cho form dự án khi đang tải", async () => {
+    let complete!: (asset: MediaAsset) => void;
+    uploadMedia.mockReturnValue(new Promise<MediaAsset>((resolve) => { complete = resolve; }));
+    const onChange = vi.fn();
+    const onUploadStateChange = vi.fn();
+    const { container } = render(<MultiImagePickerField value={[]} onChange={onChange} onUploadStateChange={onUploadStateChange} />);
+    const input = container.querySelector("input[type='file']")!;
+    fireEvent.change(input, { target: { files: [new File(["a"], "a.png", { type: "image/png" })] } });
+    expect(screen.getByRole("button", { name: "Đang xử lý 1/1" })).toBeDisabled();
+    expect(onUploadStateChange).toHaveBeenCalledWith(true);
+    fireEvent.change(input, { target: { files: [new File(["b"], "b.png", { type: "image/png" })] } });
+    expect(uploadMedia).toHaveBeenCalledTimes(1);
+    complete(media[0]);
+    await waitFor(() => expect(onChange).toHaveBeenCalledWith([media[0].url]));
+    expect(onUploadStateChange.mock.calls).toEqual([[true], [false]]);
+  });
+
+  it("không cho đổi ảnh chính khi field bị khóa quyền sửa", () => {
+    const { container } = render(<ImagePickerField value={media[0].url} onChange={vi.fn()} disabled />);
+    expect(screen.getByRole("button", { name: /Đổi hoặc tải thêm ảnh/ })).toBeDisabled();
+    expect(screen.getByRole("button", { name: /Chọn từ thư viện/ })).toBeDisabled();
+    fireEvent.change(container.querySelector("input[type='file']")!, { target: { files: [new File(["png"], "a.png", { type: "image/png" })] } });
+    expect(uploadMedia).not.toHaveBeenCalled();
   });
 });

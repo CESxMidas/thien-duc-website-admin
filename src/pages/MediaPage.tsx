@@ -20,6 +20,7 @@ import {
   validateFile,
 } from "@/lib/api/media";
 import { resolveApiError } from "@/lib/api-error-message";
+import { ACCEPTED_MIME, IMAGE_UPLOAD_HINT } from "@/lib/image-upload";
 import { formatDateTime } from "@/lib/labels";
 import type { MediaAsset } from "@/types";
 
@@ -30,6 +31,8 @@ export function MediaPage() {
   const [pending, setPending] = useState<MediaAsset | null>(null);
   const [showHidden, setShowHidden] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const uploadInProgress = useRef(false);
+  const [uploadProgress, setUploadProgress] = useState<{ current: number; total: number } | null>(null);
 
   const { user } = useAuth();
   const { data: media = [], isLoading } = useMedia(folder, showHidden);
@@ -40,29 +43,38 @@ export function MediaPage() {
   // Ẩn/hiện ảnh chỉ dành cho ADMIN trở lên, khớp `@Roles(ADMIN, SUPER_ADMIN)` ở backend.
   // EDITOR vẫn tải ảnh lên bình thường, chỉ không thấy nút quản lý hiển thị.
   const canDelete = user?.role === "ADMIN" || user?.role === "SUPER_ADMIN";
+  const isUploading = uploadProgress !== null || upload.isPending;
 
   async function handleFiles(files: FileList | null) {
-    if (!files?.length) return;
+    if (!files?.length || uploadInProgress.current) return;
 
     // Chặn tệp sai định dạng/quá lớn ngay tại client để người dùng biết trước
     // khi tốn thời gian truyền — backend vẫn kiểm lại lần nữa.
     const chosen = Array.from(files);
+    if (inputRef.current) inputRef.current.value = "";
     const rejected = chosen.map(validateFile).filter(Boolean) as string[];
     rejected.forEach((message) => toast.error(message));
 
     const accepted = chosen.filter((file) => validateFile(file) === null);
     if (accepted.length === 0) return;
 
-    // Tải tuần tự: gói Cloudinary free giới hạn request đồng thời, và upload
-    // song song nhiều ảnh nặng dễ vượt giới hạn rồi hỏng giữa chừng.
+    // Xử lý tuần tự để không giải mã nhiều ảnh lớn cùng lúc.
+    uploadInProgress.current = true;
     let uploaded = 0;
-    for (const file of accepted) {
-      try {
-        await upload.mutateAsync({ file, folder });
-        uploaded += 1;
-      } catch (error) {
-        toast.error(resolveApiError(error, `Không tải lên được ${file.name}.`));
+    try {
+      for (let index = 0; index < accepted.length; index += 1) {
+        const file = accepted[index];
+        setUploadProgress({ current: index + 1, total: accepted.length });
+        try {
+          await upload.mutateAsync({ file, folder });
+          uploaded += 1;
+        } catch (error) {
+          toast.error(resolveApiError(error, `Không tải lên được ${file.name}.`));
+        }
       }
+    } finally {
+      uploadInProgress.current = false;
+      setUploadProgress(null);
     }
 
     if (uploaded > 0) {
@@ -100,18 +112,18 @@ export function MediaPage() {
     <div>
       <PageHeader
         title="Thư viện ảnh"
-        description="Ảnh tải lên Cloudinary, tự chuyển WebP và thu về tối đa 1200px (ED-05). Nhận JPG, PNG, WebP, AVIF — tối đa 10MB mỗi tệp."
+        description={IMAGE_UPLOAD_HINT}
         actions={
           <Button
             onClick={() => inputRef.current?.click()}
-            disabled={upload.isPending}
+            disabled={isUploading}
           >
-            {upload.isPending ? (
+            {isUploading ? (
               <Loader2 className="size-4 animate-spin" />
             ) : (
               <Upload className="size-4" />
             )}
-            {upload.isPending ? "Đang tải lên..." : "Tải ảnh lên"}
+            {uploadProgress ? `Đang xử lý ${uploadProgress.current}/${uploadProgress.total}` : "Tải ảnh lên"}
           </Button>
         }
       />
@@ -119,7 +131,8 @@ export function MediaPage() {
       <input
         ref={inputRef}
         type="file"
-        accept="image/jpeg,image/png,image/webp,image/avif"
+        accept={ACCEPTED_MIME.join(",")}
+        disabled={isUploading}
         multiple
         className="hidden"
         onChange={(event) => void handleFiles(event.target.files)}
@@ -138,6 +151,7 @@ export function MediaPage() {
                 key={item.value}
                 role="tab"
                 aria-selected={active}
+                disabled={isUploading}
                 onClick={() => setFolder(item.value)}
                 className={
                   active

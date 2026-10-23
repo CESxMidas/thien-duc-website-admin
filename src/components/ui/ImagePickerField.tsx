@@ -23,6 +23,7 @@ import {
 import { useMedia, useUploadMedia } from "@/lib/api/queries";
 import { ACCEPTED_MIME, fileNameOf, validateFile } from "@/lib/api/media";
 import { resolveApiError } from "@/lib/api-error-message";
+import { IMAGE_UPLOAD_HINT } from "@/lib/image-upload";
 import { resolveAssetUrl } from "@/lib/asset-url";
 import type { MediaAsset } from "@/types";
 
@@ -55,6 +56,7 @@ interface ImagePickerFieldProps {
   /** Class bổ sung cho khung xem trước. */
   previewClassName?: string;
   onBatchUploaded?: (urls: string[]) => void;
+  disabled?: boolean;
 }
 
 /** Ảnh xem trước, tự đổi sang ô giữ chỗ khi URL hỏng. */
@@ -108,8 +110,10 @@ export function ImagePickerField({
   previewFit = "cover",
   previewClassName,
   onBatchUploaded,
+  disabled = false,
 }: ImagePickerFieldProps) {
   const inputRef = useRef<HTMLInputElement>(null);
+  const uploadInProgress = useRef(false);
   const upload = useUploadMedia();
   const [libraryOpen, setLibraryOpen] = useState(false);
   const [uploadedChoices, setUploadedChoices] = useState<MediaAsset[]>([]);
@@ -121,8 +125,9 @@ export function ImagePickerField({
   const fitClass = PREVIEW_FIT_CLASS[previewFit];
 
   async function handleFiles(files: FileList | File[] | null) {
-    if (!files?.length) return;
+    if (!files?.length || disabled || uploadInProgress.current) return;
     const chosen = Array.from(files);
+    if (inputRef.current) inputRef.current.value = "";
     const accepted = chosen.filter((file) => {
       const reason = validateFile(file);
       if (reason) toast.error(reason);
@@ -130,6 +135,7 @@ export function ImagePickerField({
     });
     if (accepted.length === 0) return;
 
+    uploadInProgress.current = true;
     const uploaded: MediaAsset[] = [];
     try {
       for (let index = 0; index < accepted.length; index += 1) {
@@ -156,6 +162,7 @@ export function ImagePickerField({
         );
       }
     } finally {
+      uploadInProgress.current = false;
       setUploadProgress(null);
       if (inputRef.current) inputRef.current.value = "";
     }
@@ -163,7 +170,7 @@ export function ImagePickerField({
 
   const isUploading = uploadProgress !== null || upload.isPending;
   const uploadLabel = uploadProgress
-    ? `Đang tải ${uploadProgress.current}/${uploadProgress.total}`
+    ? `Đang xử lý ${uploadProgress.current}/${uploadProgress.total}`
     : null;
 
   return (
@@ -173,6 +180,7 @@ export function ImagePickerField({
         type="file"
         accept={ACCEPTED_MIME.join(",")}
         multiple
+        disabled={disabled || isUploading}
         className="hidden"
         onChange={(event) => void handleFiles(event.target.files)}
       />
@@ -192,7 +200,7 @@ export function ImagePickerField({
               type="button"
               variant="outline"
               size="sm"
-              disabled={isUploading}
+              disabled={disabled || isUploading}
               onClick={() => inputRef.current?.click()}
             >
               {isUploading ? (
@@ -206,6 +214,7 @@ export function ImagePickerField({
               type="button"
               variant="outline"
               size="sm"
+              disabled={disabled || isUploading}
               onClick={() => setLibraryOpen(true)}
             >
               <Library className="size-4" /> Chọn từ thư viện
@@ -215,6 +224,7 @@ export function ImagePickerField({
               variant="ghost"
               size="sm"
               className="text-red-600 hover:bg-red-50 hover:text-red-700"
+              disabled={disabled || isUploading}
               onClick={() => onChange("")}
             >
               <Trash2 className="size-4" /> Bỏ ảnh
@@ -236,7 +246,7 @@ export function ImagePickerField({
             <Button
               type="button"
               size="sm"
-              disabled={isUploading}
+              disabled={disabled || isUploading}
               onClick={() => inputRef.current?.click()}
             >
               {isUploading ? (
@@ -250,6 +260,7 @@ export function ImagePickerField({
               type="button"
               variant="outline"
               size="sm"
+              disabled={disabled || isUploading}
               onClick={() => setLibraryOpen(true)}
             >
               <Library className="size-4" /> Chọn từ thư viện
@@ -258,6 +269,7 @@ export function ImagePickerField({
         </div>
       )}
 
+      <p className="text-xs leading-5 text-slate">{IMAGE_UPLOAD_HINT}</p>
       <MediaLibraryDialog
         open={libraryOpen}
         onOpenChange={setLibraryOpen}
@@ -340,6 +352,7 @@ interface MultiImagePickerFieldProps {
   folder?: string;
   disabled?: boolean;
   footer?: ReactNode;
+  onUploadStateChange?: (isUploading: boolean) => void;
 }
 
 /** Bộ chọn theo lô cho gallery: tải/chọn nhiều ảnh rồi thêm tất cả cùng lúc. */
@@ -349,8 +362,10 @@ export function MultiImagePickerField({
   folder = "projects",
   disabled = false,
   footer,
+  onUploadStateChange,
 }: MultiImagePickerFieldProps) {
   const inputRef = useRef<HTMLInputElement>(null);
+  const uploadInProgress = useRef(false);
   const upload = useUploadMedia();
   const [libraryOpen, setLibraryOpen] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<{
@@ -363,8 +378,9 @@ export function MultiImagePickerField({
   }
 
   async function handleFiles(files: FileList | null) {
-    if (!files?.length) return;
+    if (!files?.length || disabled || uploadInProgress.current) return;
     const chosen = Array.from(files);
+    if (inputRef.current) inputRef.current.value = "";
     const accepted = chosen.filter((file) => {
       const reason = validateFile(file);
       if (reason) toast.error(reason);
@@ -372,6 +388,8 @@ export function MultiImagePickerField({
     });
     if (accepted.length === 0) return;
 
+    uploadInProgress.current = true;
+    onUploadStateChange?.(true);
     const urls: string[] = [];
     try {
       for (let index = 0; index < accepted.length; index += 1) {
@@ -393,6 +411,8 @@ export function MultiImagePickerField({
         );
       }
     } finally {
+      uploadInProgress.current = false;
+      onUploadStateChange?.(false);
       setUploadProgress(null);
       if (inputRef.current) inputRef.current.value = "";
     }
@@ -407,6 +427,7 @@ export function MultiImagePickerField({
         type="file"
         accept={ACCEPTED_MIME.join(",")}
         multiple
+        disabled={disabled || isUploading}
         className="hidden"
         onChange={(event) => void handleFiles(event.target.files)}
       />
@@ -437,7 +458,7 @@ export function MultiImagePickerField({
                 <Upload className="size-4" />
               )}
               {uploadProgress
-                ? `Đang tải ${uploadProgress.current}/${uploadProgress.total}`
+                ? `Đang xử lý ${uploadProgress.current}/${uploadProgress.total}`
                 : "Tải nhiều ảnh"}
             </Button>
             <Button
@@ -451,6 +472,7 @@ export function MultiImagePickerField({
             </Button>
           </div>
         </div>
+        <p className="mt-2 text-xs leading-5 text-slate">{IMAGE_UPLOAD_HINT}</p>
         {footer ? (
           <div className="mt-4 border-t border-line/70 pt-4">{footer}</div>
         ) : null}
@@ -475,6 +497,7 @@ export function MultiImagePickerField({
                 <button
                   type="button"
                   aria-label={`Bỏ ảnh đã chọn ${index + 1}`}
+                  disabled={disabled || isUploading}
                   className="absolute right-1.5 top-1.5 grid size-8 place-items-center rounded-md bg-white/90 text-slate shadow-sm transition hover:text-red-600"
                   onClick={() => onChange(value.filter((item) => item !== url))}
                 >

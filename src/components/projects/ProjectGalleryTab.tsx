@@ -110,6 +110,8 @@ export function ProjectGalleryTab({
   const canEdit = canEditProject(user?.role, project);
 
   const [urls, setUrls] = useState<string[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
+  const [isAdding, setIsAdding] = useState(false);
   const [caption, setCaption] = useState("");
   const [itemSlug, setItemSlug] = useState<string>(NO_ITEM);
   const [toDelete, setToDelete] = useState<ProjectGalleryImage | null>(null);
@@ -123,46 +125,51 @@ export function ProjectGalleryTab({
 
   async function onAdd(event: React.FormEvent) {
     event.preventDefault();
-    if (urls.length === 0) return;
+    if (urls.length === 0 || isUploading || isAdding || !canEdit) return;
 
-    let added = 0;
-    const failed: string[] = [];
-    for (const url of urls) {
-      try {
-        await addImage.mutateAsync({
-          slug: project.slug,
-          data: {
-            url,
-            ...(caption.trim() && { caption: { vi: caption.trim() } }),
-            ...(item
-              ? { itemSlug: item.slug }
-              : !projectOnly && itemSlug !== NO_ITEM
-                ? { itemSlug }
-                : {}),
-          },
-        });
-        added += 1;
-      } catch (error) {
-        failed.push(url);
-        toast.error(
-          resolveApiError(
-            error,
-            `Không thêm được ảnh ${url.split("/").pop() || url}.`,
-          ),
+    setIsAdding(true);
+    try {
+      let added = 0;
+      const failed: string[] = [];
+      for (const url of urls) {
+        try {
+          await addImage.mutateAsync({
+            slug: project.slug,
+            data: {
+              url,
+              ...(caption.trim() && { caption: { vi: caption.trim() } }),
+              ...(item
+                ? { itemSlug: item.slug }
+                : !projectOnly && itemSlug !== NO_ITEM
+                  ? { itemSlug }
+                  : {}),
+            },
+          });
+          added += 1;
+        } catch (error) {
+          failed.push(url);
+          toast.error(
+            resolveApiError(
+              error,
+              `Không thêm được ảnh ${url.split("/").pop() || url}.`,
+            ),
+          );
+        }
+      }
+
+      if (added > 0) {
+        const targetLabel = item ? "hạng mục" : "dự án";
+        toast.success(
+          added === 1
+            ? `Đã thêm 1 ảnh vào thư viện ${targetLabel}.`
+            : `Đã thêm ${added} ảnh vào thư viện ${targetLabel}.`,
         );
       }
+      setUrls(failed);
+      if (failed.length === 0) setCaption("");
+    } finally {
+      setIsAdding(false);
     }
-
-    if (added > 0) {
-      const targetLabel = item ? "hạng mục" : "dự án";
-      toast.success(
-        added === 1
-          ? `Đã thêm 1 ảnh vào thư viện ${targetLabel}.`
-          : `Đã thêm ${added} ảnh vào thư viện ${targetLabel}.`,
-      );
-    }
-    setUrls(failed);
-    if (failed.length === 0) setCaption("");
   }
 
   async function onMove(index: number, delta: -1 | 1) {
@@ -308,6 +315,7 @@ export function ProjectGalleryTab({
             folder="projects"
             aspect="3/2"
             alt={`Ảnh chính ${coverLabel}`}
+            disabled={!canEdit}
           />
         </div>
 
@@ -329,6 +337,8 @@ export function ProjectGalleryTab({
               value={urls}
               onChange={setUrls}
               folder="projects"
+              disabled={isAdding}
+              onUploadStateChange={setIsUploading}
               footer={
                 <div className="grid items-end gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
                   <div className="space-y-1.5">
@@ -337,6 +347,7 @@ export function ProjectGalleryTab({
                     </Label>
                     <Input
                       id="gallery-caption"
+                      disabled={isUploading || isAdding}
                       value={caption}
                       onChange={(e) => setCaption(e.target.value)}
                       placeholder="Phối cảnh mặt tiền"
@@ -345,7 +356,7 @@ export function ProjectGalleryTab({
                   <Button
                     type="submit"
                     className="sm:mb-6"
-                    disabled={urls.length === 0 || addImage.isPending}
+                    disabled={urls.length === 0 || isUploading || isAdding}
                   >
                     {addImage.isPending ? (
                       <Loader2 className="size-4 animate-spin" />
@@ -367,7 +378,7 @@ export function ProjectGalleryTab({
           {!projectOnly && !item && (
             <div className="space-y-1.5">
               <Label>Thuộc hạng mục</Label>
-              <Select value={itemSlug} onValueChange={setItemSlug}>
+              <Select value={itemSlug} onValueChange={setItemSlug} disabled={isUploading || isAdding}>
                 <SelectTrigger className="w-64">
                   <SelectValue />
                 </SelectTrigger>

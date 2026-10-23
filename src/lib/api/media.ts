@@ -3,20 +3,13 @@
 //   POST   /media/upload?folder=     -> MediaAsset   (multipart, field `file`)
 //   DELETE /media/:id                -> { deleted }  (xóa cả trên Cloudinary)
 //
-// Backend ép ảnh về ≤1200px/WebP nên không cần nén phía client. Giới hạn 10MB
-// và whitelist mime được kiểm ở cả hai đầu — chặn sớm ở đây để người dùng biết
-// ngay thay vì chờ upload xong mới nhận lỗi.
+// Tối ưu ảnh lớn ở trình duyệt trước khi gửi; API vẫn giới hạn 10MB mỗi tệp.
 
 import { apiFetch } from "./client";
 import type { MediaAsset } from "@/types";
+import { prepareImageForUpload } from "@/lib/image-upload";
 
-export const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
-export const ACCEPTED_MIME = [
-  "image/jpeg",
-  "image/png",
-  "image/webp",
-  "image/avif",
-];
+export { ACCEPTED_MIME, MAX_UPLOAD_BYTES, validateFile } from "@/lib/image-upload";
 
 /** Thư mục chuẩn trên Cloudinary — khớp cách xếp ảnh đã thống nhất. */
 export const MEDIA_FOLDERS = [
@@ -42,20 +35,10 @@ export function listMedia(
   return apiFetch<MediaAsset[]>(`/media${query}`);
 }
 
-/** Lý do từ chối tệp, hoặc `null` nếu hợp lệ. */
-export function validateFile(file: File): string | null {
-  if (!ACCEPTED_MIME.includes(file.type)) {
-    return `${file.name}: chỉ nhận ảnh JPG, PNG, WebP hoặc AVIF.`;
-  }
-  if (file.size > MAX_UPLOAD_BYTES) {
-    return `${file.name}: vượt quá 10MB.`;
-  }
-  return null;
-}
-
-export function uploadMedia(file: File, folder: string): Promise<MediaAsset> {
+export async function uploadMedia(file: File, folder: string): Promise<MediaAsset> {
+  const prepared = await prepareImageForUpload(file);
   const body = new FormData();
-  body.append("file", file);
+  body.append("file", prepared);
   return apiFetch<MediaAsset>(
     `/media/upload?folder=${encodeURIComponent(folder)}`,
     { method: "POST", body },
