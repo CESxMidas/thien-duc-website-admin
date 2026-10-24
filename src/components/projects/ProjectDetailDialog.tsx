@@ -16,7 +16,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { BilingualField } from "@/components/ui/BilingualField";
 import { DetailList } from "@/components/ui/DetailDialog";
-import { ImagePickerField } from "@/components/ui/ImagePickerField";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { MediaSection, SplitModal } from "@/components/ui/SplitModal";
@@ -416,7 +415,6 @@ function ProjectItemWorkspace({
   const [description, setDescription] =
     useState<BilingualValue>(emptyBilingual);
   const [status, setStatus] = useState<string>(INHERIT_STATUS);
-  const [image, setImage] = useState("");
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -425,7 +423,6 @@ function ProjectItemWorkspace({
     setSummary(toBilingualValue(item.summary));
     setDescription(toBilingualLoose(item.description));
     setStatus(item.status ?? INHERIT_STATUS);
-    setImage(item.image ?? "");
     setError(null);
     setEditing(false);
   }, [item]);
@@ -455,7 +452,6 @@ function ProjectItemWorkspace({
           ...(status !== INHERIT_STATUS && {
             status: status as ProjectStatus,
           }),
-          image: image.trim() || undefined,
         },
       });
       toast.success("Đã lưu hạng mục.");
@@ -500,17 +496,6 @@ function ProjectItemWorkspace({
 
         {editing ? (
           <form onSubmit={onSave} className="space-y-4">
-            <div className="space-y-2">
-              <Label>Ảnh chính của hạng mục</Label>
-              <ImagePickerField
-                value={image}
-                onChange={setImage}
-                folder="projects"
-                aspect="3/2"
-                alt="Ảnh chính hạng mục"
-              />
-            </div>
-
             <div className="space-y-2">
               <BilingualField
                 label={<Label>Tên hạng mục</Label>}
