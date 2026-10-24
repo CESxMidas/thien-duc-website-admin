@@ -348,9 +348,9 @@ export function CooperationFormDialog({
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Tên dự án hợp tác</FormLabel>
                   <FormControl>
                     <BilingualField
+                      label={<FormLabel>Tên dự án hợp tác</FormLabel>}
                       value={field.value}
                       onChange={field.onChange}
                       placeholder={{ vi: "Vista Verde", en: "Vista Verde" }}
@@ -366,9 +366,9 @@ export function CooperationFormDialog({
               name="location"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Địa điểm dự án hợp tác</FormLabel>
                   <FormControl>
                     <BilingualField
+                      label={<FormLabel>Địa điểm dự án hợp tác</FormLabel>}
                       value={field.value}
                       onChange={field.onChange}
                       placeholder={{ vi: "Quận 2, TP.HCM", en: "District 2, HCMC" }}
@@ -384,9 +384,9 @@ export function CooperationFormDialog({
               name="partner"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Đối tác phát triển</FormLabel>
                   <FormControl>
                     <BilingualField
+                      label={<FormLabel>Đối tác phát triển</FormLabel>}
                       value={field.value}
                       onChange={field.onChange}
                       placeholder={{
@@ -405,9 +405,9 @@ export function CooperationFormDialog({
               name="role"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Vai trò của Thiên Đức</FormLabel>
                   <FormControl>
                     <BilingualField
+                      label={<FormLabel>Vai trò của Thiên Đức</FormLabel>}
                       value={field.value}
                       onChange={field.onChange}
                       placeholder={{
@@ -426,9 +426,9 @@ export function CooperationFormDialog({
               name="scale"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Quy mô dự án hợp tác</FormLabel>
                   <FormControl>
                     <BilingualField
+                      label={<FormLabel>Quy mô dự án hợp tác</FormLabel>}
                       value={field.value}
                       onChange={field.onChange}
                       placeholder={{
@@ -450,9 +450,9 @@ export function CooperationFormDialog({
               name="status"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Tiến độ hiển thị trên website</FormLabel>
                   <FormControl>
                     <BilingualField
+                      label={<FormLabel>Tiến độ hiển thị trên website</FormLabel>}
                       value={field.value}
                       onChange={field.onChange}
                       placeholder={{ vi: "Đã bàn giao", en: "Handed over" }}

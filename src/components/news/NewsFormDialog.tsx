@@ -514,9 +514,9 @@ export function NewsFormDialog({ trigger, post }: NewsFormDialogProps) {
             name="title"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Tiêu đề bài viết</FormLabel>
                 <FormControl>
                   <BilingualField
+                    label={<FormLabel>Tiêu đề bài viết</FormLabel>}
                     value={field.value}
                     onChange={field.onChange}
                     placeholder={{
@@ -552,9 +552,9 @@ export function NewsFormDialog({ trigger, post }: NewsFormDialogProps) {
             name="summary"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Tóm tắt bài viết</FormLabel>
                 <FormControl>
                   <BilingualField
+                    label={<FormLabel>Tóm tắt bài viết</FormLabel>}
                     multiline
                     rows={2}
                     value={field.value}
@@ -578,9 +578,9 @@ export function NewsFormDialog({ trigger, post }: NewsFormDialogProps) {
             name="content"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Nội dung bài viết</FormLabel>
                 <FormControl>
                   <BilingualField
+                    label={<FormLabel>Nội dung bài viết</FormLabel>}
                     multiline
                     rows={8}
                     value={field.value}

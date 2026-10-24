@@ -61,9 +61,12 @@ function Harness({ withDescription = false }: { withDescription?: boolean }) {
           name="title"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Tiêu đề</FormLabel>
               <FormControl>
-                <BilingualField value={field.value} onChange={field.onChange} />
+                <BilingualField
+                  label={<FormLabel>Tiêu đề</FormLabel>}
+                  value={field.value}
+                  onChange={field.onChange}
+                />
               </FormControl>
               {withDescription && (
                 <FormDescription>Hiện trên thẻ tin tức.</FormDescription>
@@ -77,9 +80,9 @@ function Harness({ withDescription = false }: { withDescription?: boolean }) {
           name="summary"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Mô tả ngắn</FormLabel>
               <FormControl>
                 <BilingualField
+                  label={<FormLabel>Mô tả ngắn</FormLabel>}
                   multiline
                   value={field.value}
                   onChange={field.onChange}

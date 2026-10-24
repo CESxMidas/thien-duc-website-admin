@@ -238,9 +238,9 @@ export function RecruitmentPositionFormDialog({
               name="title"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Chức danh</FormLabel>
                   <FormControl>
                     <BilingualField
+                      label={<FormLabel>Chức danh</FormLabel>}
                       value={field.value}
                       onChange={field.onChange}
                       placeholder={{ vi: "Kỹ sư xây dựng", en: "Engineer" }}
@@ -265,9 +265,9 @@ export function RecruitmentPositionFormDialog({
                   name={name}
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>{label}</FormLabel>
                       <FormControl>
                         <BilingualField
+                          label={<FormLabel>{label}</FormLabel>}
                           value={field.value}
                           onChange={field.onChange}
                           placeholder={{ vi: placeholder }}
@@ -285,9 +285,9 @@ export function RecruitmentPositionFormDialog({
               name="summary"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Mô tả ngắn</FormLabel>
                   <FormControl>
                     <BilingualField
+                      label={<FormLabel>Mô tả ngắn</FormLabel>}
                       multiline
                       rows={3}
                       value={field.value}
@@ -316,9 +316,9 @@ export function RecruitmentPositionFormDialog({
                 name={name}
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{label}</FormLabel>
                     <FormControl>
                       <BilingualField
+                        label={<FormLabel>{label}</FormLabel>}
                         multiline
                         rows={4}
                         value={field.value}

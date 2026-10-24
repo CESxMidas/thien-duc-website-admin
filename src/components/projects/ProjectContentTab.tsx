@@ -242,8 +242,8 @@ export function ProjectContentTab({ project }: { project: ProjectDetail }) {
               >
                 <div className="flex-1 space-y-2">
                   <div className="space-y-1">
-                    <Label className="text-xs text-slate">Tên thông số</Label>
                     <BilingualField
+                      label={<Label className="text-xs text-slate">Tên thông số</Label>}
                       value={fact.label}
                       onChange={(next) =>
                         setFacts(
@@ -256,8 +256,8 @@ export function ProjectContentTab({ project }: { project: ProjectDetail }) {
                     />
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-xs text-slate">Giá trị thông số</Label>
                     <BilingualField
+                      label={<Label className="text-xs text-slate">Giá trị thông số</Label>}
                       multiline
                       rows={2}
                       value={fact.value}
@@ -328,7 +328,7 @@ export function ProjectContentTab({ project }: { project: ProjectDetail }) {
 
         {map && (
           <div className="space-y-3 rounded-xl border border-line bg-cream/40 p-4">
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label>Ảnh nền bản đồ</Label>
               <ImagePickerField
                 value={map.image ?? ""}
@@ -339,7 +339,7 @@ export function ProjectContentTab({ project }: { project: ProjectDetail }) {
               />
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label htmlFor="map-url">URL Google Maps của dự án</Label>
               <Input
                 id="map-url"
@@ -349,9 +349,9 @@ export function ProjectContentTab({ project }: { project: ProjectDetail }) {
               />
             </div>
 
-            <div className="space-y-1.5">
-              <Label htmlFor="map-heading">Tiêu đề khối bản đồ</Label>
+            <div className="space-y-2">
               <BilingualField
+                label={<Label htmlFor="map-heading">Tiêu đề khối bản đồ</Label>}
                 id="map-heading"
                 value={toBilingualLoose(map.heading)}
                 onChange={(next) => patchMap({ heading: next })}
@@ -362,9 +362,9 @@ export function ProjectContentTab({ project }: { project: ProjectDetail }) {
               />
             </div>
 
-            <div className="space-y-1.5">
-              <Label htmlFor="map-desc">Mô tả vị trí</Label>
+            <div className="space-y-2">
               <BilingualField
+                label={<Label htmlFor="map-desc">Mô tả vị trí</Label>}
                 id="map-desc"
                 multiline
                 rows={2}
@@ -377,9 +377,9 @@ export function ProjectContentTab({ project }: { project: ProjectDetail }) {
               />
             </div>
 
-            <div className="space-y-1.5">
-              <Label htmlFor="map-address">Địa chỉ hiển thị trên bản đồ</Label>
+            <div className="space-y-2">
               <BilingualField
+                label={<Label htmlFor="map-address">Địa chỉ hiển thị trên bản đồ</Label>}
                 id="map-address"
                 value={toBilingualLoose(map.address)}
                 onChange={(next) => patchMap({ address: next })}
@@ -391,7 +391,7 @@ export function ProjectContentTab({ project }: { project: ProjectDetail }) {
             </div>
 
             <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label htmlFor="map-left">Vị trí marker ngang (%)</Label>
                 <Input
                   id="map-left"
@@ -404,7 +404,7 @@ export function ProjectContentTab({ project }: { project: ProjectDetail }) {
                   }
                 />
               </div>
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label htmlFor="map-top">Vị trí marker dọc (%)</Label>
                 <Input
                   id="map-top"

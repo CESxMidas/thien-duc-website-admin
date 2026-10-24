@@ -171,9 +171,9 @@ export function BannerFormDialog({ trigger, banner }: BannerFormDialogProps) {
               name="title"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Tiêu đề chính trên banner</FormLabel>
                   <FormControl>
                     <BilingualField
+                      label={<FormLabel>Tiêu đề chính trên banner</FormLabel>}
                       value={field.value}
                       onChange={field.onChange}
                       placeholder={{
@@ -195,9 +195,9 @@ export function BannerFormDialog({ trigger, banner }: BannerFormDialogProps) {
               name="eyebrow"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Nhãn nhỏ phía trên</FormLabel>
                   <FormControl>
                     <BilingualField
+                      label={<FormLabel>Nhãn nhỏ phía trên</FormLabel>}
                       value={field.value}
                       onChange={field.onChange}
                       placeholder={{
@@ -219,9 +219,9 @@ export function BannerFormDialog({ trigger, banner }: BannerFormDialogProps) {
               name="subtitle"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Mô tả phụ trên banner</FormLabel>
                   <FormControl>
                     <BilingualField
+                      label={<FormLabel>Mô tả phụ trên banner</FormLabel>}
                       multiline
                       rows={2}
                       value={field.value}
@@ -245,9 +245,9 @@ export function BannerFormDialog({ trigger, banner }: BannerFormDialogProps) {
               name="ctaLabel"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Nhãn nút CTA trên banner</FormLabel>
                   <FormControl>
                     <BilingualField
+                      label={<FormLabel>Nhãn nút CTA trên banner</FormLabel>}
                       value={field.value}
                       onChange={field.onChange}
                       placeholder={{ vi: "Xem dự án", en: "View project" }}

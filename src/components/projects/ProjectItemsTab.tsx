@@ -343,7 +343,7 @@ export function ProjectItemsTab({ project }: { project: ProjectDetail }) {
             </Button>
           </div>
 
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <Label>Ảnh chính của hạng mục</Label>
             <ImagePickerField
               value={form.image}
@@ -355,9 +355,9 @@ export function ProjectItemsTab({ project }: { project: ProjectDetail }) {
           </div>
 
           <div className="grid gap-3 sm:grid-cols-2">
-            <div className="space-y-1.5">
-              <Label htmlFor="item-title">Tên hạng mục</Label>
+            <div className="space-y-2">
               <BilingualField
+                label={<Label htmlFor="item-title">Tên hạng mục</Label>}
                 id="item-title"
                 value={form.title}
                 onChange={(title) => setForm({ ...form, title })}
@@ -367,7 +367,7 @@ export function ProjectItemsTab({ project }: { project: ProjectDetail }) {
                 }}
               />
             </div>
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label htmlFor="item-slug">Slug hạng mục</Label>
               <Input
                 id="item-slug"
@@ -378,9 +378,9 @@ export function ProjectItemsTab({ project }: { project: ProjectDetail }) {
             </div>
           </div>
 
-          <div className="space-y-1.5">
-            <Label htmlFor="item-summary">Mô tả ngắn cho thẻ hạng mục</Label>
+          <div className="space-y-2">
             <BilingualField
+              label={<Label htmlFor="item-summary">Mô tả ngắn cho thẻ hạng mục</Label>}
               id="item-summary"
               multiline
               rows={2}
@@ -527,8 +527,8 @@ export function ProjectItemsTab({ project }: { project: ProjectDetail }) {
                   >
                     <div className="min-w-0 flex-1 space-y-2">
                       <div className="space-y-1">
-                        <Label className="text-xs text-slate">Tên thông số</Label>
                         <BilingualField
+                          label={<Label className="text-xs text-slate">Tên thông số</Label>}
                           value={fact.label}
                           onChange={(label) =>
                             editQuickFacts((current) =>
@@ -541,8 +541,8 @@ export function ProjectItemsTab({ project }: { project: ProjectDetail }) {
                         />
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-xs text-slate">Giá trị thông số</Label>
                         <BilingualField
+                          label={<Label className="text-xs text-slate">Giá trị thông số</Label>}
                           multiline
                           rows={2}
                           value={fact.value}
@@ -579,7 +579,7 @@ export function ProjectItemsTab({ project }: { project: ProjectDetail }) {
           </section>
 
           <div className="grid gap-3 sm:grid-cols-2">
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label>Tình trạng thi công hạng mục</Label>
               <Select
                 value={form.status}

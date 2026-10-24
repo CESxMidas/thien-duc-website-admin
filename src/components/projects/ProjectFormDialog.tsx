@@ -376,9 +376,9 @@ export function ProjectFormDialog({ trigger, project }: ProjectFormDialogProps) 
             name="title"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Tên dự án</FormLabel>
                 <FormControl>
                   <BilingualField
+                    label={<FormLabel>Tên dự án</FormLabel>}
                     value={field.value}
                     onChange={field.onChange}
                     placeholder={{
@@ -416,9 +416,9 @@ export function ProjectFormDialog({ trigger, project }: ProjectFormDialogProps) 
             name="summary"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Mô tả ngắn cho thẻ dự án</FormLabel>
                 <FormControl>
                   <BilingualField
+                    label={<FormLabel>Mô tả ngắn cho thẻ dự án</FormLabel>}
                     multiline
                     rows={3}
                     value={field.value}
@@ -440,9 +440,9 @@ export function ProjectFormDialog({ trigger, project }: ProjectFormDialogProps) 
               name="location"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Vị trí dự án</FormLabel>
                   <FormControl>
                     <BilingualField
+                      label={<FormLabel>Vị trí dự án</FormLabel>}
                       value={field.value}
                       onChange={field.onChange}
                       placeholder={{ vi: "Bến Tre", en: "Ben Tre" }}
@@ -458,9 +458,9 @@ export function ProjectFormDialog({ trigger, project }: ProjectFormDialogProps) 
               name="category"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Loại hình dự án</FormLabel>
                   <FormControl>
                     <BilingualField
+                      label={<FormLabel>Loại hình dự án</FormLabel>}
                       value={field.value}
                       onChange={field.onChange}
                       placeholder={{ vi: "Khu đô thị", en: "Urban Area" }}

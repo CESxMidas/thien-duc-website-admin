@@ -1,4 +1,11 @@
-import { useId, useState } from "react";
+import {
+  cloneElement,
+  isValidElement,
+  useId,
+  useState,
+  type ReactElement,
+  type ReactNode,
+} from "react";
 
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -10,6 +17,8 @@ type Lang = "vi" | "en";
 const langLabel: Record<Lang, string> = { vi: "Tiếng Việt", en: "English" };
 
 interface BilingualFieldProps {
+  /** Nhãn và bộ chọn ngôn ngữ cùng hàng để các ô nhập cạnh nhau thẳng hàng. */
+  label?: ReactNode;
   value: BilingualValue;
   onChange: (value: BilingualValue) => void;
   multiline?: boolean;
@@ -54,6 +63,7 @@ interface BilingualFieldProps {
  * thông báo lỗi validate sẽ bị mất.
  */
 export function BilingualField({
+  label,
   value,
   onChange,
   multiline = false,
@@ -74,34 +84,45 @@ export function BilingualField({
 
   return (
     <div className="min-w-0 space-y-2">
-      <div className="flex min-w-0 gap-1" role="group" aria-label="Chọn ngôn ngữ">
-        {(["vi", "en"] as const).map((item) => {
-          const active = item === lang;
-          return (
-            <button
-              key={item}
-              type="button"
-              onClick={() => setLang(item)}
-              aria-pressed={active}
-              className={cn(
-                "inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-semibold uppercase transition-colors duration-150",
-                "focus-visible:ring-2 focus-visible:ring-brand/40 focus-visible:outline-none",
-                active
-                  ? "bg-brand/12 text-brand"
-                  : "text-slate hover:bg-cream hover:text-ink",
-              )}
-            >
-              {item}
-              {item === "en" && missingEnglish && (
-                <span
-                  className="size-1.5 rounded-full bg-gold"
-                  title="Chưa có bản dịch tiếng Anh"
-                  aria-label="Chưa có bản dịch tiếng Anh"
-                />
-              )}
-            </button>
-          );
-        })}
+      <div className="flex min-h-6 min-w-0 items-start justify-between gap-2">
+        {label && (
+          <div className="min-w-0">
+            {isValidElement(label)
+              ? cloneElement(label as ReactElement<{ htmlFor?: string }>, {
+                  htmlFor: fieldId,
+                })
+              : label}
+          </div>
+        )}
+        <div className="flex shrink-0 gap-2" role="group" aria-label="Chọn ngôn ngữ">
+          {(["vi", "en"] as const).map((item) => {
+            const active = item === lang;
+            return (
+              <button
+                key={item}
+                type="button"
+                onClick={() => setLang(item)}
+                aria-pressed={active}
+                className={cn(
+                  "inline-flex min-h-6 items-center gap-1.5 rounded-md px-2 py-1 text-xs leading-4 font-semibold uppercase transition-colors duration-150",
+                  "focus-visible:ring-2 focus-visible:ring-brand/40 focus-visible:outline-none",
+                  active
+                    ? "bg-brand/12 text-brand"
+                    : "text-slate hover:bg-cream hover:text-ink",
+                )}
+              >
+                {item}
+                {item === "en" && missingEnglish && (
+                  <span
+                    className="size-1.5 rounded-full bg-gold"
+                    title="Chưa có bản dịch tiếng Anh"
+                    aria-label="Chưa có bản dịch tiếng Anh"
+                  />
+                )}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/*

@@ -144,9 +144,9 @@ export function NewsCategoryFormDialog({
             name="name"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Tên chuyên mục</FormLabel>
                 <FormControl>
                   <BilingualField
+                    label={<FormLabel>Tên chuyên mục</FormLabel>}
                     value={field.value}
                     onChange={(value) => {
                       field.onChange(value);

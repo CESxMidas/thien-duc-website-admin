@@ -500,7 +500,7 @@ function ProjectItemWorkspace({
 
         {editing ? (
           <form onSubmit={onSave} className="space-y-4">
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label>Ảnh chính của hạng mục</Label>
               <ImagePickerField
                 value={image}
@@ -511,9 +511,9 @@ function ProjectItemWorkspace({
               />
             </div>
 
-            <div className="space-y-1.5">
-              <Label>Tên hạng mục</Label>
+            <div className="space-y-2">
               <BilingualField
+                label={<Label>Tên hạng mục</Label>}
                 value={title}
                 onChange={setTitle}
                 placeholder={{
@@ -524,7 +524,7 @@ function ProjectItemWorkspace({
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-1.5">
+              <div className="space-y-2">
               <Label htmlFor={`item-slug-${item.id}`}>Slug hạng mục</Label>
                 <Input
                   id={`item-slug-${item.id}`}
@@ -533,7 +533,7 @@ function ProjectItemWorkspace({
                   placeholder="fancy-tower"
                 />
               </div>
-              <div className="space-y-1.5">
+              <div className="space-y-2">
               <Label>Tình trạng thi công hạng mục</Label>
                 <Select value={status} onValueChange={setStatus}>
                   <SelectTrigger>
@@ -553,9 +553,9 @@ function ProjectItemWorkspace({
               </div>
             </div>
 
-            <div className="space-y-1.5">
-              <Label>Mô tả ngắn cho thẻ hạng mục</Label>
+            <div className="space-y-2">
               <BilingualField
+                label={<Label>Mô tả ngắn cho thẻ hạng mục</Label>}
                 multiline
                 rows={3}
                 value={summary}
@@ -567,9 +567,9 @@ function ProjectItemWorkspace({
               />
             </div>
 
-            <div className="space-y-1.5">
-              <Label>Nội dung chi tiết hạng mục</Label>
+            <div className="space-y-2">
               <BilingualField
+                label={<Label>Nội dung chi tiết hạng mục</Label>}
                 multiline
                 rows={5}
                 value={description}
@@ -795,9 +795,9 @@ function InfoTab({
         {editing ? (
           <form onSubmit={onSaveBasic} className="space-y-4">
             <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-1.5 sm:col-span-2">
-                <Label>Tên dự án</Label>
+              <div className="space-y-2 sm:col-span-2">
                 <BilingualField
+                  label={<Label>Tên dự án</Label>}
                   value={title}
                   onChange={setTitle}
                   placeholder={{
@@ -806,7 +806,7 @@ function InfoTab({
                   }}
                 />
               </div>
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label htmlFor="project-slug">Slug dự án</Label>
                 <Input
                   id="project-slug"
@@ -815,7 +815,7 @@ function InfoTab({
                   placeholder="khu-do-thi-hung-phu"
                 />
               </div>
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label>Tình trạng thi công</Label>
                 <Select
                   value={status}
@@ -835,9 +835,9 @@ function InfoTab({
               </div>
             </div>
 
-            <div className="space-y-1.5">
-              <Label>Mô tả ngắn cho thẻ dự án</Label>
+            <div className="space-y-2">
               <BilingualField
+                label={<Label>Mô tả ngắn cho thẻ dự án</Label>}
                 multiline
                 rows={3}
                 value={summary}
@@ -850,17 +850,17 @@ function InfoTab({
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-1.5">
-                <Label>Vị trí dự án</Label>
+              <div className="space-y-2">
                 <BilingualField
+                  label={<Label>Vị trí dự án</Label>}
                   value={location}
                   onChange={setLocation}
                   placeholder={{ vi: "Bến Tre", en: "Ben Tre" }}
                 />
               </div>
-              <div className="space-y-1.5">
-                <Label>Loại hình dự án</Label>
+              <div className="space-y-2">
                 <BilingualField
+                  label={<Label>Loại hình dự án</Label>}
                   value={category}
                   onChange={setCategory}
                   placeholder={{ vi: "Khu đô thị", en: "Urban Area" }}

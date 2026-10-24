@@ -341,9 +341,9 @@ export function PageFormDialog({ trigger, page }: PageFormDialogProps) {
               name="title"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Tiêu đề trang</FormLabel>
                   <FormControl>
                     <BilingualField
+                      label={<FormLabel>Tiêu đề trang</FormLabel>}
                       value={field.value}
                       onChange={field.onChange}
                       placeholder={{
@@ -362,9 +362,9 @@ export function PageFormDialog({ trigger, page }: PageFormDialogProps) {
               name="content"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Nội dung trang</FormLabel>
                   <FormControl>
                     <BilingualField
+                      label={<FormLabel>Nội dung trang</FormLabel>}
                       multiline
                       rows={8}
                       value={field.value}

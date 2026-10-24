@@ -2,8 +2,23 @@ import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { BilingualField } from "@/components/ui/BilingualField";
+import { Label } from "@/components/ui/label";
 
 describe("BilingualField", () => {
+  it("giữ nhãn liên kết với ô nhập khi đổi ngôn ngữ", async () => {
+    const user = userEvent.setup();
+    render(
+      <BilingualField
+        label={<Label>Tên hạng mục</Label>}
+        value={{ vi: "Tên tiếng Việt", en: "English name" }}
+        onChange={vi.fn()}
+      />,
+    );
+    expect(screen.getByRole("textbox", { name: "Tên hạng mục" })).toHaveValue("Tên tiếng Việt");
+    await user.click(screen.getByRole("button", { name: /^en/i }));
+    expect(screen.getByRole("textbox", { name: "Tên hạng mục" })).toHaveValue("English name");
+  });
+
   it("shows the Vietnamese value first", () => {
     render(
       <BilingualField value={{ vi: "Xin chào", en: "Hello" }} onChange={vi.fn()} />,
