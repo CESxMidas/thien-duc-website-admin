@@ -1,3 +1,4 @@
+import type { ComponentProps } from "react";
 import { Link } from "react-router-dom";
 import {
   Inbox,
@@ -56,69 +57,21 @@ export function DashboardPage() {
     ? "mt-8 grid gap-6 lg:grid-cols-2"
     : "mt-8 grid gap-6";
 
-  return (
-    <div>
-      <PageHeader
-        title="Tổng quan"
-        description="Số liệu nhanh và lối tắt thao tác."
-      />
+  // Ưu tiên mục có dữ liệu; giữ thứ tự cũ trong từng nhóm để tránh đảo lộn.
+  const stats: (ComponentProps<typeof StatCard> & { value: number })[] = [
+    ...(canViewLeads ? [{
+      label: "Form liên hệ mới", value: newLeads, hint: "Chưa xử lý",
+      icon: Inbox, to: "/lien-he", accent: "blue" as const,
+    }] : []),
+    { label: "Nội dung chờ duyệt", value: pendingContent, hint: "Tin tức + dự án", icon: ClipboardCheck, to: "/tin-tuc", accent: "amber" },
+    { label: "Dự án", value: projects.length, hint: "Tổng số dự án", icon: Building2, to: "/du-an", accent: "brand" },
+    { label: "Bài viết", value: news.length, hint: "Tổng số bài", icon: Newspaper, to: "/tin-tuc", accent: "green" },
+  ];
+  stats.sort((a, b) => Number(b.value > 0) - Number(a.value > 0));
 
-      {/* Số liệu nhanh (ED-02) */}
-      <div className={statGridClass}>
-        {canViewLeads && (
-          <StatCard
-            label="Form liên hệ mới"
-            value={newLeads}
-            hint="Chưa xử lý"
-            icon={Inbox}
-            to="/lien-he"
-            accent="blue"
-          />
-        )}
-        <StatCard
-          label="Nội dung chờ duyệt"
-          value={pendingContent}
-          hint="Tin tức + dự án"
-          icon={ClipboardCheck}
-          to="/tin-tuc"
-          accent="amber"
-        />
-        <StatCard
-          label="Dự án"
-          value={projects.length}
-          hint="Tổng số dự án"
-          icon={Building2}
-          to="/du-an"
-          accent="brand"
-        />
-        <StatCard
-          label="Bài viết"
-          value={news.length}
-          hint="Tổng số bài"
-          icon={Newspaper}
-          to="/tin-tuc"
-          accent="green"
-        />
-      </div>
-
-      {/* Lối tắt tạo mới (ED-02) */}
-      <div className="mt-6 flex flex-wrap gap-3">
-        <Button asChild>
-          <Link to="/du-an">
-            <Plus className="size-4" /> Tạo dự án
-          </Link>
-        </Button>
-        <Button asChild variant="outline">
-          <Link to="/tin-tuc">
-            <Plus className="size-4" /> Viết tin
-          </Link>
-        </Button>
-      </div>
-
-      <div className={panelGridClass}>
-        {/* Form liên hệ mới nhất — chỉ ADMIN/SUPER_ADMIN */}
-        {canViewLeads && (
-        <Card className="gap-0 py-0">
+  const panels = [
+    { visible: canViewLeads, hasData: recentLeads.length > 0, content: (
+        <Card key="leads" className="gap-0 py-0">
           <CardHeader className="flex flex-row items-center justify-between border-b py-3">
             <CardTitle className="text-base">Liên hệ mới nhất</CardTitle>
             <Link to="/lien-he" className="text-sm text-brand hover:underline">
@@ -157,10 +110,9 @@ export function DashboardPage() {
             </ul>
           </CardContent>
         </Card>
-        )}
-
-        {/* Nội dung chờ duyệt */}
-        <Card className="gap-0 py-0">
+    ) },
+    { visible: true, hasData: pendingList.length > 0, content: (
+        <Card key="pending" className="gap-0 py-0">
           <CardHeader className="flex flex-row items-center justify-between border-b py-3">
             <CardTitle className="text-base">Chờ duyệt</CardTitle>
             <span className="text-sm text-slate">{pendingList.length} mục</span>
@@ -192,6 +144,38 @@ export function DashboardPage() {
             </ul>
           </CardContent>
         </Card>
+    ) },
+  ].filter((panel) => panel.visible)
+    .sort((a, b) => Number(b.hasData) - Number(a.hasData));
+
+  return (
+    <div>
+      <PageHeader
+        title="Tổng quan"
+        description="Số liệu nhanh và lối tắt thao tác."
+      />
+
+      {/* Số liệu nhanh (ED-02) */}
+      <div className={statGridClass}>
+        {stats.map((stat) => <StatCard key={stat.label} {...stat} />)}
+      </div>
+
+      {/* Lối tắt tạo mới (ED-02) */}
+      <div className="mt-6 flex flex-wrap gap-3">
+        <Button asChild>
+          <Link to="/du-an">
+            <Plus className="size-4" /> Tạo dự án
+          </Link>
+        </Button>
+        <Button asChild variant="outline">
+          <Link to="/tin-tuc">
+            <Plus className="size-4" /> Viết tin
+          </Link>
+        </Button>
+      </div>
+
+      <div className={panelGridClass}>
+        {panels.map((panel) => panel.content)}
       </div>
     </div>
   );
