@@ -45,7 +45,7 @@ const project: ProjectDetail = {
   slug: "hung-phu",
   title: { vi: "Khu đô thị Hưng Phú" },
   summary: { vi: "Thông tin dự án" },
-  description: null,
+  description: { vi: "Tổng quan dự án thử nghiệm.\nĐoạn tiếp theo." },
   status: "DANG_THI_CONG",
   contentStatus: "DRAFT",
   publishedAt: null,
@@ -67,7 +67,7 @@ const project: ProjectDetail = {
     slug: "fancy-tower",
     title: { vi: "Fancy Tower" },
     summary: null,
-    description: null,
+    description: { vi: "Nội dung chi tiết hạng mục thử nghiệm." },
     highlights: null,
     quickFacts: null,
     status: null,
@@ -101,4 +101,41 @@ it("chỉ có một bộ đổi ảnh chính; lưu nội dung không ghi đè �
   const savedData = updateItem.mock.calls[1][0].data;
   expect(savedData.title).toEqual({ vi: "Fancy Tower mới" });
   expect(savedData).not.toHaveProperty("image");
+});
+
+it("chỉ hiện tổng quan dự án một lần khi xem và khi đóng chỉnh sửa", async () => {
+  const user = userEvent.setup();
+  render(<ProjectDetailDialog slug={project.slug} open onOpenChange={vi.fn()} />);
+
+  expect(screen.getAllByText("Nội dung tổng quan dự án")).toHaveLength(1);
+  expect(screen.getAllByText(/Tổng quan dự án thử nghiệm/)).toHaveLength(1);
+  expect(screen.getByText("Ngày tạo")).toBeInTheDocument();
+  expect(screen.getByText("Cập nhật gần nhất")).toBeInTheDocument();
+
+  await user.click(screen.getByRole("button", { name: "Sửa thông tin" }));
+  expect(screen.getAllByText("Nội dung tổng quan dự án")).toHaveLength(1);
+  expect(screen.getByPlaceholderText("Giới thiệu tổng quan về quy mô, vị trí, hạ tầng và tiến độ dự án")).toHaveValue(project.description!.vi);
+  expect(screen.queryByText(/Tổng quan dự án thử nghiệm/, { selector: "dd" })).not.toBeInTheDocument();
+
+  await user.click(screen.getByRole("button", { name: "Đóng chỉnh sửa" }));
+  expect(screen.getAllByText("Nội dung tổng quan dự án")).toHaveLength(1);
+  expect(screen.getAllByText(/Tổng quan dự án thử nghiệm/)).toHaveLength(1);
+});
+
+it("chỉ hiện chi tiết hạng mục ở chế độ xem hoặc trong ô chỉnh sửa", async () => {
+  const user = userEvent.setup();
+  render(<ProjectDetailDialog slug={project.slug} open onOpenChange={vi.fn()} />);
+
+  await user.click(screen.getByRole("tab", { name: /Fancy Tower/ }));
+  expect(screen.getAllByText("Nội dung chi tiết hạng mục")).toHaveLength(1);
+  expect(screen.queryByText("Nội dung tổng quan dự án")).not.toBeInTheDocument();
+
+  await user.click(screen.getByRole("button", { name: "Sửa hạng mục" }));
+  expect(screen.getAllByText("Nội dung chi tiết hạng mục")).toHaveLength(1);
+  expect(screen.getByRole("textbox", { name: "Nội dung chi tiết hạng mục" })).toHaveValue("Nội dung chi tiết hạng mục thử nghiệm.");
+  expect(screen.queryByText("Nội dung chi tiết hạng mục thử nghiệm.", { selector: "dd" })).not.toBeInTheDocument();
+
+  await user.click(screen.getByRole("button", { name: "Đóng chỉnh sửa" }));
+  expect(screen.getAllByText("Nội dung chi tiết hạng mục")).toHaveLength(1);
+  expect(screen.getByText("Nội dung chi tiết hạng mục thử nghiệm.", { selector: "dd" })).toBeInTheDocument();
 });

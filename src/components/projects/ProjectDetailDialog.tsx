@@ -626,7 +626,7 @@ function ProjectItemWorkspace({
             label: "Tình trạng áp dụng",
             value: projectStatusLabel[effectiveStatus],
           },
-          ...(toBilingualLoose(item.description).vi
+          ...(!editing && toBilingualLoose(item.description).vi
             ? [
                 {
                   label: "Nội dung chi tiết hạng mục",
@@ -913,15 +913,6 @@ function InfoTab({
               </span>
             ),
           },
-          ...(project.description?.vi
-            ? [
-                {
-                  label: "Nội dung tổng quan dự án",
-                  value: project.description.vi,
-                  block: true,
-                },
-              ]
-            : []),
           { label: "Ngày tạo", value: formatDateTime(project.createdAt) },
           {
             label: "Cập nhật gần nhất",
