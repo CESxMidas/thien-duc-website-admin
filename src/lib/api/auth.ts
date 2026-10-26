@@ -12,6 +12,7 @@ import type {
   AcceptInvitationInput,
   AuthUser,
   ChangePasswordInput,
+  PasswordChangeChallenge,
   ResetPasswordInput,
   Role,
 } from "@/types";
@@ -207,6 +208,15 @@ export async function changePassword(
       body: JSON.stringify(input),
     },
   );
+}
+
+export function requestPasswordChangeCode(input: {
+  currentPassword: string;
+}): Promise<PasswordChangeChallenge> {
+  return apiFetch<PasswordChangeChallenge>("/auth/change-password/code", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
 }
 
 /** Đăng xuất: thu hồi refresh token ở backend (best-effort) rồi xóa token cục bộ. */

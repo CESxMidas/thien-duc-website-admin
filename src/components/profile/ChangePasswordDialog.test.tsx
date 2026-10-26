@@ -19,11 +19,15 @@ import * as basePath from "@/lib/base-path";
 import { withBase } from "@/lib/base-path";
 
 const changePassword = vi.hoisted(() => vi.fn());
+const requestPasswordChangeCode = vi.hoisted(() => vi.fn());
 const clearTokens = vi.hoisted(() => vi.fn());
 const toastSuccess = vi.hoisted(() => vi.fn());
 const toastError = vi.hoisted(() => vi.fn());
 
-vi.mock("@/lib/api/auth", () => ({ changePassword }));
+vi.mock("@/lib/api/auth", () => ({
+  changePassword,
+  requestPasswordChangeCode,
+}));
 
 vi.mock("sonner", () => ({
   toast: { success: toastSuccess, error: toastError },
@@ -41,6 +45,12 @@ const assign = vi.fn();
 beforeEach(() => {
   vi.clearAllMocks();
   changePassword.mockResolvedValue({ success: true, message: "ok" });
+  requestPasswordChangeCode.mockResolvedValue({
+    challengeId: "00000000-0000-4000-8000-000000000001",
+    maskedEmail: "a***@thienduc.vn",
+    expiresAt: new Date(Date.now() + 600000).toISOString(),
+    resendAvailableAt: new Date(Date.now() + 60000).toISOString(),
+  });
   // jsdom không cho gán `window.location.assign` trực tiếp.
   Object.defineProperty(window, "location", {
     configurable: true,
@@ -64,7 +74,7 @@ function fields() {
     current: screen.getByLabelText("Mật khẩu hiện tại"),
     next: screen.getByLabelText("Mật khẩu mới"),
     confirm: screen.getByLabelText("Xác nhận mật khẩu mới"),
-    submit: screen.getByRole("button", { name: "Đổi mật khẩu" }),
+    submit: screen.getByRole("button", { name: "Gửi mã xác nhận" }),
   };
 }
 
@@ -75,9 +85,83 @@ async function submitValid(user: ReturnType<typeof userEvent.setup>) {
   await user.type(f.next, "MatKhauMoi456");
   await user.type(f.confirm, "MatKhauMoi456");
   await user.click(f.submit);
+  await user.type(await screen.findByLabelText("Mã xác nhận"), "123456");
+  await user.click(
+    screen.getByRole("button", { name: "Xác nhận đổi mật khẩu" }),
+  );
 }
 
 describe("ChangePasswordDialog", () => {
+  it("mã hết hạn thì khóa xác nhận nhưng vẫn cho hủy hoặc gửi lại", async () => {
+    requestPasswordChangeCode.mockResolvedValueOnce({
+      challengeId: "00000000-0000-4000-8000-000000000001",
+      maskedEmail: "a***@thienduc.vn",
+      expiresAt: new Date(Date.now() - 1).toISOString(),
+      resendAvailableAt: new Date(Date.now() - 1).toISOString(),
+    });
+    const { user } = setup();
+    const f = fields();
+    await user.type(f.current, "MatKhauCu123");
+    await user.type(f.next, "MatKhauMoi456");
+    await user.type(f.confirm, "MatKhauMoi456");
+    await user.click(f.submit);
+    expect(await screen.findByText(/Mã đã hết hạn/)).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Xác nhận đổi mật khẩu" }),
+    ).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Hủy" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "Gửi lại mã" })).toBeEnabled();
+    await user.click(screen.getByRole("button", { name: "Gửi lại mã" }));
+    await waitFor(() =>
+      expect(requestPasswordChangeCode).toHaveBeenCalledTimes(2),
+    );
+    expect(changePassword).not.toHaveBeenCalled();
+  });
+  it("gửi mã trước, chưa đổi mật khẩu hoặc đăng xuất khi email vừa được gửi", async () => {
+    const { user } = setup();
+    const f = fields();
+    await user.type(f.current, "MatKhauCu123");
+    await user.type(f.next, "MatKhauMoi456");
+    await user.type(f.confirm, "MatKhauMoi456");
+    await user.click(f.submit);
+    expect(await screen.findByLabelText("Mã xác nhận")).toHaveFocus();
+    expect(requestPasswordChangeCode).toHaveBeenCalledWith({
+      currentPassword: "MatKhauCu123",
+    });
+    expect(changePassword).not.toHaveBeenCalled();
+    expect(clearTokens).not.toHaveBeenCalled();
+    expect(screen.getByText(/a\*\*\*@thienduc.vn/)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Gửi lại sau/ })).toBeDisabled();
+  });
+
+  it("gửi email lỗi thì giữ bước mật khẩu và không báo đã gửi mã", async () => {
+    requestPasswordChangeCode.mockRejectedValueOnce(new Error("offline"));
+    const { user } = setup();
+    const f = fields();
+    await user.type(f.current, "MatKhauCu123");
+    await user.type(f.next, "MatKhauMoi456");
+    await user.type(f.confirm, "MatKhauMoi456");
+    await user.click(f.submit);
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "Không gửi được mã xác nhận",
+    );
+    expect(screen.queryByLabelText("Mã xác nhận")).toBeNull();
+    expect(changePassword).not.toHaveBeenCalled();
+  });
+
+  it("không cho xác nhận mã chưa đủ 6 số", async () => {
+    const { user } = setup();
+    const f = fields();
+    await user.type(f.current, "MatKhauCu123");
+    await user.type(f.next, "MatKhauMoi456");
+    await user.type(f.confirm, "MatKhauMoi456");
+    await user.click(f.submit);
+    await user.type(await screen.findByLabelText("Mã xác nhận"), "123");
+    await user.click(
+      screen.getByRole("button", { name: "Xác nhận đổi mật khẩu" }),
+    );
+    expect(changePassword).not.toHaveBeenCalled();
+  });
   it("hiện đủ ba ô mật khẩu và hai nút", () => {
     setup();
     const f = fields();
@@ -154,7 +238,7 @@ describe("ChangePasswordDialog", () => {
     expect(changePassword).not.toHaveBeenCalled();
   });
 
-  it("gửi ĐÚNG ba field, KHÔNG kèm userId", async () => {
+  it("gửi mật khẩu kèm mã và ID lượt gửi, không kèm userId", async () => {
     const { user } = setup();
 
     await submitValid(user);
@@ -163,6 +247,8 @@ describe("ChangePasswordDialog", () => {
     const payload = changePassword.mock.calls[0][0] as Record<string, unknown>;
 
     expect(payload).toEqual({
+      challengeId: "00000000-0000-4000-8000-000000000001",
+      verificationCode: "123456",
       currentPassword: "MatKhauCu123",
       newPassword: "MatKhauMoi456",
       confirmPassword: "MatKhauMoi456",
@@ -235,7 +321,7 @@ describe("ChangePasswordDialog", () => {
 
     await waitFor(() => expect(toastError).toHaveBeenCalled());
     expect(onOpenChange).not.toHaveBeenCalledWith(false);
-    expect(screen.getByLabelText("Mật khẩu hiện tại")).toBeInTheDocument();
+    expect(screen.getByLabelText("Mã xác nhận")).toBeInTheDocument();
   });
 
   it("bấm Hủy thì đóng hộp thoại, không gọi API", async () => {

@@ -386,9 +386,18 @@ export interface ResetPasswordInput {
  * (`forbidNonWhitelisted`) sẽ reject 400 nếu client gửi kèm field lạ.
  */
 export interface ChangePasswordInput {
+  challengeId: string;
+  verificationCode: string;
   currentPassword: string;
   newPassword: string;
   confirmPassword: string;
+}
+
+export interface PasswordChangeChallenge {
+  challengeId: string;
+  maskedEmail: string;
+  expiresAt: string;
+  resendAvailableAt: string;
 }
 
 /** Trạng thái yêu cầu cập nhật hồ sơ (ProfileChangeStatus của backend). */
