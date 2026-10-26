@@ -1,3 +1,4 @@
+import { usePublicationClock } from "@/lib/use-publication-clock";
 import { ContentOrderDialog } from "@/components/content/ContentOrderDialog";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -53,11 +54,8 @@ import type { ContentStatus, Project } from "@/types";
  * (tình trạng thi công). Hai khái niệm này ở dự án rất dễ lẫn, nên cột và chip
  * lọc của chúng được giữ tách bạch cả về nhãn lẫn về mã.
  *
- * "Đã lên lịch" gộp cả `SCHEDULED` lẫn `DUE` vì cả hai đều sinh ra từ một lịch
- * đăng — người dùng đi tìm "những dự án tôi đã hẹn giờ". Huy hiệu trên từng hàng
- * vẫn tách bạch hai trạng thái đó. Ngược lại "Chờ duyệt" CỐ Ý không gộp `DUE`:
- * một dự án đã tới hạn đang hiển thị công khai, xếp chung với hàng chờ duyệt là
- * nói sai sự thật.
+ * Lịch tương lai nằm trong "Đã lên lịch". Dự án tới hạn đã công khai nên nằm
+ * trong "Đã đăng", không cần duyệt lại dù cột trạng thái DB chưa đồng bộ.
  */
 type ProjectFilter = "ALL" | "DRAFT" | "PENDING" | "SCHEDULED" | "PUBLISHED";
 
@@ -74,7 +72,7 @@ function matchesFilter(
   filter: ProjectFilter,
 ): boolean {
   if (filter === "ALL") return true;
-  if (filter === "SCHEDULED") return state === "SCHEDULED" || state === "DUE";
+  if (filter === "PUBLISHED") return state === "PUBLISHED" || state === "DUE";
   return state === filter;
 }
 
@@ -98,7 +96,7 @@ export function ProjectsPage() {
 
   // Đồng hồ MÁY, chỉ để chọn nhãn và ẩn nút chắc chắn bị từ chối — backend mới
   // là nơi quyết định dự án có công khai hay không (xem `project-schedule.ts`).
-  const now = new Date();
+  const now = usePublicationClock(projects.map((item) => item.scheduledAt));
 
   async function changeStatus(project: Project, status: ContentStatus) {
     setBusySlug(project.slug);
@@ -215,7 +213,7 @@ export function ProjectsPage() {
     {
       key: "contentStatus",
       header: "Trạng thái đăng",
-      // Dòng phụ (mốc hẹn / ghi chú đồng bộ) cần xuống dòng được.
+      // Mốc đăng theo giờ Việt Nam cần xuống dòng được.
       headerClassName: "w-36",
       cellClassName: "w-36 whitespace-normal",
       render: (p) => {
@@ -229,15 +227,8 @@ export function ProjectsPage() {
             <Badge variant={publicationStateTone[state]}>
               {publicationStateLabel[state]}
             </Badge>
-            {state === "SCHEDULED" && scheduledLabel ? (
+            {(state === "SCHEDULED" || state === "DUE") && scheduledLabel ? (
               <p className="text-xs text-slate">{scheduledLabel}</p>
-            ) : null}
-            {state === "DUE" ? (
-              // Không nói "chờ duyệt": theo vị từ hiển thị của backend, dự án
-              // này ĐÃ ra công khai rồi, chỉ còn chờ reconciler ghi lại trạng thái.
-              <p className="text-xs text-slate">
-                Đã hiển thị công khai, đang chờ đồng bộ
-              </p>
             ) : null}
           </div>
         );
@@ -276,7 +267,10 @@ export function ProjectsPage() {
         const busy = busySlug === p.slug;
         const state = deriveProjectPublicationState(p, now);
         const schedule = projectScheduleActions(user?.role, p, now);
-        const statusActions = contentStatusActions(user?.role, p.contentStatus)
+        const statusActions = contentStatusActions(
+          user?.role,
+          deriveProjectPublicationState(p, now),
+        )
           // Ở trạng thái "Đã lên lịch", "Trả về nháp" và "Huỷ lịch" cho ra CÙNG
           // một kết quả (DRAFT, xoá cả hai mốc). Giữ lại nút nói đúng việc đang
           // làm; ở mọi trạng thái khác "Trả về nháp" vẫn nguyên như trước.
@@ -287,7 +281,7 @@ export function ProjectsPage() {
           // stopPropagation: hàng đã bấm được để mở chi tiết — các nút thao tác
           // không được kích hoạt luôn cả modal.
           <div
-            className="flex max-w-full items-center justify-end gap-1.5 whitespace-nowrap py-1"
+            className="flex max-w-full flex-wrap items-center justify-end gap-1.5 py-1"
             onClick={(e) => e.stopPropagation()}
           >
             {busy && <Loader2 className="size-4 animate-spin text-slate" />}

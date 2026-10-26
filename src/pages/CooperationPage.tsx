@@ -1,3 +1,4 @@
+import { usePublicationClock } from "@/lib/use-publication-clock";
 import { useState } from "react";
 import { toast } from "sonner";
 import {
@@ -78,7 +79,7 @@ export function CooperationPage() {
 
   // Đồng hồ MÁY, chỉ để chọn nhãn và ẩn nút chắc chắn bị từ chối — backend mới
   // là nơi quyết định bản ghi có công khai hay không (xem `cooperation-schedule.ts`).
-  const now = new Date();
+  const now = usePublicationClock(projects.map((item) => item.scheduledAt));
 
   /**
    * `order` là thứ tự các thẻ chạy ở trang chủ, nên đổi thứ tự **là** đổi nội
@@ -289,13 +290,16 @@ export function CooperationPage() {
       headerClassName: "text-right",
       render: (project) => (
         <div
-          className="flex justify-end gap-1"
+          className="flex flex-wrap justify-end gap-1"
           onClick={(event) => event.stopPropagation()}
         >
           {busyId === project.id && (
             <Loader2 className="size-3.5 animate-spin text-slate" />
           )}
-          {contentStatusActions(user?.role, project.contentStatus)
+          {contentStatusActions(
+            user?.role,
+            deriveCooperationPublicationState(project, now),
+          )
             // Ở trạng thái "Đã lên lịch", "Trả về nháp" và "Huỷ lịch" cho ra
             // CÙNG một kết quả (DRAFT, xoá cả hai mốc). Giữ lại nút nói đúng
             // việc đang làm; ở mọi trạng thái khác "Trả về nháp" vẫn như trước.

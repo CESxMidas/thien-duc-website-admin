@@ -1,3 +1,4 @@
+import { usePublicationClock } from "@/lib/use-publication-clock";
 import { ContentOrderDialog } from "@/components/content/ContentOrderDialog";
 import { useState } from "react";
 import { Link } from "react-router-dom";
@@ -53,11 +54,8 @@ import type { ContentStatus, NewsPost } from "@/types";
 /**
  * Bộ lọc theo trạng thái SUY RA, không phải theo cột `status`.
  *
- * "Đã lên lịch" gộp cả `SCHEDULED` lẫn `DUE` vì cả hai đều sinh ra từ một lịch
- * đăng — người dùng đi tìm "những bài tôi đã hẹn giờ" chứ không phân biệt bài
- * nào vừa qua mốc. Huy hiệu trên từng hàng vẫn tách bạch hai trạng thái đó.
- * Ngược lại, "Chờ duyệt" CỐ Ý không gộp `DUE`: một bài đã tới hạn đang hiển thị
- * công khai, xếp chung với hàng chờ duyệt là nói sai sự thật.
+ * Lịch tương lai nằm trong "Đã lên lịch". Bài tới hạn đã công khai nên chuyển
+ * sang "Đã đăng", không nằm trong hàng chờ duyệt dù DB còn PENDING.
  */
 type NewsFilter = "ALL" | "DRAFT" | "PENDING" | "SCHEDULED" | "PUBLISHED";
 
@@ -71,7 +69,7 @@ const filters: { value: NewsFilter; label: string }[] = [
 
 function matchesFilter(state: PublicationState, filter: NewsFilter): boolean {
   if (filter === "ALL") return true;
-  if (filter === "SCHEDULED") return state === "SCHEDULED" || state === "DUE";
+  if (filter === "PUBLISHED") return state === "PUBLISHED" || state === "DUE";
   return state === filter;
 }
 
@@ -94,10 +92,8 @@ export function NewsPage() {
 
   // Đồng hồ MÁY, chỉ để chọn nhãn và ẩn nút chắc chắn bị từ chối — backend mới
   // là nơi quyết định bài có công khai hay không (xem `news-schedule.ts`).
-  // Không dùng state có bộ đếm: một hàng vừa qua mốc sẽ đổi nhãn ở lần render
-  // kế tiếp (thao tác bất kỳ hoặc lần refetch của React Query), và mọi thao tác
-  // sai thời điểm đều được backend chặn lại.
-  const now = new Date();
+  // Đồng hồ đánh thức đúng mốc đăng để nhãn, bộ lọc và thao tác đổi cùng lúc.
+  const now = usePublicationClock(news.map((item) => item.scheduledAt));
 
   async function changeStatus(post: NewsPost, status: ContentStatus) {
     setBusySlug(post.slug);
@@ -193,7 +189,7 @@ export function NewsPage() {
     {
       key: "status",
       header: "Trạng thái",
-      // Dòng phụ (mốc hẹn / ghi chú đồng bộ) cần xuống dòng được.
+      // Mốc đăng theo giờ Việt Nam cần xuống dòng được.
       cellClassName: "whitespace-normal",
       render: (post) => {
         const state = derivePublicationState(post, now);
@@ -206,15 +202,8 @@ export function NewsPage() {
             <Badge variant={publicationStateTone[state]}>
               {publicationStateLabel[state]}
             </Badge>
-            {state === "SCHEDULED" && scheduledLabel ? (
+            {(state === "SCHEDULED" || state === "DUE") && scheduledLabel ? (
               <p className="text-xs text-slate">{scheduledLabel}</p>
-            ) : null}
-            {state === "DUE" ? (
-              // Không nói "chờ duyệt": theo vị từ hiển thị của backend, bài này
-              // ĐÃ ra công khai rồi, chỉ còn chờ reconciler ghi lại trạng thái.
-              <p className="text-xs text-slate">
-                Đã hiển thị công khai, đang chờ đồng bộ
-              </p>
             ) : null}
           </div>
         );
@@ -233,11 +222,16 @@ export function NewsPage() {
     {
       key: "actions",
       header: "Thao tác",
+      headerClassName: "w-80 text-right",
+      cellClassName: "w-80 whitespace-normal",
       render: (post) => {
         const busy = busySlug === post.slug;
         const state = derivePublicationState(post, now);
         const schedule = newsScheduleActions(user?.role, post, now);
-        const statusActions = contentStatusActions(user?.role, post.status)
+        const statusActions = contentStatusActions(
+          user?.role,
+          derivePublicationState(post, now),
+        )
           // Ở trạng thái "Đã lên lịch", "Trả về nháp" và "Huỷ lịch" cho ra CÙNG
           // một kết quả (DRAFT, xoá cả hai mốc). Giữ lại nút nói đúng việc đang
           // làm; ở mọi trạng thái khác "Trả về nháp" vẫn nguyên như trước.
@@ -246,11 +240,8 @@ export function NewsPage() {
           );
         return (
           <div
-            // Hàng "Đã lên lịch" có tới năm nút. Màn hẹp: cho xuống dòng để
-            // mọi nút đều chạm tới được, không đẩy bảng sinh cuộn ngang. Màn
-            // rộng (xl trở lên): giữ một dòng — cột tiêu đề còn dư chỗ nên bảng
-            // tự nhường bề rộng, thay vì bỏ lại nút xóa lẻ loi ở dòng dưới.
-            className="flex flex-wrap items-center justify-end gap-1 xl:flex-nowrap"
+            // Cho nút xuống hàng trong cột, không đè lên mốc cập nhật bên cạnh.
+            className="flex flex-wrap items-center justify-end gap-1"
             // Bảng có onRowClick ở nơi khác; chặn nổi bọt để bấm nút không mở hàng.
             onClick={(event) => event.stopPropagation()}
           >

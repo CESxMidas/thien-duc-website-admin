@@ -32,23 +32,21 @@ export const publicationStateLabel: Record<PublicationState, string> = {
   DRAFT: "Nháp",
   PENDING: "Chờ duyệt",
   SCHEDULED: "Đã lên lịch",
-  DUE: "Đã đến giờ đăng",
+  DUE: "Đã đăng theo lịch",
   PUBLISHED: "Đã đăng",
 };
 
 /**
  * Sắc thái huy hiệu — dùng lại đúng token đã có, không thêm màu mới.
  *
- * `DUE` lấy sắc cảnh báo chứ không phải xanh lá: bài ĐANG hiển thị công khai
- * (vị từ Batch 2) nhưng dữ liệu chưa được reconciler đồng bộ, nên nó là một
- * trạng thái quá độ cần chú ý, không phải trạng thái ổn định. Nhãn chữ mới là
- * thứ phân biệt chính — màu chỉ hỗ trợ, không mang thông tin riêng.
+ * `DUE` đã hiển thị công khai theo lịch dù tác vụ đồng bộ chưa cập nhật cột
+ * trạng thái. Dùng cùng sắc xanh với đã đăng, không gợi ý cần duyệt thêm.
  */
 export const publicationStateTone: Record<PublicationState, BadgeTone> = {
   DRAFT: "gray",
   PENDING: "amber",
   SCHEDULED: "blue",
-  DUE: "amber",
+  DUE: "green",
   PUBLISHED: "green",
 };
 

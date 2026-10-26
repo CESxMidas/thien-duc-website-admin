@@ -9,6 +9,21 @@ import { contentStatusActions } from "@/lib/content-status-actions";
  * PENDING/PUBLISHED.
  */
 describe("contentStatusActions", () => {
+  it("bài đã tới giờ đăng không cần duyệt thêm dù trạng thái lưu vẫn PENDING", () => {
+    for (const role of ["ADMIN", "SUPER_ADMIN"] as const) {
+      expect(contentStatusActions(role, "DUE")).toEqual([
+        { to: "DRAFT", label: "Trả về nháp", intent: "revert" },
+      ]);
+    }
+    expect(contentStatusActions("EDITOR", "DUE")).toEqual([]);
+  });
+
+  it("lịch tương lai là Đăng ngay/Huỷ lịch, không phải một lượt duyệt mới", () => {
+    expect(
+      contentStatusActions("ADMIN", "SCHEDULED").map((action) => action.label),
+    ).toEqual(["Đăng ngay", "Huỷ lịch"]);
+    expect(contentStatusActions("EDITOR", "SCHEDULED")).toEqual([]);
+  });
   it("SUPER_ADMIN: nháp đăng thẳng (PUBLISHED), không gửi duyệt", () => {
     const actions = contentStatusActions("SUPER_ADMIN", "DRAFT");
     expect(actions).toEqual([

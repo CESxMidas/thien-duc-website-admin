@@ -1,3 +1,4 @@
+import { usePublicationClock } from "@/lib/use-publication-clock";
 // Modal chi tiết dự án — mở khi bấm vào một hàng ở trang Dự án.
 //
 // Quy chuẩn modal 2 cột (SplitModal): CỘT ẢNH bên trái gom toàn bộ hình ảnh với
@@ -510,7 +511,7 @@ function ProjectItemWorkspace({
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-              <Label htmlFor={`item-slug-${item.id}`}>Slug hạng mục</Label>
+                <Label htmlFor={`item-slug-${item.id}`}>Slug hạng mục</Label>
                 <Input
                   id={`item-slug-${item.id}`}
                   value={slug}
@@ -519,7 +520,7 @@ function ProjectItemWorkspace({
                 />
               </div>
               <div className="space-y-2">
-              <Label>Tình trạng thi công hạng mục</Label>
+                <Label>Tình trạng thi công hạng mục</Label>
                 <Select value={status} onValueChange={setStatus}>
                   <SelectTrigger>
                     <SelectValue />
@@ -589,7 +590,10 @@ function ProjectItemWorkspace({
           <DetailList
             fields={[
               { label: "Tên hạng mục", value: item.title.vi },
-              { label: "Slug hạng mục", value: `/${project.slug}/${item.slug}` },
+              {
+                label: "Slug hạng mục",
+                value: `/${project.slug}/${item.slug}`,
+              },
               {
                 label: "Mô tả ngắn cho thẻ hạng mục",
                 value: item.summary?.vi ?? "Chưa có mô tả ngắn",
@@ -670,6 +674,7 @@ function InfoTab({
   const { user } = useAuth();
   const updateProject = useUpdateProject();
   const updateStatus = useUpdateProjectStatus();
+  const now = usePublicationClock([project.scheduledAt]);
   const canEdit = canEditProject(user?.role, project);
   const [localEditing, setLocalEditing] = useState(false);
   const [title, setTitle] = useState<BilingualValue>(emptyBilingual);
@@ -694,11 +699,14 @@ function InfoTab({
   // Thao tác trạng thái do helper dùng chung quyết định theo vai trò:
   // SUPER_ADMIN DRAFT → "Đăng ngay"; EDITOR DRAFT → "Gửi duyệt"; PENDING/PUBLISHED
   // chỉ ADMIN trở lên có nút. Ẩn cả cụm khi vai trò không có thao tác nào hợp lệ.
-  const actions = contentStatusActions(user?.role, project.contentStatus);
+  const actions = contentStatusActions(
+    user?.role,
+    deriveProjectPublicationState(project, now),
+  );
 
   // Đồng hồ máy, chỉ để chọn nhãn hiển thị — backend mới quyết định dự án có
   // công khai hay không.
-  const publicationState = deriveProjectPublicationState(project, new Date());
+  const publicationState = deriveProjectPublicationState(project, now);
 
   async function onChangeStatus(to: ContentStatus) {
     try {
@@ -880,7 +888,10 @@ function InfoTab({
                 value: project.summary.vi,
                 block: true,
               },
-              { label: "Vị trí dự án", value: project.location?.vi ?? "Chưa nhập" },
+              {
+                label: "Vị trí dự án",
+                value: project.location?.vi ?? "Chưa nhập",
+              },
               {
                 label: "Loại hình dự án",
                 value: project.category?.vi ?? "Chưa nhập",

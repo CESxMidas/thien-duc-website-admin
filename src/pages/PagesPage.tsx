@@ -1,3 +1,4 @@
+import { usePublicationClock } from "@/lib/use-publication-clock";
 import { useState } from "react";
 import {
   CalendarClock,
@@ -57,7 +58,7 @@ export function PagesPage() {
 
   // Đồng hồ MÁY, chỉ để chọn nhãn và ẩn nút chắc chắn bị từ chối — backend mới
   // là nơi quyết định trang có công khai hay không (xem `page-schedule.ts`).
-  const now = new Date();
+  const now = usePublicationClock(pages.map((item) => item.scheduledAt));
 
   // Thao tác trạng thái theo bậc thang DRAFT → PENDING → PUBLISHED, dùng chung
   // helper với Tin tức/Dự án. Nút hiển thị và trạng thái đích do vai trò quyết định.
@@ -174,7 +175,7 @@ export function PagesPage() {
       header: "",
       render: (page) => (
         <div
-          className="flex items-center gap-1"
+          className="flex flex-wrap items-center gap-1"
           onClick={(event) => event.stopPropagation()}
         >
           {/* EDITOR không sửa được trang ĐANG hiển thị công khai — backend trả
@@ -195,7 +196,10 @@ export function PagesPage() {
           {busySlug === page.slug && (
             <Loader2 className="size-3.5 animate-spin text-slate" />
           )}
-          {contentStatusActions(user?.role, page.status)
+          {contentStatusActions(
+            user?.role,
+            derivePagePublicationState(page, now),
+          )
             // Ở trạng thái "Đã lên lịch", "Trả về nháp" và "Huỷ lịch" cho ra
             // CÙNG một kết quả (DRAFT, xoá cả hai mốc). Giữ lại nút nói đúng
             // việc đang làm; ở mọi trạng thái khác "Trả về nháp" vẫn như trước.
@@ -342,7 +346,9 @@ export function PagesPage() {
                 {
                   label: "Nội dung (tiếng Việt)",
                   block: true,
-                  value: (detail.content ?? []).map((item) => item.vi).join("\n\n"),
+                  value: (detail.content ?? [])
+                    .map((item) => item.vi)
+                    .join("\n\n"),
                 },
                 {
                   label: "Nội dung (tiếng Anh)",

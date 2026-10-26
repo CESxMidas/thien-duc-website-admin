@@ -16,19 +16,14 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { PagesPage } from "@/pages/PagesPage";
 import type { Role, StaticPage } from "@/types";
 
-const {
-  schedulePublication,
-  cancelPublication,
-  updateStatus,
-  pageRows,
-  role,
-} = vi.hoisted(() => ({
-  schedulePublication: vi.fn(async () => {}),
-  cancelPublication: vi.fn(async () => {}),
-  updateStatus: vi.fn(async () => {}),
-  pageRows: { current: [] as StaticPage[] },
-  role: { current: "ADMIN" as Role },
-}));
+const { schedulePublication, cancelPublication, updateStatus, pageRows, role } =
+  vi.hoisted(() => ({
+    schedulePublication: vi.fn(async () => {}),
+    cancelPublication: vi.fn(async () => {}),
+    updateStatus: vi.fn(async () => {}),
+    pageRows: { current: [] as StaticPage[] },
+    role: { current: "ADMIN" as Role },
+  }));
 
 vi.mock("@/lib/api/queries", () => {
   const mutation = (fn: (...args: never[]) => Promise<unknown>) => () => ({
@@ -141,7 +136,7 @@ describe("huy hiệu xuất bản (§45)", () => {
     ["nhap", "Nháp"],
     ["cho-duyet", "Chờ duyệt"],
     ["da-len-lich", "Đã lên lịch"],
-    ["toi-han", "Đã đến giờ đăng"],
+    ["toi-han", "Đã đăng theo lịch"],
     ["da-dang", "Đã đăng"],
   ])("%s → %s", (slug, label) => {
     renderPage();
@@ -187,6 +182,11 @@ describe("ma trận thao tác — ADMIN (§39)", () => {
   it("đã tới hạn: KHÔNG có Huỷ lịch", () => {
     renderPage();
     expect(
+      within(rowOf("toi-han")).queryByRole("button", {
+        name: /Duyệt|Đăng ngay/,
+      }),
+    ).toBeNull();
+    expect(
       within(rowOf("toi-han")).queryByRole("button", { name: /Huỷ lịch/ }),
     ).toBeNull();
   });
@@ -195,7 +195,9 @@ describe("ma trận thao tác — ADMIN (§39)", () => {
     renderPage();
     const row = within(rowOf("da-dang"));
     expect(row.queryByRole("button", { name: /Lên lịch/ })).toBeNull();
-    expect(row.getByRole("button", { name: /Trả về nháp/ })).toBeInTheDocument();
+    expect(
+      row.getByRole("button", { name: /Trả về nháp/ }),
+    ).toBeInTheDocument();
   });
 
   it("nháp từng đăng: không hẹn giờ lại được", () => {

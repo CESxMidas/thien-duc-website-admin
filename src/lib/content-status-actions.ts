@@ -1,4 +1,5 @@
 import type { ContentStatus, Role } from "@/types";
+import type { PublicationState } from "@/lib/news-schedule";
 
 /**
  * Ý nghĩa một thao tác đổi trạng thái — dùng để component chọn icon/kiểu nút mà
@@ -33,7 +34,8 @@ const REVERT: ContentStatusAction = {
 /**
  * Các thao tác đổi trạng thái khả dụng cho một vai trò tại một trạng thái, dùng
  * chung cho cả bốn module nội dung (Tin tức, Dự án, Trang, Dự án hợp tác) theo
- * bậc thang `DRAFT → PENDING → PUBLISHED`. Gom về một chỗ để không lặp logic nút.
+ * bậc thang `DRAFT → PENDING → PUBLISHED`. Với nội dung đặt lịch phải truyền
+ * trạng thái suy ra để không yêu cầu duyệt lại bài đã công khai đúng giờ.
  *
  * Quy tắc nghiệp vụ (Option B — công ty nhỏ, ít quản trị viên):
  * - **ADMIN / SUPER_ADMIN**: từ DRAFT **đăng thẳng** (PUBLISHED) với nhãn
@@ -47,7 +49,7 @@ const REVERT: ContentStatusAction = {
  */
 export function contentStatusActions(
   role: Role | undefined | null,
-  status: ContentStatus,
+  status: PublicationState,
 ): ContentStatusAction[] {
   switch (status) {
     case "DRAFT":
@@ -56,8 +58,19 @@ export function contentStatusActions(
         : [{ to: "PENDING", label: "Gửi duyệt", intent: "submit" }];
     case "PENDING":
       return canApproveRole(role)
-        ? [{ to: "PUBLISHED", label: "Duyệt & đăng", intent: "approve" }, REVERT]
+        ? [
+            { to: "PUBLISHED", label: "Duyệt & đăng", intent: "approve" },
+            REVERT,
+          ]
         : [];
+    case "SCHEDULED":
+      return canApproveRole(role)
+        ? [
+            { to: "PUBLISHED", label: "Đăng ngay", intent: "publish" },
+            { ...REVERT, label: "Huỷ lịch" },
+          ]
+        : [];
+    case "DUE":
     case "PUBLISHED":
       return canApproveRole(role) ? [REVERT] : [];
     default:

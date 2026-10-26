@@ -160,7 +160,7 @@ describe("huy hiệu xuất bản (§47)", () => {
     ["Hợp tác nhap", "Nháp"],
     ["Hợp tác cho-duyet", "Chờ duyệt"],
     ["Hợp tác da-len-lich", "Đã lên lịch"],
-    ["Hợp tác toi-han", "Đã đến giờ đăng"],
+    ["Hợp tác toi-han", "Đã đăng theo lịch"],
     ["Hợp tác da-dang", "Đã đăng"],
   ])("%s → %s", (name, label) => {
     renderPage();
@@ -218,6 +218,7 @@ describe("ma trận thao tác — ADMIN (§42)", () => {
   it("đã tới hạn: KHÔNG có Huỷ lịch", () => {
     renderPage();
     const row = within(rowOf("Hợp tác toi-han"));
+    expect(row.queryByRole("button", { name: /Duyệt|Đăng ngay/ })).toBeNull();
     expect(row.queryByRole("button", { name: /Huỷ lịch/ })).toBeNull();
   });
 
@@ -225,7 +226,9 @@ describe("ma trận thao tác — ADMIN (§42)", () => {
     renderPage();
     const row = within(rowOf("Hợp tác da-dang"));
     expect(row.queryByRole("button", { name: /Lên lịch/ })).toBeNull();
-    expect(row.getByRole("button", { name: /Trả về nháp/ })).toBeInTheDocument();
+    expect(
+      row.getByRole("button", { name: /Trả về nháp/ }),
+    ).toBeInTheDocument();
   });
 
   it("nháp từng đăng: không hẹn giờ lại được", () => {

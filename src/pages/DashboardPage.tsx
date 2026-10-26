@@ -1,3 +1,6 @@
+import { usePublicationClock } from "@/lib/use-publication-clock";
+import { derivePublicationState } from "@/lib/news-schedule";
+import { deriveProjectPublicationState } from "@/lib/project-schedule";
 import type { ComponentProps } from "react";
 import { Link } from "react-router-dom";
 import {
@@ -25,26 +28,29 @@ import {
 export function DashboardPage() {
   const { user } = useAuth();
   // `/contact` chỉ cho ADMIN/SUPER_ADMIN — EDITOR không xem lead (khớp nav.ts).
-  const canViewLeads =
-    user?.role === "ADMIN" || user?.role === "SUPER_ADMIN";
+  const canViewLeads = user?.role === "ADMIN" || user?.role === "SUPER_ADMIN";
 
   const { data: leads = [] } = useLeads(canViewLeads);
   const { data: news = [] } = useNews();
   const { data: projects = [] } = useProjects();
 
+  const now = usePublicationClock(
+    [...news, ...projects].map((item) => item.scheduledAt),
+  );
   const newLeads = leads.filter((l) => l.status === "NEW").length;
   const pendingContent =
-    news.filter((n) => n.status === "PENDING").length +
-    projects.filter((p) => p.contentStatus === "PENDING").length;
+    news.filter((n) => derivePublicationState(n, now) === "PENDING").length +
+    projects.filter((p) => deriveProjectPublicationState(p, now) === "PENDING")
+      .length;
 
   const recentLeads = leads.slice(0, 4);
   // Tiêu đề tin và dự án đều là field song ngữ — lấy bản tiếng Việt để render.
   const pendingList = [
     ...news
-      .filter((n) => n.status === "PENDING")
+      .filter((n) => derivePublicationState(n, now) === "PENDING")
       .map((n) => ({ id: n.id, title: n.title.vi, kind: "Tin tức" })),
     ...projects
-      .filter((p) => p.contentStatus === "PENDING")
+      .filter((p) => deriveProjectPublicationState(p, now) === "PENDING")
       .map((p) => ({ id: p.id, title: p.title.vi, kind: "Dự án" })),
   ];
 
@@ -59,18 +65,50 @@ export function DashboardPage() {
 
   // Ưu tiên mục có dữ liệu; giữ thứ tự cũ trong từng nhóm để tránh đảo lộn.
   const stats: (ComponentProps<typeof StatCard> & { value: number })[] = [
-    ...(canViewLeads ? [{
-      label: "Form liên hệ mới", value: newLeads, hint: "Chưa xử lý",
-      icon: Inbox, to: "/lien-he", accent: "blue" as const,
-    }] : []),
-    { label: "Nội dung chờ duyệt", value: pendingContent, hint: "Tin tức + dự án", icon: ClipboardCheck, to: "/tin-tuc", accent: "amber" },
-    { label: "Dự án", value: projects.length, hint: "Tổng số dự án", icon: Building2, to: "/du-an", accent: "brand" },
-    { label: "Bài viết", value: news.length, hint: "Tổng số bài", icon: Newspaper, to: "/tin-tuc", accent: "green" },
+    ...(canViewLeads
+      ? [
+          {
+            label: "Form liên hệ mới",
+            value: newLeads,
+            hint: "Chưa xử lý",
+            icon: Inbox,
+            to: "/lien-he",
+            accent: "blue" as const,
+          },
+        ]
+      : []),
+    {
+      label: "Nội dung chờ duyệt",
+      value: pendingContent,
+      hint: "Tin tức + dự án",
+      icon: ClipboardCheck,
+      to: "/tin-tuc",
+      accent: "amber",
+    },
+    {
+      label: "Dự án",
+      value: projects.length,
+      hint: "Tổng số dự án",
+      icon: Building2,
+      to: "/du-an",
+      accent: "brand",
+    },
+    {
+      label: "Bài viết",
+      value: news.length,
+      hint: "Tổng số bài",
+      icon: Newspaper,
+      to: "/tin-tuc",
+      accent: "green",
+    },
   ];
   stats.sort((a, b) => Number(b.value > 0) - Number(a.value > 0));
 
   const panels = [
-    { visible: canViewLeads, hasData: recentLeads.length > 0, content: (
+    {
+      visible: canViewLeads,
+      hasData: recentLeads.length > 0,
+      content: (
         <Card key="leads" className="gap-0 py-0">
           <CardHeader className="flex flex-row items-center justify-between border-b py-3">
             <CardTitle className="text-base">Liên hệ mới nhất</CardTitle>
@@ -85,33 +123,40 @@ export function DashboardPage() {
                   Chưa có form liên hệ nào.
                 </li>
               ) : (
-              recentLeads.map((lead) => (
-                <li key={lead.id} className="flex items-center gap-3 px-5 py-3">
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium text-ink">
-                      {lead.name}{" "}
-                      <span className="font-normal text-slate">
-                        · {lead.phone}
-                      </span>
-                    </p>
-                    <p className="truncate text-xs text-slate">
-                      {lead.message}
-                    </p>
-                  </div>
-                  <Badge variant={leadStatusTone[lead.status]}>
-                    {leadStatusLabel[lead.status]}
-                  </Badge>
-                  <span className="hidden text-xs text-slate sm:block">
-                    {formatDateTime(lead.createdAt)}
-                  </span>
-                </li>
-              ))
+                recentLeads.map((lead) => (
+                  <li
+                    key={lead.id}
+                    className="flex items-center gap-3 px-5 py-3"
+                  >
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium text-ink">
+                        {lead.name}{" "}
+                        <span className="font-normal text-slate">
+                          · {lead.phone}
+                        </span>
+                      </p>
+                      <p className="truncate text-xs text-slate">
+                        {lead.message}
+                      </p>
+                    </div>
+                    <Badge variant={leadStatusTone[lead.status]}>
+                      {leadStatusLabel[lead.status]}
+                    </Badge>
+                    <span className="hidden text-xs text-slate sm:block">
+                      {formatDateTime(lead.createdAt)}
+                    </span>
+                  </li>
+                ))
               )}
             </ul>
           </CardContent>
         </Card>
-    ) },
-    { visible: true, hasData: pendingList.length > 0, content: (
+      ),
+    },
+    {
+      visible: true,
+      hasData: pendingList.length > 0,
+      content: (
         <Card key="pending" className="gap-0 py-0">
           <CardHeader className="flex flex-row items-center justify-between border-b py-3">
             <CardTitle className="text-base">Chờ duyệt</CardTitle>
@@ -144,8 +189,10 @@ export function DashboardPage() {
             </ul>
           </CardContent>
         </Card>
-    ) },
-  ].filter((panel) => panel.visible)
+      ),
+    },
+  ]
+    .filter((panel) => panel.visible)
     .sort((a, b) => Number(b.hasData) - Number(a.hasData));
 
   return (
@@ -157,7 +204,9 @@ export function DashboardPage() {
 
       {/* Số liệu nhanh (ED-02) */}
       <div className={statGridClass}>
-        {stats.map((stat) => <StatCard key={stat.label} {...stat} />)}
+        {stats.map((stat) => (
+          <StatCard key={stat.label} {...stat} />
+        ))}
       </div>
 
       {/* Lối tắt tạo mới (ED-02) */}

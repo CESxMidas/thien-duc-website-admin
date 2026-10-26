@@ -199,7 +199,7 @@ describe("ProjectsPage — huy hiệu trạng thái xuất bản", () => {
       within(row("Dự án đã lên lịch")).getByText("Đã lên lịch"),
     ).toBeInTheDocument();
     expect(
-      within(row("Dự án tới giờ")).getByText("Đã đến giờ đăng"),
+      within(row("Dự án tới giờ")).getByText("Đã đăng theo lịch"),
     ).toBeInTheDocument();
     expect(
       within(row("Dự án đã đăng")).getByText("Đã đăng"),
@@ -213,13 +213,11 @@ describe("ProjectsPage — huy hiệu trạng thái xuất bản", () => {
     ).toBeInTheDocument();
   });
 
-  it("dự án tới giờ nói đúng sự thật: đã công khai, đang chờ đồng bộ", () => {
+  it("dự án tới giờ hiển thị mốc đăng và trạng thái đã đăng theo lịch", () => {
     renderPage();
     const dueRow = row("Dự án tới giờ");
 
-    expect(
-      within(dueRow).getByText("Đã hiển thị công khai, đang chờ đồng bộ"),
-    ).toBeInTheDocument();
+    expect(within(dueRow).getByText(/13\/08\/2026/)).toBeInTheDocument();
     expect(within(dueRow).queryByText("Chờ duyệt")).toBeNull();
   });
 
@@ -290,6 +288,7 @@ describe("ProjectsPage — ma trận thao tác của ADMIN/SUPER_ADMIN", () => {
     expect(labels).not.toContain("Huỷ lịch");
     expect(labels).not.toContain("Lên lịch");
     expect(labels).toContain("Trả về nháp");
+    expect(labels).not.toContain("Duyệt & đăng");
   });
 
   it("dự án đang đăng: không có thao tác lịch nào", () => {
@@ -413,7 +412,8 @@ describe("ProjectsPage — luồng đặt / đổi / huỷ lịch", () => {
     schedulePublication.mockRejectedValueOnce(
       new ApiRequestError(409, {
         code: "CONFLICT",
-        message: "Dự án này đã từng được đăng nên không đặt lịch đăng lại được.",
+        message:
+          "Dự án này đã từng được đăng nên không đặt lịch đăng lại được.",
       }),
     );
     const user = renderPage();
@@ -434,11 +434,11 @@ describe("ProjectsPage — luồng đặt / đổi / huỷ lịch", () => {
 });
 
 describe("ProjectsPage — bộ lọc theo trạng thái đăng", () => {
-  it('"Đã lên lịch" gộp cả dự án đã tới hạn, và đếm đúng', () => {
+  it("dự án tới hạn được đếm vào Đã đăng, không còn Đã lên lịch", () => {
     renderPage();
 
     expect(
-      screen.getByRole("button", { name: "Đã lên lịch (2)" }),
+      screen.getByRole("button", { name: "Đã lên lịch (1)" }),
     ).toBeInTheDocument();
     // Dự án tới giờ KHÔNG bị đếm vào hàng chờ duyệt.
     expect(
@@ -449,10 +449,10 @@ describe("ProjectsPage — bộ lọc theo trạng thái đăng", () => {
   it("lọc rồi thì bảng chỉ còn dự án có lịch", async () => {
     const user = renderPage();
 
-    await user.click(screen.getByRole("button", { name: "Đã lên lịch (2)" }));
+    await user.click(screen.getByRole("button", { name: "Đã lên lịch (1)" }));
 
     expect(screen.queryByText("Dự án nháp")).toBeNull();
-    expect(screen.getByText("Dự án tới giờ")).toBeInTheDocument();
+    expect(screen.queryByText("Dự án tới giờ")).not.toBeInTheDocument();
     expect(screen.getByText("Dự án đã lên lịch")).toBeInTheDocument();
   });
 });

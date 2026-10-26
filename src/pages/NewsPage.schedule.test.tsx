@@ -8,7 +8,7 @@
  *  3. Luồng đặt / đổi / huỷ lịch gọi đúng route lệnh với đúng chuỗi instant.
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { render, screen, within } from "@testing-library/react";
+import { act, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -50,7 +50,9 @@ vi.mock("@/lib/api/queries", () => {
 });
 
 vi.mock("@/context/AuthContext", () => ({
-  useAuth: () => ({ user: { id: "u1", name: "A", email: "a@b.c", role: role.current } }),
+  useAuth: () => ({
+    user: { id: "u1", name: "A", email: "a@b.c", role: role.current },
+  }),
 }));
 
 vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
@@ -180,7 +182,7 @@ describe("NewsPage — huy hiệu trạng thái", () => {
       within(row("Bài đã lên lịch")).getByText("Đã lên lịch"),
     ).toBeInTheDocument();
     expect(
-      within(row("Bài tới giờ")).getByText("Đã đến giờ đăng"),
+      within(row("Bài tới giờ")).getByText("Đã đăng theo lịch"),
     ).toBeInTheDocument();
     expect(within(row("Bài đã đăng")).getByText("Đã đăng")).toBeInTheDocument();
   });
@@ -192,13 +194,11 @@ describe("NewsPage — huy hiệu trạng thái", () => {
     ).toBeInTheDocument();
   });
 
-  it("bài tới giờ nói đúng sự thật: đã công khai, đang chờ đồng bộ", () => {
+  it("bài tới giờ hiển thị mốc đăng, không đưa chi tiết đồng bộ vào UI", () => {
     renderPage();
     const scheduledRow = row("Bài tới giờ");
 
-    expect(
-      within(scheduledRow).getByText("Đã hiển thị công khai, đang chờ đồng bộ"),
-    ).toBeInTheDocument();
+    expect(within(scheduledRow).getByText(/13\/08\/2026/)).toBeInTheDocument();
     // KHÔNG được nói "Chờ duyệt": backend đã cho bài này ra công khai.
     expect(within(scheduledRow).queryByText("Chờ duyệt")).toBeNull();
   });
@@ -251,6 +251,7 @@ describe("NewsPage — ma trận thao tác của ADMIN/SUPER_ADMIN", () => {
     expect(labels).not.toContain("Huỷ lịch");
     expect(labels).not.toContain("Lên lịch");
     expect(labels).toContain("Trả về nháp");
+    expect(labels).not.toContain("Duyệt & đăng");
   });
 
   it("bài đang đăng: không có thao tác lịch nào", () => {
@@ -329,7 +330,8 @@ describe("NewsPage — luồng đặt lịch", () => {
     schedulePublication.mockRejectedValueOnce(
       new ApiRequestError(409, {
         code: "CONFLICT",
-        message: "Bài viết này đã từng được đăng nên không đặt lịch đăng lại được.",
+        message:
+          "Bài viết này đã từng được đăng nên không đặt lịch đăng lại được.",
       }),
     );
     const user = renderPage();
@@ -358,7 +360,9 @@ describe("NewsPage — đổi lịch, huỷ lịch, đăng ngay", () => {
     );
     const dialog = await screen.findByRole("dialog");
 
-    expect(within(dialog).getByLabelText("Ngày đăng")).toHaveValue("2026-08-20");
+    expect(within(dialog).getByLabelText("Ngày đăng")).toHaveValue(
+      "2026-08-20",
+    );
     expect(within(dialog).getByLabelText("Giờ đăng")).toHaveValue("08:00");
     expect(within(dialog).getByText("Đổi lịch đăng bài")).toBeInTheDocument();
   });
@@ -407,32 +411,60 @@ describe("NewsPage — đổi lịch, huỷ lịch, đăng ngay", () => {
 });
 
 describe("NewsPage — bộ lọc theo trạng thái", () => {
-  it('"Đã lên lịch" gộp cả bài đã tới hạn, và đếm đúng', () => {
+  it("bài đã tới hạn nằm trong Đã đăng, không còn ở Đã lên lịch hoặc chờ duyệt", () => {
     renderPage();
     expect(
-      screen.getByRole("button", { name: "Đã lên lịch (2)" }),
+      screen.getByRole("button", { name: "Đã lên lịch (1)" }),
     ).toBeInTheDocument();
     // Bài tới giờ KHÔNG bị đếm vào hàng chờ duyệt.
     expect(
       screen.getByRole("button", { name: "Chờ duyệt (1)" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Đã đăng (2)" }),
     ).toBeInTheDocument();
   });
 
   it("lọc rồi thì bảng chỉ còn bài có lịch, gần nhất lên trước", async () => {
     const user = renderPage();
 
-    await user.click(screen.getByRole("button", { name: "Đã lên lịch (2)" }));
+    await user.click(screen.getByRole("button", { name: "Đã lên lịch (1)" }));
 
     expect(screen.queryByText("Bài nháp")).toBeNull();
-    expect(screen.getByText("Bài tới giờ")).toBeInTheDocument();
+    expect(screen.queryByText("Bài tới giờ")).not.toBeInTheDocument();
     expect(screen.getByText("Bài đã lên lịch")).toBeInTheDocument();
 
     const titles = screen
       .getAllByRole("row")
       .slice(1)
       .map((tableRow) => within(tableRow).getAllByRole("cell")[0].textContent);
-    // PAST (16:00 hôm nay) đứng trước FUTURE (20/08).
-    expect(titles[0]).toContain("Bài tới giờ");
-    expect(titles[1]).toContain("Bài đã lên lịch");
+    expect(titles).toHaveLength(1);
+    expect(titles[0]).toContain("Bài đã lên lịch");
   });
+});
+
+it("tự chuyển sang đã đăng khi tới giờ, không yêu cầu duyệt hoặc đăng thêm", () => {
+  const at = new Date(NOW.getTime() + 1_000).toISOString();
+  newsRows.current = [{ ...scheduledPost, scheduledAt: at, publishedAt: at }];
+  renderPage();
+  expect(
+    within(row("Bài đã lên lịch")).getByRole("button", { name: "Đăng ngay" }),
+  ).toBeInTheDocument();
+  act(() => vi.advanceTimersByTime(1_000));
+  const current = within(row("Bài đã lên lịch"));
+  expect(current.getByText("Đã đăng theo lịch")).toHaveClass(
+    "bg-status-success-surface",
+  );
+  expect(
+    current.queryByRole("button", {
+      name: /Duyệt|Đăng ngay|Huỷ lịch|Đổi lịch/,
+    }),
+  ).not.toBeInTheDocument();
+  expect(
+    screen.getByRole("button", { name: "Đã đăng (1)" }),
+  ).toBeInTheDocument();
+  expect(
+    screen.getByRole("button", { name: "Chờ duyệt (0)" }),
+  ).toBeInTheDocument();
+  expect(updateStatus).not.toHaveBeenCalled();
 });
