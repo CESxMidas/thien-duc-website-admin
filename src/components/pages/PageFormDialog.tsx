@@ -1,3 +1,4 @@
+import { slugify } from "@/lib/slugify";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -31,10 +32,7 @@ import { canScheduleRole } from "@/lib/news-schedule";
 import { formatVietnamSentence } from "@/lib/vietnam-time";
 import { resolveApiError } from "@/lib/api-error-message";
 import { toBilingualValue } from "@/lib/bilingual";
-import {
-  paragraphsToText,
-  toParagraphPayload,
-} from "@/lib/long-form-content";
+import { paragraphsToText, toParagraphPayload } from "@/lib/long-form-content";
 import type { StaticPage } from "@/types";
 
 interface PageFormDialogProps {
@@ -317,74 +315,90 @@ export function PageFormDialog({ trigger, page }: PageFormDialogProps) {
           </>
         }
       >
-        <form id={formId} onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4" noValidate>
-            <FormField
-              control={form.control}
-              name="slug"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Slug trang nội dung</FormLabel>
-                  <FormControl>
-                    <Input placeholder="gioi-thieu" {...field} disabled={isEdit} />
-                  </FormControl>
-                  <FormDescription>
-                    Website đọc trang theo slug: <code>gioi-thieu</code> và{" "}
-                    <code>lien-he</code> là hai slug đang được dùng.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+        <form
+          id={formId}
+          onSubmit={form.handleSubmit(onSubmit)}
+          className="grid gap-4"
+          noValidate
+        >
+          <FormField
+            control={form.control}
+            name="slug"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Slug trang nội dung</FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder="gioi-thieu"
+                    {...field}
+                    disabled={isEdit}
+                  />
+                </FormControl>
+                <FormDescription>
+                  {!isEdit && "Đường dẫn tự tạo từ tiêu đề. "}
+                  Website đọc trang theo slug: <code>gioi-thieu</code> và{" "}
+                  <code>lien-he</code> là hai slug đang được dùng.
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-            <FormField
-              control={form.control}
-              name="title"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <BilingualField
-                      label={<FormLabel>Tiêu đề trang</FormLabel>}
-                      value={field.value}
-                      onChange={field.onChange}
-                      placeholder={{
-                        vi: "Tổng quan về Công ty Thiên Đức",
-                        en: "About Thien Duc",
-                      }}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+          <FormField
+            control={form.control}
+            name="title"
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <BilingualField
+                    label={<FormLabel>Tiêu đề trang</FormLabel>}
+                    value={field.value}
+                    onChange={(value) => {
+                      field.onChange(value);
+                      if (!isEdit && !form.getFieldState("slug").isDirty) {
+                        form.setValue("slug", slugify(value.vi), {
+                          shouldValidate: form.formState.isSubmitted,
+                        });
+                      }
+                    }}
+                    placeholder={{
+                      vi: "Tổng quan về Công ty Thiên Đức",
+                      en: "About Thien Duc",
+                    }}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-            <FormField
-              control={form.control}
-              name="content"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <BilingualField
-                      label={<FormLabel>Nội dung trang</FormLabel>}
-                      multiline
-                      rows={8}
-                      value={field.value}
-                      onChange={field.onChange}
-                      placeholder={{
-                        vi: "Đoạn đầu làm mô tả dưới tiêu đề trang. Các đoạn sau là nội dung chính.",
-                        en: "The first paragraph becomes the page intro. Later paragraphs become the main body.",
-                      }}
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    Cách nhau một dòng trống để tách đoạn. Đoạn đầu tiên hiển thị
-                    làm mô tả dưới tiêu đề trang, các đoạn sau nằm trong phần nội
-                    dung. Bản tiếng Anh nên giữ đúng số đoạn như tiếng Việt.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
+          <FormField
+            control={form.control}
+            name="content"
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <BilingualField
+                    label={<FormLabel>Nội dung trang</FormLabel>}
+                    multiline
+                    rows={8}
+                    value={field.value}
+                    onChange={field.onChange}
+                    placeholder={{
+                      vi: "Đoạn đầu làm mô tả dưới tiêu đề trang. Các đoạn sau là nội dung chính.",
+                      en: "The first paragraph becomes the page intro. Later paragraphs become the main body.",
+                    }}
+                  />
+                </FormControl>
+                <FormDescription>
+                  Cách nhau một dòng trống để tách đoạn. Đoạn đầu tiên hiển thị
+                  làm mô tả dưới tiêu đề trang, các đoạn sau nằm trong phần nội
+                  dung. Bản tiếng Anh nên giữ đúng số đoạn như tiếng Việt.
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         </form>
       </SplitModal>
 

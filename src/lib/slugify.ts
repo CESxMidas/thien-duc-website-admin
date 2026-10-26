@@ -12,14 +12,18 @@
  * tay TRƯỚC khi chuẩn hoá.
  */
 export function slugify(input: string): string {
-  return input
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "") // bỏ dấu thanh + dấu mũ (ắ → a, ế → e)
-    .replace(/đ/g, "d")
-    .replace(/Đ/g, "D")
-    .toLowerCase()
-    // Mọi cụm ký tự không phải chữ/số → MỘT gạch ngang. Gộp luôn ở bước này nên
-    // không bao giờ sinh ra hai gạch liền ("A & B" → "a-b", không phải "a--b").
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, ""); // bỏ gạch thừa ở hai đầu
+  return (
+    input
+      .normalize("NFD")
+      .replace(/[̀-ͯ]/g, "") // bỏ dấu thanh + dấu mũ (ắ → a, ế → e)
+      .replace(/đ/g, "d")
+      .replace(/Đ/g, "D")
+      .toLowerCase()
+      // Mọi cụm ký tự không phải chữ/số → MỘT gạch ngang. Gộp luôn ở bước này nên
+      // không bao giờ sinh ra hai gạch liền ("A & B" → "a-b", không phải "a--b").
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 160)
+      .replace(/-+$/g, "")
+  ); // giữ trong giới hạn URL và bỏ gạch thừa ở cuối
 }

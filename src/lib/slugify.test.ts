@@ -7,6 +7,11 @@ import { SLUG_PATTERN } from "./form-validation";
  * mọi kết quả phải hợp lệ ngay từ đầu — không có cơ hội sửa sau.
  */
 describe("slugify", () => {
+  it("giới hạn đường dẫn tự tạo ở 160 ký tự và không kết thúc bằng dấu gạch", () => {
+    const slug = slugify("Thiên Đức ".repeat(100));
+    expect(slug.length).toBeLessThanOrEqual(160);
+    expect(slug).toMatch(/^[a-z0-9]+(?:-[a-z0-9]+)*$/);
+  });
   it("bỏ dấu thanh và dấu mũ tiếng Việt", () => {
     expect(slugify("Tin dự án")).toBe("tin-du-an");
     expect(slugify("Tin thị trường")).toBe("tin-thi-truong");

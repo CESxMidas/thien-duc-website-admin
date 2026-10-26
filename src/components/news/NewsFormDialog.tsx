@@ -1,3 +1,4 @@
+import { slugify } from "@/lib/slugify";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
@@ -518,7 +519,14 @@ export function NewsFormDialog({ trigger, post }: NewsFormDialogProps) {
                   <BilingualField
                     label={<FormLabel>Tiêu đề bài viết</FormLabel>}
                     value={field.value}
-                    onChange={field.onChange}
+                    onChange={(value) => {
+                      field.onChange(value);
+                      if (!isEdit && !form.getFieldState("slug").isDirty) {
+                        form.setValue("slug", slugify(value.vi), {
+                          shouldValidate: form.formState.isSubmitted,
+                        });
+                      }
+                    }}
                     placeholder={{
                       vi: "Lễ khởi công Fancy Tower",
                       en: "Fancy Tower groundbreaking ceremony",
@@ -540,7 +548,9 @@ export function NewsFormDialog({ trigger, post }: NewsFormDialogProps) {
                   <Input placeholder="le-khoi-cong-fancy-tower" {...field} />
                 </FormControl>
                 <FormDescription>
-                  Bài đã đăng thì đổi đường dẫn sẽ làm hỏng link cũ.
+                  {isEdit
+                    ? "Bài đã đăng thì đổi đường dẫn sẽ làm hỏng link cũ."
+                    : "Tự tạo từ tiêu đề bài viết. Bạn có thể chỉnh lại nếu cần."}
                 </FormDescription>
                 <FormMessage />
               </FormItem>

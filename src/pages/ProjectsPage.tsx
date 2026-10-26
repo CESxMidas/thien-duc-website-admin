@@ -1,3 +1,4 @@
+import { ContentOrderDialog } from "@/components/content/ContentOrderDialog";
 import { useState } from "react";
 import { toast } from "sonner";
 import {
@@ -386,13 +387,23 @@ export function ProjectsPage() {
         title="Dự án"
         description="Quản lý dự án, hạng mục con và thư viện ảnh."
         actions={
-          <ProjectFormDialog
-            trigger={
-              <Button>
-                <Plus className="size-4" /> Tạo dự án
-              </Button>
-            }
-          />
+          <div className="flex flex-wrap gap-2">
+            <ContentOrderDialog
+              collection="projects"
+              items={projects.map((item) => ({
+                id: item.id,
+                title: item.title.vi,
+              }))}
+              disabled={isLoading}
+            />
+            <ProjectFormDialog
+              trigger={
+                <Button>
+                  <Plus className="size-4" /> Tạo dự án
+                </Button>
+              }
+            />
+          </div>
         }
       />
 

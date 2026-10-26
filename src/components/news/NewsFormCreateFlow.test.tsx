@@ -80,7 +80,9 @@ vi.mock("@/lib/api/queries", () => {
 });
 
 vi.mock("@/context/AuthContext", () => ({
-  useAuth: () => ({ user: { id: "u1", name: "A", email: "a@b.c", role: role.current } }),
+  useAuth: () => ({
+    user: { id: "u1", name: "A", email: "a@b.c", role: role.current },
+  }),
 }));
 
 const toastSuccess = vi.fn();
@@ -157,6 +159,7 @@ async function fillValidForm(
     within(dialog).getByRole("textbox", { name: "Tóm tắt bài viết" }),
     "Tóm tắt bài mới đủ dài.",
   );
+  await user.clear(within(dialog).getByLabelText("Đường dẫn bài viết"));
   await user.type(
     within(dialog).getByLabelText("Đường dẫn bài viết"),
     "slug-nguoi-dung-go",
@@ -335,7 +338,9 @@ describe("tạo + đặt lịch — các lối hỏng", () => {
     await fillValidForm(user, dialog);
     await user.click(within(dialog).getByRole("button", { name: "Đặt lịch" }));
     const scheduleDialog = await pickSchedule(user, false);
-    await user.click(within(scheduleDialog).getByRole("button", { name: "Hủy" }));
+    await user.click(
+      within(scheduleDialog).getByRole("button", { name: "Hủy" }),
+    );
 
     await waitFor(() =>
       expect(
@@ -350,9 +355,8 @@ describe("tạo + đặt lịch — các lối hỏng", () => {
     // modal cùng tồn tại trong khoảnh khắc chuyển tiếp, vừa không nói được
     // form NÀO còn mở — mà đó chính là điều lỗi này làm hỏng.
     const createDialog = screen.getByRole("dialog", { name: "Viết tin mới" });
-    const slugField = within(createDialog).getByDisplayValue(
-      "slug-nguoi-dung-go",
-    );
+    const slugField =
+      within(createDialog).getByDisplayValue("slug-nguoi-dung-go");
     // Và vẫn thao tác được: hai modal chồng nhau dễ để lại khoá con trỏ / bẫy
     // tiêu điểm của lớp vừa đóng, khiến form dưới nhìn thấy mà không gõ được.
     await user.type(slugField, "-2");
@@ -395,7 +399,9 @@ describe("tạo + đặt lịch — các lối hỏng", () => {
     expect(schedulePublication).not.toHaveBeenCalled();
     expect(toastError.mock.calls[0][0]).toContain("Slug bài viết đã tồn tại");
     const stillOpen = await screen.findByRole("dialog");
-    expect(within(stillOpen).getByDisplayValue("slug-nguoi-dung-go")).toBeInTheDocument();
+    expect(
+      within(stillOpen).getByDisplayValue("slug-nguoi-dung-go"),
+    ).toBeInTheDocument();
   });
 
   /**

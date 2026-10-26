@@ -1,3 +1,4 @@
+import { slugify } from "@/lib/slugify";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -69,7 +70,10 @@ function toFormValues(project?: Project): ProjectFormValues {
   };
 }
 
-export function ProjectFormDialog({ trigger, project }: ProjectFormDialogProps) {
+export function ProjectFormDialog({
+  trigger,
+  project,
+}: ProjectFormDialogProps) {
   const isEdit = project !== undefined;
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
@@ -380,7 +384,14 @@ export function ProjectFormDialog({ trigger, project }: ProjectFormDialogProps) 
                   <BilingualField
                     label={<FormLabel>Tên dự án</FormLabel>}
                     value={field.value}
-                    onChange={field.onChange}
+                    onChange={(value) => {
+                      field.onChange(value);
+                      if (!isEdit && !form.getFieldState("slug").isDirty) {
+                        form.setValue("slug", slugify(value.vi), {
+                          shouldValidate: form.formState.isSubmitted,
+                        });
+                      }
+                    }}
                     placeholder={{
                       vi: "Khu đô thị Hưng Phú",
                       en: "Hung Phu Urban Area",
@@ -401,11 +412,11 @@ export function ProjectFormDialog({ trigger, project }: ProjectFormDialogProps) 
                 <FormControl>
                   <Input placeholder="khu-do-thi-hung-phu" {...field} />
                 </FormControl>
-                {isEdit && (
-                  <FormDescription>
-                    Đổi slug sẽ làm hỏng các liên kết cũ tới dự án này.
-                  </FormDescription>
-                )}
+                <FormDescription>
+                  {isEdit
+                    ? "Đổi slug sẽ làm hỏng các liên kết cũ tới dự án này."
+                    : "Tự tạo từ tên dự án. Bạn có thể chỉnh lại nếu cần."}
+                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}

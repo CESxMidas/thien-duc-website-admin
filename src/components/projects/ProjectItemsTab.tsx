@@ -1,10 +1,12 @@
+import { slugify } from "@/lib/slugify";
+import { ContentOrderDialog } from "@/components/content/ContentOrderDialog";
 // Tab "Hạng mục" của modal chi tiết dự án: các hạng mục con (`project_items`)
 // như Fancy Tower, Hưng Phú Mall nằm trong Khu đô thị Hưng Phú.
 //
 // Form thêm/sửa hiện ngay trong tab thay vì mở thêm một dialog lồng — modal chi
 // tiết đã là một lớp rồi, chồng thêm lớp nữa khiến người dùng mất dấu.
 
-import { useState, type CSSProperties } from "react";
+import { useRef, useState, type CSSProperties } from "react";
 import { toast } from "sonner";
 import {
   ChevronDown,
@@ -170,7 +172,10 @@ export function ProjectItemsTab({ project }: { project: ProjectDetail }) {
   const isEdit = editingSlug !== null && editingSlug !== "";
   const saving = createItem.isPending || updateItem.isPending;
 
+  const slugTouched = useRef(false);
+
   function openCreate() {
+    slugTouched.current = false;
     setForm(emptyForm());
     setContentDirty(CLEAN_CONTENT);
     setError(null);
@@ -178,6 +183,7 @@ export function ProjectItemsTab({ project }: { project: ProjectDetail }) {
   }
 
   function openEdit(item: ProjectItem) {
+    slugTouched.current = true;
     setForm(toFormState(item));
     setContentDirty(CLEAN_CONTENT);
     setError(null);
@@ -360,7 +366,13 @@ export function ProjectItemsTab({ project }: { project: ProjectDetail }) {
                 label={<Label htmlFor="item-title">Tên hạng mục</Label>}
                 id="item-title"
                 value={form.title}
-                onChange={(title) => setForm({ ...form, title })}
+                onChange={(title) =>
+                  setForm({
+                    ...form,
+                    title,
+                    slug: slugTouched.current ? form.slug : slugify(title.vi),
+                  })
+                }
                 placeholder={{
                   vi: "Chung cư Fancy Tower",
                   en: "Fancy Tower apartments",
@@ -372,7 +384,10 @@ export function ProjectItemsTab({ project }: { project: ProjectDetail }) {
               <Input
                 id="item-slug"
                 value={form.slug}
-                onChange={(e) => setForm({ ...form, slug: e.target.value })}
+                onChange={(e) => {
+                  slugTouched.current = true;
+                  setForm({ ...form, slug: e.target.value });
+                }}
                 placeholder="fancy-tower"
               />
             </div>
@@ -380,7 +395,11 @@ export function ProjectItemsTab({ project }: { project: ProjectDetail }) {
 
           <div className="space-y-2">
             <BilingualField
-              label={<Label htmlFor="item-summary">Mô tả ngắn cho thẻ hạng mục</Label>}
+              label={
+                <Label htmlFor="item-summary">
+                  Mô tả ngắn cho thẻ hạng mục
+                </Label>
+              }
               id="item-summary"
               multiline
               rows={2}
@@ -528,7 +547,11 @@ export function ProjectItemsTab({ project }: { project: ProjectDetail }) {
                     <div className="min-w-0 flex-1 space-y-2">
                       <div className="space-y-1">
                         <BilingualField
-                          label={<Label className="text-xs text-slate">Tên thông số</Label>}
+                          label={
+                            <Label className="text-xs text-slate">
+                              Tên thông số
+                            </Label>
+                          }
                           value={fact.label}
                           onChange={(label) =>
                             editQuickFacts((current) =>
@@ -542,7 +565,11 @@ export function ProjectItemsTab({ project }: { project: ProjectDetail }) {
                       </div>
                       <div className="space-y-1">
                         <BilingualField
-                          label={<Label className="text-xs text-slate">Giá trị thông số</Label>}
+                          label={
+                            <Label className="text-xs text-slate">
+                              Giá trị thông số
+                            </Label>
+                          }
                           multiline
                           rows={2}
                           value={fact.value}
@@ -621,6 +648,14 @@ export function ProjectItemsTab({ project }: { project: ProjectDetail }) {
         </form>
       )}
 
+      <ContentOrderDialog
+        collection={`projects/${encodeURIComponent(project.slug)}/items`}
+        items={project.items.map((item) => ({
+          id: item.id,
+          title: item.title.vi,
+        }))}
+      />
+
       {project.items.length === 0 ? (
         <p className="py-8 text-center text-sm text-slate">
           Dự án chưa có hạng mục con nào.
@@ -630,62 +665,61 @@ export function ProjectItemsTab({ project }: { project: ProjectDetail }) {
           {project.items.map((item, index) => {
             const isActive = item.isActive !== false;
             return (
-            <li
-              key={item.id}
-              style={{ "--row-index": Math.min(index, 7) } as CSSProperties}
-              className="row-in flex items-center gap-3 rounded-xl border border-line p-3 transition-colors duration-150 hover:border-line-strong"
-            >
-              <div className="min-w-0 flex-1">
-                <div className="flex flex-wrap items-center gap-2">
-                  <p className="truncate text-sm font-medium text-ink">
-                    {item.title.vi}
+              <li
+                key={item.id}
+                style={{ "--row-index": Math.min(index, 7) } as CSSProperties}
+                className="row-in flex items-center gap-3 rounded-xl border border-line p-3 transition-colors duration-150 hover:border-line-strong"
+              >
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="truncate text-sm font-medium text-ink">
+                      {item.title.vi}
+                    </p>
+                    <Badge variant={isActive ? "green" : "gray"}>
+                      {isActive ? "Đang hiện" : "Đang ẩn"}
+                    </Badge>
+                  </div>
+                  <p className="truncate text-xs text-slate">
+                    /{item.slug}
+                    {" · "}
+                    {item.status
+                      ? projectStatusLabel[item.status]
+                      : `Theo dự án (${projectStatusLabel[project.status]})`}
                   </p>
-                  <Badge variant={isActive ? "green" : "gray"}>
-                    {isActive ? "Đang hiện" : "Đang ẩn"}
-                  </Badge>
                 </div>
-                <p className="truncate text-xs text-slate">
-                  /{item.slug}
-                  {" · "}
-                  {item.status
-                    ? projectStatusLabel[item.status]
-                    : `Theo dự án (${projectStatusLabel[project.status]})`}
-                </p>
-              </div>
-              <div className="flex shrink-0 gap-1">
-                {canEdit && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => openEdit(item)}
-                  >
-                    <Pencil className="size-4" /> Sửa
-                  </Button>
-                )}
-                {canDelete && (
-                  isActive ? (
+                <div className="flex shrink-0 gap-1">
+                  {canEdit && (
                     <Button
                       variant="ghost"
                       size="sm"
-                      aria-label="Ẩn hạng mục"
-                      className="text-red-600 hover:bg-red-50 hover:text-red-700"
-                      onClick={() => setToDelete(item)}
+                      onClick={() => openEdit(item)}
                     >
-                      <EyeOff className="size-4" />
+                      <Pencil className="size-4" /> Sửa
                     </Button>
-                  ) : (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      aria-label="Hiện hạng mục"
-                      onClick={() => void showItem(item)}
-                    >
-                      <Eye className="size-4" />
-                    </Button>
-                  )
-                )}
-              </div>
-            </li>
+                  )}
+                  {canDelete &&
+                    (isActive ? (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        aria-label="Ẩn hạng mục"
+                        className="text-red-600 hover:bg-red-50 hover:text-red-700"
+                        onClick={() => setToDelete(item)}
+                      >
+                        <EyeOff className="size-4" />
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        aria-label="Hiện hạng mục"
+                        onClick={() => void showItem(item)}
+                      >
+                        <Eye className="size-4" />
+                      </Button>
+                    ))}
+                </div>
+              </li>
             );
           })}
         </ul>

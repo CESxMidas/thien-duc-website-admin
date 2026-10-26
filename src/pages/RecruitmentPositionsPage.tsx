@@ -1,5 +1,13 @@
+import { ContentOrderDialog } from "@/components/content/ContentOrderDialog";
 import { useMemo, useState } from "react";
-import { BriefcaseBusiness, Loader2, Pencil, Plus, Send, Undo2 } from "lucide-react";
+import {
+  BriefcaseBusiness,
+  Loader2,
+  Pencil,
+  Plus,
+  Send,
+  Undo2,
+} from "lucide-react";
 import { toast } from "sonner";
 
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
@@ -9,7 +17,13 @@ import { Button } from "@/components/ui/button";
 import { ContentListCell } from "@/components/ui/ContentListCell";
 import { DataTable, type Column } from "@/components/ui/DataTable";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useAuth } from "@/context/AuthContext";
 import {
   useDeleteRecruitmentPosition,
@@ -19,7 +33,11 @@ import {
 import { resolveApiError } from "@/lib/api-error-message";
 import { canEditPublishableContent } from "@/lib/content-editing";
 import { contentStatusActions } from "@/lib/content-status-actions";
-import { contentStatusLabel, contentStatusTone, formatDateTime } from "@/lib/labels";
+import {
+  contentStatusLabel,
+  contentStatusTone,
+  formatDateTime,
+} from "@/lib/labels";
 import type { ContentStatus, RecruitmentPosition } from "@/types";
 
 type StatusFilter = "ALL" | ContentStatus;
@@ -55,13 +73,9 @@ export function RecruitmentPositionsPage() {
     user?.role === "ADMIN" || user?.role === "SUPER_ADMIN";
   const visiblePositions = useMemo(
     () =>
-      positions
-        .filter((position) => filter === "ALL" || position.status === filter)
-        .sort(
-          (a, b) =>
-            a.order - b.order ||
-            a.title.vi.localeCompare(b.title.vi, "vi"),
-        ),
+      positions.filter(
+        (position) => filter === "ALL" || position.status === filter,
+      ),
     [filter, positions],
   );
 
@@ -217,20 +231,28 @@ export function RecruitmentPositionsPage() {
         title="Vị trí tuyển dụng"
         description="Quản lý thông tin tuyển dụng và trạng thái hiển thị."
         actions={
-          <RecruitmentPositionFormDialog
-            trigger={
-              <Button>
-                <Plus className="size-4" /> Thêm vị trí
-              </Button>
-            }
-          />
+          <div className="flex flex-wrap gap-2">
+            <ContentOrderDialog
+              collection="recruitment-positions"
+              items={positions.map((item) => ({
+                id: item.id,
+                title: item.title.vi,
+              }))}
+              disabled={isLoading}
+            />
+            <RecruitmentPositionFormDialog
+              trigger={
+                <Button>
+                  <Plus className="size-4" /> Thêm vị trí
+                </Button>
+              }
+            />
+          </div>
         }
       />
 
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-slate">
-          {visiblePositions.length} vị trí
-        </p>
+        <p className="text-sm text-slate">{visiblePositions.length} vị trí</p>
         <Select
           value={filter}
           onValueChange={(value) => setFilter(value as StatusFilter)}

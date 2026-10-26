@@ -1,3 +1,4 @@
+import { ContentOrderDialog } from "@/components/content/ContentOrderDialog";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import {
@@ -362,22 +363,32 @@ export function NewsPage() {
             : "Chuyên mục và bài viết."
         }
         actions={
-          <div className="flex gap-2">
-            {/* Quản lý chuyên mục là một TRANG riêng (`/tin-tuc/chuyen-muc`),
+          <div className="flex flex-wrap gap-2">
+            <ContentOrderDialog
+              collection="news"
+              items={news.map((item) => ({
+                id: item.id,
+                title: item.title.vi,
+              }))}
+              disabled={isLoading}
+            />
+            <div className="flex gap-2">
+              {/* Quản lý chuyên mục là một TRANG riêng (`/tin-tuc/chuyen-muc`),
                 không phải modal: màn đó cần hộp thoại xác nhận xóa, mà đặt
                 Dialog trong Dialog làm focus và phím ESC nhập nhằng. */}
-            <Button variant="outline" asChild>
-              <Link to="/tin-tuc/chuyen-muc">
-                <Tags className="size-4" /> Chuyên mục
-              </Link>
-            </Button>
-            <NewsFormDialog
-              trigger={
-                <Button>
-                  <Plus className="size-4" /> Viết tin
-                </Button>
-              }
-            />
+              <Button variant="outline" asChild>
+                <Link to="/tin-tuc/chuyen-muc">
+                  <Tags className="size-4" /> Chuyên mục
+                </Link>
+              </Button>
+              <NewsFormDialog
+                trigger={
+                  <Button>
+                    <Plus className="size-4" /> Viết tin
+                  </Button>
+                }
+              />
+            </div>
           </div>
         }
       />
@@ -458,8 +469,8 @@ export function NewsPage() {
         description={
           pendingDelete ? (
             <>
-              Bài <strong>{pendingDelete.title.vi}</strong> sẽ chuyển về nháp
-              và không còn hiển thị công khai. Dữ liệu vẫn được giữ lại.
+              Bài <strong>{pendingDelete.title.vi}</strong> sẽ chuyển về nháp và
+              không còn hiển thị công khai. Dữ liệu vẫn được giữ lại.
             </>
           ) : null
         }
