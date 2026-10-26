@@ -11,7 +11,7 @@ export function Topbar({ onMenu }: { onMenu: () => void }) {
   const menu = usePresence(menuOpen);
 
   return (
-    <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-line bg-white/90 px-4 backdrop-blur lg:px-6">
+    <header className="sticky top-0 z-20 flex h-16 shrink-0 items-center justify-between border-b border-line bg-white/90 px-4 backdrop-blur lg:px-6">
       <button
         className="rounded-md p-2 text-slate hover:bg-cream lg:hidden"
         onClick={onMenu}

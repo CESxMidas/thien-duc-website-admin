@@ -55,13 +55,13 @@ export function Sidebar({
           được. visibility không nội suy — trình duyệt giữ `visible` tới hết
           transition rồi mới ẩn, đúng thứ ta cần. */}
       <aside
-        className={`fixed inset-y-0 left-0 z-40 flex w-64 flex-col bg-espresso text-white transition-[transform,visibility] lg:visible lg:static lg:translate-x-0 lg:transition-none ${
+        className={`fixed inset-y-0 left-0 z-40 flex w-64 shrink-0 flex-col overflow-hidden bg-espresso text-white transition-[transform,visibility] lg:visible lg:static lg:h-full lg:translate-x-0 lg:transition-none ${
           open
             ? "visible translate-x-0 duration-200 ease-enter"
             : "invisible -translate-x-full duration-150 ease-exit"
         }`}
       >
-        <div className="flex h-16 items-center justify-between border-b border-white/10 px-5">
+        <div className="flex h-16 shrink-0 items-center justify-between border-b border-white/10 px-5">
           <div className="flex items-center gap-2.5">
             {/* Logo chung với FE public (public/images/brand/logo-thien-duc.png) —
                 cùng một file thương hiệu, khác nền hộp cho phù hợp sidebar tối. */}
@@ -97,7 +97,7 @@ export function Sidebar({
         {/* `space-y-2` + `py-2.5`: giãn các mục chiếm hết chiều cao cột, không
             dồn cục lên trên để lại khoảng trống lớn dưới đáy. Màn hình thấp
             vẫn an toàn nhờ `overflow-y-auto`. */}
-        <nav className="scrollbar-on-dark flex-1 space-y-2 overflow-y-auto px-3 py-5">
+        <nav className="scrollbar-on-dark min-h-0 flex-1 space-y-2 overflow-y-auto overscroll-y-contain px-3 py-5">
           {items.map(({ to, label, icon: Icon }) => (
             <NavLink
               key={to}
@@ -133,7 +133,7 @@ export function Sidebar({
         </nav>
 
         {/* white/40 chỉ đạt ~3.9:1 trên nền tối — giữ /60 cho đủ 4.5:1. */}
-        <p className="border-t border-white/10 px-5 py-4 text-xs text-white/60">
+        <p className="shrink-0 border-t border-white/10 px-5 py-4 text-xs text-white/60">
           Thiên Đức Quản Trị Nội Dung. <br />
         </p>
       </aside>
