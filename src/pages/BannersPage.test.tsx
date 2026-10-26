@@ -341,3 +341,7 @@ describe("BannersPage — nội dung banner đã seed", () => {
     expect(updateBanner).not.toHaveBeenCalled();
   });
 });
+
+vi.mock("@/context/AuthContext", () => ({
+  useAuth: () => ({ user: { role: "ADMIN", canDeleteCms: false } }),
+}));

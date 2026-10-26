@@ -1,3 +1,4 @@
+import { DeleteContentButton } from "@/components/content/DeleteContentButton";
 import { usePublicationClock } from "@/lib/use-publication-clock";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -293,6 +294,12 @@ export function CooperationPage() {
           className="flex flex-wrap justify-end gap-1"
           onClick={(event) => event.stopPropagation()}
         >
+          <DeleteContentButton
+            kind="cooperation"
+            id={project.id}
+            title={project.name.vi}
+          />
+
           {busyId === project.id && (
             <Loader2 className="size-3.5 animate-spin text-slate" />
           )}

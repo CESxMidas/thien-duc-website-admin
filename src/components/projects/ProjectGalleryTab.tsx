@@ -1,3 +1,4 @@
+import { DeleteContentButton } from "@/components/content/DeleteContentButton";
 // Tab "Hình ảnh" của modal chi tiết dự án: thêm ảnh theo URL, đổi thứ tự hiển
 // thị và xóa ảnh. Ở tab dự án chính chỉ quản lý ảnh chung của dự án; ảnh hạng
 // mục được tách sang từng hạng mục để người dùng không nhầm cấp nội dung.
@@ -96,7 +97,7 @@ export function ProjectGalleryTab({
     ? images.filter((image) => !image.projectItemId)
     : item
       ? images.filter((image) => image.projectItemId === item.id)
-    : images;
+      : images;
   const addImage = useAddGalleryImage();
   const deleteImage = useDeleteGalleryImage();
   const updateImage = useUpdateGalleryImage();
@@ -115,7 +116,9 @@ export function ProjectGalleryTab({
   const [caption, setCaption] = useState("");
   const [itemSlug, setItemSlug] = useState<string>(NO_ITEM);
   const [toDelete, setToDelete] = useState<ProjectGalleryImage | null>(null);
-  const projectImageCount = images.filter((image) => !image.projectItemId).length;
+  const projectImageCount = images.filter(
+    (image) => !image.projectItemId,
+  ).length;
   const itemImageCount = images.length - projectImageCount;
 
   /** Tên hạng mục để dán nhãn lên ảnh — id ảnh chỉ lưu projectItemId. */
@@ -183,7 +186,10 @@ export function ProjectGalleryTab({
     ];
     let visibleIndex = 0;
     const ids = images.map((image) => {
-      if ((projectOnly && image.projectItemId) || (item && image.projectItemId !== item.id)) {
+      if (
+        (projectOnly && image.projectItemId) ||
+        (item && image.projectItemId !== item.id)
+      ) {
         return image.id;
       }
       const id = visibleIds[visibleIndex];
@@ -326,74 +332,81 @@ export function ProjectGalleryTab({
         )}
 
         {canEdit && (
-          <form onSubmit={onAdd} className="space-y-4 border-b border-line pb-4">
-          <div className="space-y-1.5">
-            <div>
-              <Label className="font-display text-sm font-semibold text-ink">
-                Thêm và quản lý ảnh {item ? "hạng mục" : "dự án"}
-              </Label>
-            </div>
-            <MultiImagePickerField
-              value={urls}
-              onChange={setUrls}
-              folder="projects"
-              disabled={isAdding}
-              onUploadStateChange={setIsUploading}
-              footer={
-                <div className="grid items-end gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
-                  <div className="space-y-1.5">
-                    <Label htmlFor="gallery-caption">
-                      Chú thích chung (không bắt buộc)
-                    </Label>
-                    <Input
-                      id="gallery-caption"
-                      disabled={isUploading || isAdding}
-                      value={caption}
-                      onChange={(e) => setCaption(e.target.value)}
-                      placeholder="Phối cảnh mặt tiền"
-                    />
-                  </div>
-                  <Button
-                    type="submit"
-                    className="sm:mb-6"
-                    disabled={urls.length === 0 || isUploading || isAdding}
-                  >
-                    {addImage.isPending ? (
-                      <Loader2 className="size-4 animate-spin" />
-                    ) : (
-                      <Plus className="size-4" />
-                    )}
-                    Thêm ảnh
-                    {urls.length > 0 && (
-                      <span className="rounded-full bg-white/20 px-1.5 text-xs">
-                        {urls.length}
-                      </span>
-                    )}
-                  </Button>
-                </div>
-              }
-            />
-          </div>
-
-          {!projectOnly && !item && (
+          <form
+            onSubmit={onAdd}
+            className="space-y-4 border-b border-line pb-4"
+          >
             <div className="space-y-1.5">
-              <Label>Thuộc hạng mục</Label>
-              <Select value={itemSlug} onValueChange={setItemSlug} disabled={isUploading || isAdding}>
-                <SelectTrigger className="w-64">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={NO_ITEM}>Ảnh chung của dự án</SelectItem>
-                  {project.items.map((item) => (
-                    <SelectItem key={item.id} value={item.slug}>
-                      Ảnh hạng mục: {item.title.vi}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div>
+                <Label className="font-display text-sm font-semibold text-ink">
+                  Thêm và quản lý ảnh {item ? "hạng mục" : "dự án"}
+                </Label>
+              </div>
+              <MultiImagePickerField
+                value={urls}
+                onChange={setUrls}
+                folder="projects"
+                disabled={isAdding}
+                onUploadStateChange={setIsUploading}
+                footer={
+                  <div className="grid items-end gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="gallery-caption">
+                        Chú thích chung (không bắt buộc)
+                      </Label>
+                      <Input
+                        id="gallery-caption"
+                        disabled={isUploading || isAdding}
+                        value={caption}
+                        onChange={(e) => setCaption(e.target.value)}
+                        placeholder="Phối cảnh mặt tiền"
+                      />
+                    </div>
+                    <Button
+                      type="submit"
+                      className="sm:mb-6"
+                      disabled={urls.length === 0 || isUploading || isAdding}
+                    >
+                      {addImage.isPending ? (
+                        <Loader2 className="size-4 animate-spin" />
+                      ) : (
+                        <Plus className="size-4" />
+                      )}
+                      Thêm ảnh
+                      {urls.length > 0 && (
+                        <span className="rounded-full bg-white/20 px-1.5 text-xs">
+                          {urls.length}
+                        </span>
+                      )}
+                    </Button>
+                  </div>
+                }
+              />
             </div>
-          )}
-        </form>
+
+            {!projectOnly && !item && (
+              <div className="space-y-1.5">
+                <Label>Thuộc hạng mục</Label>
+                <Select
+                  value={itemSlug}
+                  onValueChange={setItemSlug}
+                  disabled={isUploading || isAdding}
+                >
+                  <SelectTrigger className="w-64">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={NO_ITEM}>Ảnh chung của dự án</SelectItem>
+                    {project.items.map((item) => (
+                      <SelectItem key={item.id} value={item.slug}>
+                        Ảnh hạng mục: {item.title.vi}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+          </form>
         )}
 
         {visibleImages.length === 0 ? (
@@ -406,110 +419,122 @@ export function ProjectGalleryTab({
               const isActive = image.isActive !== false;
               const isCover = coverImage === image.url;
               return (
-              <li
-                key={image.id}
-                style={{ "--row-index": Math.min(index, 7) } as CSSProperties}
-                className="row-in flex items-center gap-3 rounded-xl border border-line p-2 transition-colors duration-150 hover:border-line-strong"
-              >
-                <GalleryThumb url={image.url} alt={image.caption?.vi ?? ""} />
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm text-ink">
-                    {image.caption?.vi || (
-                      <span className="text-slate italic">
-                        Không có chú thích
-                      </span>
-                    )}
-                  </p>
-                  {/* Chỉ hiện tên file cho gọn; rê chuột xem URL đầy đủ. */}
-                  <p className="truncate text-xs text-slate" title={image.url}>
-                    {image.url.split("/").pop() || image.url}
-                  </p>
-                  <div className="mt-1 flex flex-wrap items-center gap-1.5">
-                    {!projectOnly && (
-                      <Badge variant={image.projectItemId ? "blue" : "gray"}>
-                        {image.projectItemId
-                          ? `Ảnh hạng mục: ${
-                              itemTitleById.get(image.projectItemId) ?? "Hạng mục"
-                            }`
-                          : "Ảnh chung dự án"}
+                <li
+                  key={image.id}
+                  style={{ "--row-index": Math.min(index, 7) } as CSSProperties}
+                  className="row-in flex items-center gap-3 rounded-xl border border-line p-2 transition-colors duration-150 hover:border-line-strong"
+                >
+                  <GalleryThumb url={image.url} alt={image.caption?.vi ?? ""} />
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm text-ink">
+                      {image.caption?.vi || (
+                        <span className="text-slate italic">
+                          Không có chú thích
+                        </span>
+                      )}
+                    </p>
+                    {/* Chỉ hiện tên file cho gọn; rê chuột xem URL đầy đủ. */}
+                    <p
+                      className="truncate text-xs text-slate"
+                      title={image.url}
+                    >
+                      {image.url.split("/").pop() || image.url}
+                    </p>
+                    <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                      {!projectOnly && (
+                        <Badge variant={image.projectItemId ? "blue" : "gray"}>
+                          {image.projectItemId
+                            ? `Ảnh hạng mục: ${
+                                itemTitleById.get(image.projectItemId) ??
+                                "Hạng mục"
+                              }`
+                            : "Ảnh chung dự án"}
+                        </Badge>
+                      )}
+                      <Badge variant={isActive ? "green" : "gray"}>
+                        {isActive ? "Đang hiện" : "Đang ẩn"}
                       </Badge>
-                    )}
-                    <Badge variant={isActive ? "green" : "gray"}>
-                      {isActive ? "Đang hiện" : "Đang ẩn"}
-                    </Badge>
-                    {isCover ? <Badge variant="blue">Ảnh chính</Badge> : null}
+                      {isCover ? <Badge variant="blue">Ảnh chính</Badge> : null}
+                    </div>
                   </div>
-                </div>
-                {canEdit && (
-                  <div className="flex shrink-0 items-center gap-0.5">
-                    <Button
-                      variant={isCover ? "outline" : "ghost"}
-                      size="sm"
-                      aria-label={
-                        isCover
-                          ? "Ảnh này đang là ảnh đại diện"
-                          : "Đặt làm ảnh đại diện"
-                      }
-                      title={
-                        !isActive
-                          ? "Hãy hiện ảnh trước khi đặt làm ảnh đại diện"
-                          : isCover
+                  <DeleteContentButton
+                    kind="project-images"
+                    id={image.id}
+                    title={image.caption?.vi || "Ảnh dự án"}
+                  />
+                  {canEdit && (
+                    <div className="flex shrink-0 items-center gap-0.5">
+                      <Button
+                        variant={isCover ? "outline" : "ghost"}
+                        size="sm"
+                        aria-label={
+                          isCover
                             ? "Ảnh này đang là ảnh đại diện"
-                            : item
-                              ? "Đặt làm ảnh đại diện hạng mục"
-                              : "Đặt làm ảnh đại diện"
-                      }
-                      disabled={
-                        !isActive ||
-                        isCover ||
-                        updateProject.isPending ||
-                        updateItem.isPending
-                      }
-                      onClick={() => void setCoverImage(image)}
-                    >
-                      {isCover ? "Cover" : "Đại diện"}
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      aria-label="Đưa ảnh lên trước"
-                      disabled={index === 0 || reorder.isPending}
-                      onClick={() => void onMove(index, -1)}
-                    >
-                      <ChevronUp className="size-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      aria-label="Đưa ảnh xuống sau"
-                      disabled={index === visibleImages.length - 1 || reorder.isPending}
-                      onClick={() => void onMove(index, 1)}
-                    >
-                      <ChevronDown className="size-4" />
-                    </Button>
-                    {isActive ? (
+                            : "Đặt làm ảnh đại diện"
+                        }
+                        title={
+                          !isActive
+                            ? "Hãy hiện ảnh trước khi đặt làm ảnh đại diện"
+                            : isCover
+                              ? "Ảnh này đang là ảnh đại diện"
+                              : item
+                                ? "Đặt làm ảnh đại diện hạng mục"
+                                : "Đặt làm ảnh đại diện"
+                        }
+                        disabled={
+                          !isActive ||
+                          isCover ||
+                          updateProject.isPending ||
+                          updateItem.isPending
+                        }
+                        onClick={() => void setCoverImage(image)}
+                      >
+                        {isCover ? "Cover" : "Đại diện"}
+                      </Button>
                       <Button
                         variant="ghost"
                         size="sm"
-                        aria-label="Ẩn ảnh"
-                        className="text-red-600 hover:bg-red-50 hover:text-red-700"
-                        onClick={() => setToDelete(image)}
+                        aria-label="Đưa ảnh lên trước"
+                        disabled={index === 0 || reorder.isPending}
+                        onClick={() => void onMove(index, -1)}
                       >
-                        <EyeOff className="size-4" />
+                        <ChevronUp className="size-4" />
                       </Button>
-                    ) : (
                       <Button
                         variant="ghost"
                         size="sm"
-                        aria-label="Hiện ảnh"
-                        onClick={() => void showImage(image)}
+                        aria-label="Đưa ảnh xuống sau"
+                        disabled={
+                          index === visibleImages.length - 1 ||
+                          reorder.isPending
+                        }
+                        onClick={() => void onMove(index, 1)}
                       >
-                        <Eye className="size-4" />
+                        <ChevronDown className="size-4" />
                       </Button>
-                    )}
-                  </div>
-                )}
-              </li>
+                      {isActive ? (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          aria-label="Ẩn ảnh"
+                          className="text-red-600 hover:bg-red-50 hover:text-red-700"
+                          onClick={() => setToDelete(image)}
+                        >
+                          <EyeOff className="size-4" />
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          aria-label="Hiện ảnh"
+                          onClick={() => void showImage(image)}
+                        >
+                          <Eye className="size-4" />
+                        </Button>
+                      )}
+                    </div>
+                  )}
+                </li>
               );
             })}
           </ul>

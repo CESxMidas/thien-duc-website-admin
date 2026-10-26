@@ -69,7 +69,10 @@ vi.mock("@/lib/api/queries", () => {
 /** Mốc "bây giờ" cố định cho cả file: 12:00 ngày 15/09/2026 giờ VN. */
 const NOW = new Date("2026-09-15T05:00:00.000Z");
 
-const base: Omit<Banner, "id" | "title" | "isActive" | "displayFrom" | "displayUntil" | "order"> = {
+const base: Omit<
+  Banner,
+  "id" | "title" | "isActive" | "displayFrom" | "displayUntil" | "order"
+> = {
   image: "/images/banners/home/a.jpg",
   eyebrow: null,
   subtitle: null,
@@ -268,10 +271,14 @@ describe("Form banner — phần “Thời gian hiển thị”", () => {
     }
 
     expect(
-      within(dialog).getByText("Không nhập phần này thì banner có thể hiện ngay sau khi bật."),
+      within(dialog).getByText(
+        "Không nhập phần này thì banner có thể hiện ngay sau khi bật.",
+      ),
     ).toBeInTheDocument();
     expect(
-      within(dialog).getByText("Không nhập phần này thì banner không tự hết hạn."),
+      within(dialog).getByText(
+        "Không nhập phần này thì banner không tự hết hạn.",
+      ),
     ).toBeInTheDocument();
   });
 
@@ -317,7 +324,9 @@ describe("Form banner — phần “Thời gian hiển thị”", () => {
       within(dialog).getByLabelText("Hiển thị từ — giờ"),
       "08:00",
     );
-    await user.click(within(dialog).getByRole("button", { name: "Lưu thay đổi" }));
+    await user.click(
+      within(dialog).getByRole("button", { name: "Lưu thay đổi" }),
+    );
 
     await waitFor(() => expect(updateBanner).toHaveBeenCalledTimes(1));
     const { data } = updateBanner.mock.calls[0][0];
@@ -343,7 +352,9 @@ describe("Form banner — phần “Thời gian hiển thị”", () => {
       within(dialog).getByLabelText("Hiển thị đến — giờ"),
       "23:59",
     );
-    await user.click(within(dialog).getByRole("button", { name: "Lưu thay đổi" }));
+    await user.click(
+      within(dialog).getByRole("button", { name: "Lưu thay đổi" }),
+    );
 
     await waitFor(() => expect(updateBanner).toHaveBeenCalledTimes(1));
     const { data } = updateBanner.mock.calls[0][0];
@@ -355,31 +366,46 @@ describe("Form banner — phần “Thời gian hiển thị”", () => {
 
   /** §19 — xoá biên phải gửi `null` TƯỜNG MINH, không phải bỏ field đi. */
   it.each([
-    ["xoá biên dưới", ["Hiển thị từ — ngày", "Hiển thị từ — giờ"], "displayFrom", "displayUntil"],
-    ["xoá biên trên", ["Hiển thị đến — ngày", "Hiển thị đến — giờ"], "displayUntil", "displayFrom"],
-  ])("%s: gửi null tường minh, biên kia giữ nguyên", async (_label, labels, cleared, kept) => {
-    const user = userEvent.setup();
-    banners.current = [
-      banner({
-        id: "b1",
-        vi: "Banner",
-        displayFrom: "2026-09-01T01:00:00.000Z",
-        displayUntil: "2026-09-30T01:00:00.000Z",
-      }),
-    ];
-    renderPage(<BannersPage />);
-    const dialog = await openEdit(user);
+    [
+      "xoá biên dưới",
+      ["Hiển thị từ — ngày", "Hiển thị từ — giờ"],
+      "displayFrom",
+      "displayUntil",
+    ],
+    [
+      "xoá biên trên",
+      ["Hiển thị đến — ngày", "Hiển thị đến — giờ"],
+      "displayUntil",
+      "displayFrom",
+    ],
+  ])(
+    "%s: gửi null tường minh, biên kia giữ nguyên",
+    async (_label, labels, cleared, kept) => {
+      const user = userEvent.setup();
+      banners.current = [
+        banner({
+          id: "b1",
+          vi: "Banner",
+          displayFrom: "2026-09-01T01:00:00.000Z",
+          displayUntil: "2026-09-30T01:00:00.000Z",
+        }),
+      ];
+      renderPage(<BannersPage />);
+      const dialog = await openEdit(user);
 
-    for (const label of labels) {
-      await user.clear(within(dialog).getByLabelText(label));
-    }
-    await user.click(within(dialog).getByRole("button", { name: "Lưu thay đổi" }));
+      for (const label of labels) {
+        await user.clear(within(dialog).getByLabelText(label));
+      }
+      await user.click(
+        within(dialog).getByRole("button", { name: "Lưu thay đổi" }),
+      );
 
-    await waitFor(() => expect(updateBanner).toHaveBeenCalledTimes(1));
-    const { data } = updateBanner.mock.calls[0][0];
-    expect(data).toHaveProperty(cleared, null);
-    expect(data[kept]).not.toBeNull();
-  });
+      await waitFor(() => expect(updateBanner).toHaveBeenCalledTimes(1));
+      const { data } = updateBanner.mock.calls[0][0];
+      expect(data).toHaveProperty(cleared, null);
+      expect(data[kept]).not.toBeNull();
+    },
+  );
 
   it("xoá cả hai biên: quay lại “luôn hiển thị”", async () => {
     const user = userEvent.setup();
@@ -402,7 +428,9 @@ describe("Form banner — phần “Thời gian hiển thị”", () => {
     ]) {
       await user.clear(within(dialog).getByLabelText(label));
     }
-    await user.click(within(dialog).getByRole("button", { name: "Lưu thay đổi" }));
+    await user.click(
+      within(dialog).getByRole("button", { name: "Lưu thay đổi" }),
+    );
 
     await waitFor(() => expect(updateBanner).toHaveBeenCalledTimes(1));
     const { data } = updateBanner.mock.calls[0][0];
@@ -416,7 +444,9 @@ describe("Form banner — phần “Thời gian hiển thị”", () => {
     renderPage(<BannersPage />);
     const dialog = await openEdit(user);
 
-    await user.click(within(dialog).getByRole("button", { name: "Lưu thay đổi" }));
+    await user.click(
+      within(dialog).getByRole("button", { name: "Lưu thay đổi" }),
+    );
     await waitFor(() => expect(updateBanner).toHaveBeenCalledTimes(1));
 
     const { data } = updateBanner.mock.calls[0][0];
@@ -451,13 +481,19 @@ describe("Form banner — phần “Thời gian hiển thị”", () => {
       renderPage(<BannersPage />);
       const dialog = await openEdit(user);
 
-      await fillWindow(user, dialog, values as [string, string, string, string]);
+      await fillWindow(
+        user,
+        dialog,
+        values as [string, string, string, string],
+      );
       await user.click(
         within(dialog).getByRole("button", { name: "Lưu thay đổi" }),
       );
 
       expect(
-        await within(dialog).findByText("“Hiển thị đến” phải sau “Hiển thị từ”."),
+        await within(dialog).findByText(
+          "“Hiển thị đến” phải sau “Hiển thị từ”.",
+        ),
       ).toBeInTheDocument();
       expect(updateBanner).not.toHaveBeenCalled();
     });
@@ -528,7 +564,10 @@ describe("Tạo banner mới — cấu hình cửa sổ trong MỘT lượt gử
       within(dialog).getByLabelText("Hiển thị từ — ngày"),
       "2026-09-20",
     );
-    await user.type(within(dialog).getByLabelText("Hiển thị từ — giờ"), "08:00");
+    await user.type(
+      within(dialog).getByLabelText("Hiển thị từ — giờ"),
+      "08:00",
+    );
 
     await user.click(
       within(dialog).getByRole("button", { name: "Thêm banner" }),
@@ -546,3 +585,7 @@ describe("Tạo banner mới — cấu hình cửa sổ trong MỘT lượt gử
     expect(payload.displayUntil).toBeNull();
   });
 });
+
+vi.mock("@/context/AuthContext", () => ({
+  useAuth: () => ({ user: { role: "ADMIN", canDeleteCms: false } }),
+}));

@@ -8,6 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { DataTable, type Column } from "@/components/ui/DataTable";
 import { UserFormDialog } from "@/components/users/UserFormDialog";
 import { UserDetailDialog } from "@/components/users/UserDetailDialog";
+import { DeletePermissionsDialog } from "@/components/users/DeletePermissionsDialog";
+import { DeleteContentButton } from "@/components/content/DeleteContentButton";
 import { DeactivateUserDialog } from "@/components/users/DeactivateUserDialog";
 import { RevokeInvitationDialog } from "@/components/users/RevokeInvitationDialog";
 import { useAuth } from "@/context/AuthContext";
@@ -58,7 +60,10 @@ export function UsersPage() {
         toast.error("Vui lòng chờ trước khi gửi lại lời mời.");
       } else {
         toast.error(
-          resolveApiError(error, "Không gửi lại được lời mời. Vui lòng thử lại."),
+          resolveApiError(
+            error,
+            "Không gửi lại được lời mời. Vui lòng thử lại.",
+          ),
         );
       }
     } finally {
@@ -67,6 +72,25 @@ export function UsersPage() {
   }
 
   const columns: Column<AdminUser>[] = [
+    {
+      key: "deletePermission",
+      header: "Quyền xóa",
+      render: (member) => (
+        <Badge
+          variant={
+            member.role === "SUPER_ADMIN" || member.canDeleteCms
+              ? "green"
+              : "gray"
+          }
+        >
+          {member.role === "SUPER_ADMIN"
+            ? "Toàn quyền"
+            : member.canDeleteCms
+              ? "Được cấp"
+              : "Chưa cấp"}
+        </Badge>
+      ),
+    },
     {
       key: "name",
       header: "Họ tên",
@@ -100,17 +124,26 @@ export function UsersPage() {
     {
       key: "actions",
       header: "Thao tác",
+      headerClassName: "w-80 text-right",
+      cellClassName: "w-80 whitespace-normal",
       render: (u) => {
-        if (!canManage) return null;
+        if (!canManage)
+          return u.role !== "SUPER_ADMIN" && u.id !== currentUser?.id ? (
+            <DeleteContentButton kind="users" id={u.id} title={u.name} />
+          ) : null;
         const isSelf = u.id === currentUser?.id;
         const status = getUserStatus(u);
         return (
           // stopPropagation: hàng đã bấm được để mở chi tiết — các nút thao
           // tác không được kích hoạt luôn cả modal.
           <div
-            className="flex justify-end gap-1"
+            className="flex flex-wrap justify-end gap-1"
             onClick={(e) => e.stopPropagation()}
           >
+            <DeletePermissionsDialog user={u} />
+            {!isSelf && (
+              <DeleteContentButton kind="users" id={u.id} title={u.name} />
+            )}
             <UserFormDialog
               user={u}
               trigger={
@@ -149,7 +182,9 @@ export function UsersPage() {
                 className="text-red-600 hover:bg-red-50 hover:text-red-700"
                 disabled={isSelf}
                 // Không thể tự khóa mình — backend chặn, ẩn luôn khả năng bấm.
-                title={isSelf ? "Không thể tự khóa tài khoản của mình" : undefined}
+                title={
+                  isSelf ? "Không thể tự khóa tài khoản của mình" : undefined
+                }
                 onClick={() => setToDeactivate(u)}
               >
                 Khóa

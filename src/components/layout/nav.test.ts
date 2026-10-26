@@ -22,6 +22,7 @@ describe("navItems — hiển thị theo vai trò", () => {
     expect(editor).not.toContain("/lien-he");
     expect(editor).not.toContain("/duyet-ho-so");
     expect(editor).not.toContain("/tai-khoan");
+    expect(editor).not.toContain("/thong-tin-cong-ty");
     // Nội dung EDITOR vẫn quản lý được thì vẫn hiện.
     expect(editor).toContain("/du-an");
     expect(editor).toContain("/tin-tuc");
@@ -32,6 +33,7 @@ describe("navItems — hiển thị theo vai trò", () => {
   it("ADMIN và SUPER_ADMIN: thấy mục Banner", () => {
     for (const role of ["ADMIN", "SUPER_ADMIN"] as const) {
       expect(visibleFor(role)).toContain("/banner");
+      expect(visibleFor(role)).toContain("/thong-tin-cong-ty");
     }
   });
 

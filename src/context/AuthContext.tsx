@@ -33,6 +33,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 
   useEffect(() => {
+    if (!user) return;
+    let active = true;
+    const refreshProfile = () => {
+      void authService
+        .fetchMe()
+        .then((profile) => {
+          if (active) setUser(profile);
+        })
+        .catch(() => {});
+    };
+    const interval = window.setInterval(refreshProfile, 60_000);
+    window.addEventListener("focus", refreshProfile);
+    return () => {
+      active = false;
+      window.clearInterval(interval);
+      window.removeEventListener("focus", refreshProfile);
+    };
+    // Chỉ khởi tạo lại khi đổi tài khoản, không tạo timer mới mỗi lần lấy hồ sơ.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
+
+  useEffect(() => {
     let active = true;
 
     if (isLoading) {

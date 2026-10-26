@@ -18,6 +18,8 @@ import { CooperationPage } from "@/pages/CooperationPage";
 import { ContactPage } from "@/pages/ContactPage";
 import { MediaPage } from "@/pages/MediaPage";
 import { BrandingSettingsPage } from "@/pages/BrandingSettingsPage";
+import { CompanyContactPage } from "@/pages/CompanyContactPage";
+import { TrashPage } from "@/pages/TrashPage";
 import { UsersPage } from "@/pages/UsersPage";
 import { ProfilePage } from "@/pages/ProfilePage";
 import { ProfileRequestsPage } from "@/pages/ProfileRequestsPage";
@@ -46,10 +48,7 @@ export default function App() {
             <Route path="tin-tuc" element={<NewsPage />} />
             <Route path="tin-tuc/chuyen-muc" element={<NewsCategoriesPage />} />
             <Route path="trang" element={<PagesPage />} />
-            <Route
-              path="tuyen-dung"
-              element={<RecruitmentPositionsPage />}
-            />
+            <Route path="tuyen-dung" element={<RecruitmentPositionsPage />} />
             <Route
               path="banner"
               element={
@@ -68,6 +67,15 @@ export default function App() {
               }
             />
             <Route path="thu-vien" element={<MediaPage />} />
+            <Route path="thung-rac" element={<TrashPage />} />
+            <Route
+              path="thong-tin-cong-ty"
+              element={
+                <ProtectedRoute roles={["ADMIN", "SUPER_ADMIN"]}>
+                  <CompanyContactPage />
+                </ProtectedRoute>
+              }
+            />
             <Route
               path="thuong-hieu"
               element={

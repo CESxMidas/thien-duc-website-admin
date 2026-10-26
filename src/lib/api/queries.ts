@@ -30,7 +30,28 @@ export const queryKeys = {
   myProfile: ["my-profile"] as const,
   profileRequests: ["profile-requests"] as const,
   brandingSettings: ["settings", "branding"] as const,
+  companyContact: ["settings", "company-contact"] as const,
 };
+
+export function useCompanyContact() {
+  return useQuery({
+    queryKey: queryKeys.companyContact,
+    queryFn: settingsApi.getCompanyContact,
+  });
+}
+
+export function useUpdateCompanyContact() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: settingsApi.updateCompanyContact,
+    onSuccess: (data) => {
+      queryClient.setQueryData(queryKeys.companyContact, data);
+      return queryClient.invalidateQueries({
+        queryKey: queryKeys.companyContact,
+      });
+    },
+  });
+}
 
 /* -------------------------------------------------------------------------
    Cai dat thuong hieu - /settings/branding
@@ -69,8 +90,13 @@ export function useLeads(enabled = true) {
 export function useUpdateLead() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: contactApi.UpdateLeadInput }) =>
-      contactApi.updateLead(id, data),
+    mutationFn: ({
+      id,
+      data,
+    }: {
+      id: string;
+      data: contactApi.UpdateLeadInput;
+    }) => contactApi.updateLead(id, data),
     onSuccess: () =>
       queryClient.invalidateQueries({ queryKey: queryKeys.leads }),
   });
@@ -96,11 +122,14 @@ export function useNewsCategories() {
  * invalidate làm mới cả bài viết lẫn chuyên mục — số bài của chuyên mục
  * đổi mỗi khi thêm/xóa bài.
  */
-function useNewsMutation<TArgs, TResult>(fn: (args: TArgs) => Promise<TResult>) {
+function useNewsMutation<TArgs, TResult>(
+  fn: (args: TArgs) => Promise<TResult>,
+) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: fn,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.news }),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: queryKeys.news }),
   });
 }
 
@@ -351,8 +380,13 @@ export function useCreateCooperationProject() {
 
 export function useUpdateCooperationProject() {
   return useCooperationMutation(
-    ({ id, data }: { id: string; data: cooperationApi.UpdateCooperationInput }) =>
-      cooperationApi.updateCooperationProject(id, data),
+    ({
+      id,
+      data,
+    }: {
+      id: string;
+      data: cooperationApi.UpdateCooperationInput;
+    }) => cooperationApi.updateCooperationProject(id, data),
   );
 }
 

@@ -1,3 +1,4 @@
+import { DeleteContentButton } from "@/components/content/DeleteContentButton";
 import { usePublicationClock } from "@/lib/use-publication-clock";
 import { ContentOrderDialog } from "@/components/content/ContentOrderDialog";
 import { useState } from "react";
@@ -284,6 +285,8 @@ export function ProjectsPage() {
             className="flex max-w-full flex-wrap items-center justify-end gap-1.5 py-1"
             onClick={(e) => e.stopPropagation()}
           >
+            <DeleteContentButton kind="projects" id={p.id} title={p.title.vi} />
+
             {busy && <Loader2 className="size-4 animate-spin text-slate" />}
 
             {statusActions.map((action) => (

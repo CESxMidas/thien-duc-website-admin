@@ -1,3 +1,4 @@
+import { DeleteContentButton } from "@/components/content/DeleteContentButton";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import {
@@ -156,19 +157,19 @@ export function NewsCategoriesPage() {
       render: (category) => {
         const isActive = category.isActive !== false;
         return (
-        <div>
-          <div className="flex flex-wrap items-center gap-2">
-            <p className="font-medium text-ink">{category.name.vi}</p>
-            <Badge variant={isActive ? "green" : "gray"}>
-              {isActive ? "Đang hiện" : "Đang ẩn"}
-            </Badge>
+          <div>
+            <div className="flex flex-wrap items-center gap-2">
+              <p className="font-medium text-ink">{category.name.vi}</p>
+              <Badge variant={isActive ? "green" : "gray"}>
+                {isActive ? "Đang hiện" : "Đang ẩn"}
+              </Badge>
+            </div>
+            {category.name.en ? (
+              <p className="text-xs text-slate">{category.name.en}</p>
+            ) : (
+              <p className="text-xs text-warning">Chưa có tên tiếng Anh</p>
+            )}
           </div>
-          {category.name.en ? (
-            <p className="text-xs text-slate">{category.name.en}</p>
-          ) : (
-            <p className="text-xs text-warning">Chưa có tên tiếng Anh</p>
-          )}
-        </div>
         );
       },
     },
@@ -214,6 +215,12 @@ export function NewsCategoriesPage() {
         const isActive = category.isActive !== false;
         return (
           <div className="flex justify-end gap-1">
+            <DeleteContentButton
+              kind="news-categories"
+              id={category.id}
+              title={category.name.vi}
+            />
+
             <NewsCategoryFormDialog
               category={category}
               trigger={
@@ -226,8 +233,8 @@ export function NewsCategoriesPage() {
                 </Button>
               }
             />
-            {canDelete && (
-              isActive ? (
+            {canDelete &&
+              (isActive ? (
                 <Button
                   variant="ghost"
                   size="sm"
@@ -251,8 +258,7 @@ export function NewsCategoriesPage() {
                     <Eye className="size-4" />
                   )}
                 </Button>
-              )
-            )}
+              ))}
           </div>
         );
       },
@@ -297,12 +303,13 @@ export function NewsCategoriesPage() {
         description={
           <>
             <p>
-              Đường dẫn công khai <code>/tin-tuc/danh-muc/{toDelete?.slug}</code>{" "}
-              sẽ không còn hiển thị trong bộ lọc.
+              Đường dẫn công khai{" "}
+              <code>/tin-tuc/danh-muc/{toDelete?.slug}</code> sẽ không còn hiển
+              thị trong bộ lọc.
             </p>
             <p className="mt-2">
-              Các bài viết đang gắn chuyên mục này vẫn giữ nguyên phân loại.
-              Có thể hiện lại chuyên mục bất cứ lúc nào.
+              Các bài viết đang gắn chuyên mục này vẫn giữ nguyên phân loại. Có
+              thể hiện lại chuyên mục bất cứ lúc nào.
             </p>
           </>
         }

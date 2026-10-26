@@ -1,3 +1,4 @@
+import { DeleteContentButton } from "@/components/content/DeleteContentButton";
 import { usePublicationClock } from "@/lib/use-publication-clock";
 import { useState } from "react";
 import {
@@ -178,6 +179,12 @@ export function PagesPage() {
           className="flex flex-wrap items-center gap-1"
           onClick={(event) => event.stopPropagation()}
         >
+          <DeleteContentButton
+            kind="pages"
+            id={page.id}
+            title={page.title.vi}
+          />
+
           {/* EDITOR không sửa được trang ĐANG hiển thị công khai — backend trả
               403, nên không hiện nút. ADMIN trở lên giữ nguyên quyền sửa. */}
           {/* EDITOR mất quyền sửa từ lúc trang được hẹn giờ hoặc đã từng công

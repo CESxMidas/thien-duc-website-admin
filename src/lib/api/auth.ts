@@ -56,6 +56,7 @@ interface MeResponse {
   name: string;
   email: string;
   role: string;
+  canDeleteCms?: boolean;
 }
 
 /** Hồ sơ tài khoản đang đăng nhập (nguồn duy nhất cho tên hiển thị thật). */
@@ -199,10 +200,13 @@ export async function resetPassword(
 export async function changePassword(
   input: ChangePasswordInput,
 ): Promise<{ success: boolean; message: string }> {
-  return apiFetch<{ success: boolean; message: string }>("/auth/change-password", {
-    method: "POST",
-    body: JSON.stringify(input),
-  });
+  return apiFetch<{ success: boolean; message: string }>(
+    "/auth/change-password",
+    {
+      method: "POST",
+      body: JSON.stringify(input),
+    },
+  );
 }
 
 /** Đăng xuất: thu hồi refresh token ở backend (best-effort) rồi xóa token cục bộ. */

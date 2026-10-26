@@ -1,15 +1,12 @@
 import { useState } from "react";
+import { DeleteContentButton } from "@/components/content/DeleteContentButton";
 import { StickyNote } from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { LeadDetailDialog } from "@/components/contact/LeadDetailDialog";
 import { Badge } from "@/components/ui/badge";
 import { DataTable, type Column } from "@/components/ui/DataTable";
 import { useLeads } from "@/lib/api/queries";
-import {
-  formatDateTime,
-  leadStatusLabel,
-  leadStatusTone,
-} from "@/lib/labels";
+import { formatDateTime, leadStatusLabel, leadStatusTone } from "@/lib/labels";
 import type { Lead, LeadStatus } from "@/types";
 
 const filters: { value: LeadStatus | "ALL"; label: string }[] = [
@@ -20,6 +17,13 @@ const filters: { value: LeadStatus | "ALL"; label: string }[] = [
 ];
 
 const columns: Column<Lead>[] = [
+  {
+    key: "actions",
+    header: "Thao tác",
+    render: (lead) => (
+      <DeleteContentButton kind="contact" id={lead.id} title={lead.name} />
+    ),
+  },
   {
     key: "name",
     header: "Khách hàng",
@@ -42,7 +46,8 @@ const columns: Column<Lead>[] = [
         <span className="line-clamp-2 text-slate">{l.message}</span>
         {l.internalNote ? (
           <span className="mt-1 flex items-center gap-1 text-xs text-brand">
-            <StickyNote className="size-3" aria-hidden="true" /> Có ghi chú nội bộ
+            <StickyNote className="size-3" aria-hidden="true" /> Có ghi chú nội
+            bộ
           </span>
         ) : null}
       </div>

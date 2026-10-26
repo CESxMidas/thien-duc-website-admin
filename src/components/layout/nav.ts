@@ -10,6 +10,7 @@ import {
   LayoutDashboard,
   Newspaper,
   Palette,
+  Trash2,
   UserCog,
   Users,
   type LucideIcon,
@@ -62,5 +63,12 @@ export const navItems: NavItem[] = [
     icon: Palette,
     roles: ["ADMIN", "SUPER_ADMIN"],
   },
+  {
+    to: "/thong-tin-cong-ty",
+    label: "Thông tin công ty",
+    icon: Building2,
+    roles: ["ADMIN", "SUPER_ADMIN"],
+  },
   { to: "/ho-so", label: "Thông tin cá nhân", icon: UserCog },
+  { to: "/thung-rac", label: "Thùng rác", icon: Trash2 },
 ];

@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import { DeleteContentButton } from "@/components/content/DeleteContentButton";
 import { Eye, EyeOff, ImageIcon, Loader2, Upload } from "lucide-react";
 import { toast } from "sonner";
 
@@ -32,7 +33,10 @@ export function MediaPage() {
   const [showHidden, setShowHidden] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const uploadInProgress = useRef(false);
-  const [uploadProgress, setUploadProgress] = useState<{ current: number; total: number } | null>(null);
+  const [uploadProgress, setUploadProgress] = useState<{
+    current: number;
+    total: number;
+  } | null>(null);
 
   const { user } = useAuth();
   const { data: media = [], isLoading } = useMedia(folder, showHidden);
@@ -69,7 +73,9 @@ export function MediaPage() {
           await upload.mutateAsync({ file, folder });
           uploaded += 1;
         } catch (error) {
-          toast.error(resolveApiError(error, `Không tải lên được ${file.name}.`));
+          toast.error(
+            resolveApiError(error, `Không tải lên được ${file.name}.`),
+          );
         }
       }
     } finally {
@@ -123,7 +129,9 @@ export function MediaPage() {
             ) : (
               <Upload className="size-4" />
             )}
-            {uploadProgress ? `Đang xử lý ${uploadProgress.current}/${uploadProgress.total}` : "Tải ảnh lên"}
+            {uploadProgress
+              ? `Đang xử lý ${uploadProgress.current}/${uploadProgress.total}`
+              : "Tải ảnh lên"}
           </Button>
         }
       />
@@ -182,7 +190,10 @@ export function MediaPage() {
       {isLoading ? (
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
           {Array.from({ length: 8 }).map((_, i) => (
-            <div key={i} className="aspect-3/2 animate-pulse rounded-xl bg-cream" />
+            <div
+              key={i}
+              className="aspect-3/2 animate-pulse rounded-xl bg-cream"
+            />
           ))}
         </div>
       ) : media.length === 0 ? (
@@ -192,8 +203,8 @@ export function MediaPage() {
             Thư mục này chưa có ảnh
           </h2>
           <p className="mt-2 max-w-md text-sm text-slate">
-            Tải ảnh lên để dùng cho dự án, bài viết và banner. Ảnh được tối ưu tự
-            động sau khi tải.
+            Tải ảnh lên để dùng cho dự án, bài viết và banner. Ảnh được tối ưu
+            tự động sau khi tải.
           </p>
           <Button className="mt-6" onClick={() => inputRef.current?.click()}>
             <Upload className="size-4" /> Tải ảnh lên
@@ -204,63 +215,67 @@ export function MediaPage() {
           {media.map((asset) => {
             const isActive = asset.isActive !== false;
             return (
-            <figure
-              key={asset.id}
-              className="group overflow-hidden rounded-xl border border-line bg-white"
-            >
-              <div className="relative aspect-3/2 bg-cream">
-                <img
-                  src={asset.url}
-                  alt={fileNameOf(asset)}
-                  loading="lazy"
-                  className={`size-full object-cover ${
-                    isActive ? "" : "opacity-45"
-                  }`}
-                />
-                {!isActive && (
-                  <Badge variant="gray" className="absolute left-2 top-2">
-                    Đang ẩn
-                  </Badge>
-                )}
-                {canDelete && (
-                  isActive ? (
-                    <button
-                      type="button"
-                      onClick={() => setPending(asset)}
-                      aria-label={`Ẩn ảnh ${fileNameOf(asset)}`}
-                      className="absolute right-2 top-2 grid size-9 place-items-center rounded-lg bg-white/90 text-slate opacity-0 transition hover:bg-white hover:text-red-600 focus-visible:opacity-100 group-hover:opacity-100"
-                    >
-                      <EyeOff className="size-4" />
-                    </button>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => void handleShow(asset)}
-                      aria-label={`Hiện ảnh ${fileNameOf(asset)}`}
-                      className="absolute right-2 top-2 grid size-9 place-items-center rounded-lg bg-white/90 text-slate opacity-0 transition hover:bg-white hover:text-brand focus-visible:opacity-100 group-hover:opacity-100"
-                    >
-                      <Eye className="size-4" />
-                    </button>
-                  )
-                )}
-              </div>
-              <figcaption className="px-3 py-2">
-                <p className="truncate text-xs font-medium text-ink">
-                  {fileNameOf(asset)}
-                </p>
-                <p className="text-xs text-slate">
-                  {[
-                    formatBytes(asset.bytes),
-                    asset.width && asset.height
-                      ? `${asset.width}×${asset.height}`
-                      : null,
-                    asset.format?.toUpperCase(),
-                  ]
-                    .filter(Boolean)
-                    .join(" · ")}
-                </p>
-              </figcaption>
-            </figure>
+              <figure
+                key={asset.id}
+                className="group overflow-hidden rounded-xl border border-line bg-white"
+              >
+                <div className="relative aspect-3/2 bg-cream">
+                  <img
+                    src={asset.url}
+                    alt={fileNameOf(asset)}
+                    loading="lazy"
+                    className={`size-full object-cover ${
+                      isActive ? "" : "opacity-45"
+                    }`}
+                  />
+                  {!isActive && (
+                    <Badge variant="gray" className="absolute left-2 top-2">
+                      Đang ẩn
+                    </Badge>
+                  )}
+                  {canDelete &&
+                    (isActive ? (
+                      <button
+                        type="button"
+                        onClick={() => setPending(asset)}
+                        aria-label={`Ẩn ảnh ${fileNameOf(asset)}`}
+                        className="absolute right-2 top-2 grid size-9 place-items-center rounded-lg bg-white/90 text-slate opacity-0 transition hover:bg-white hover:text-red-600 focus-visible:opacity-100 group-hover:opacity-100"
+                      >
+                        <EyeOff className="size-4" />
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => void handleShow(asset)}
+                        aria-label={`Hiện ảnh ${fileNameOf(asset)}`}
+                        className="absolute right-2 top-2 grid size-9 place-items-center rounded-lg bg-white/90 text-slate opacity-0 transition hover:bg-white hover:text-brand focus-visible:opacity-100 group-hover:opacity-100"
+                      >
+                        <Eye className="size-4" />
+                      </button>
+                    ))}
+                </div>
+                <figcaption className="px-3 py-2">
+                  <DeleteContentButton
+                    kind="media"
+                    id={asset.id}
+                    title={fileNameOf(asset)}
+                  />
+                  <p className="truncate text-xs font-medium text-ink">
+                    {fileNameOf(asset)}
+                  </p>
+                  <p className="text-xs text-slate">
+                    {[
+                      formatBytes(asset.bytes),
+                      asset.width && asset.height
+                        ? `${asset.width}×${asset.height}`
+                        : null,
+                      asset.format?.toUpperCase(),
+                    ]
+                      .filter(Boolean)
+                      .join(" · ")}
+                  </p>
+                </figcaption>
+              </figure>
             );
           })}
         </div>
@@ -275,7 +290,8 @@ export function MediaPage() {
             <>
               Ảnh <strong>{fileNameOf(pending)}</strong> (tải lên{" "}
               {formatDateTime(pending.createdAt)}) sẽ không hiện trong thư viện
-              chọn ảnh mặc định. File và dữ liệu vẫn được giữ lại để hiện lại sau.
+              chọn ảnh mặc định. File và dữ liệu vẫn được giữ lại để hiện lại
+              sau.
             </>
           ) : null
         }

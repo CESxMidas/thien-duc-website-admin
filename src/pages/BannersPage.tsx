@@ -1,5 +1,13 @@
+import { DeleteContentButton } from "@/components/content/DeleteContentButton";
 import { useState } from "react";
-import { ArrowDown, ArrowUp, ImageOff, Loader2, Pencil, Plus } from "lucide-react";
+import {
+  ArrowDown,
+  ArrowUp,
+  ImageOff,
+  Loader2,
+  Pencil,
+  Plus,
+} from "lucide-react";
 import { toast } from "sonner";
 
 import { BannerFormDialog } from "@/components/banners/BannerFormDialog";
@@ -203,6 +211,12 @@ export function BannersPage() {
       header: "",
       render: (banner) => (
         <div onClick={(event) => event.stopPropagation()}>
+          <DeleteContentButton
+            kind="banners"
+            id={banner.id}
+            title={bannerListTitle(banner)}
+          />
+
           <BannerFormDialog
             banner={banner}
             trigger={

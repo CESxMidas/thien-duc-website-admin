@@ -14,6 +14,7 @@ export function ConfirmDialog({
   description,
   confirmLabel = "Xóa",
   submitting = false,
+  confirmDisabled = false,
   onConfirm,
 }: {
   open: boolean;
@@ -22,6 +23,7 @@ export function ConfirmDialog({
   description: ReactNode;
   confirmLabel?: string;
   submitting?: boolean;
+  confirmDisabled?: boolean;
   onConfirm: () => void;
 }) {
   return (
@@ -44,7 +46,7 @@ export function ConfirmDialog({
             type="button"
             variant="destructive"
             onClick={onConfirm}
-            disabled={submitting}
+            disabled={submitting || confirmDisabled}
           >
             {submitting && <Loader2 className="size-4 animate-spin" />}
             {confirmLabel}

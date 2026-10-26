@@ -1,3 +1,4 @@
+import { DeleteContentButton } from "@/components/content/DeleteContentButton";
 import { usePublicationClock } from "@/lib/use-publication-clock";
 import { ContentOrderDialog } from "@/components/content/ContentOrderDialog";
 import { useState } from "react";
@@ -245,6 +246,12 @@ export function NewsPage() {
             // Bảng có onRowClick ở nơi khác; chặn nổi bọt để bấm nút không mở hàng.
             onClick={(event) => event.stopPropagation()}
           >
+            <DeleteContentButton
+              kind="news"
+              id={post.id}
+              title={post.title.vi}
+            />
+
             {busy && <Loader2 className="size-4 animate-spin text-slate" />}
 
             {statusActions.map((action) => (

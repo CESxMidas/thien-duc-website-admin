@@ -1,3 +1,4 @@
+import { DeleteContentButton } from "@/components/content/DeleteContentButton";
 import { ContentOrderDialog } from "@/components/content/ContentOrderDialog";
 import { useMemo, useState } from "react";
 import {
@@ -10,7 +11,6 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
-import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { RecruitmentPositionFormDialog } from "@/components/recruitment/RecruitmentPositionFormDialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -26,7 +26,6 @@ import {
 } from "@/components/ui/select";
 import { useAuth } from "@/context/AuthContext";
 import {
-  useDeleteRecruitmentPosition,
   useRecruitmentPositions,
   useUpdateRecruitmentPosition,
 } from "@/lib/api/queries";
@@ -64,13 +63,8 @@ export function RecruitmentPositionsPage() {
   const { user } = useAuth();
   const { data: positions = [], isLoading } = useRecruitmentPositions();
   const updatePosition = useUpdateRecruitmentPosition();
-  const deletePosition = useDeleteRecruitmentPosition();
   const [filter, setFilter] = useState<StatusFilter>("ALL");
   const [busyId, setBusyId] = useState<string | null>(null);
-  const [pendingDelete, setPendingDelete] =
-    useState<RecruitmentPosition | null>(null);
-  const canManageDeletion =
-    user?.role === "ADMIN" || user?.role === "SUPER_ADMIN";
   const visiblePositions = useMemo(
     () =>
       positions.filter(
@@ -93,20 +87,6 @@ export function RecruitmentPositionsPage() {
       toast.success(`Đã chuyển sang "${contentStatusLabel[status]}".`);
     } catch (error) {
       toast.error(resolveApiError(error, "Không đổi được trạng thái."));
-    } finally {
-      setBusyId(null);
-    }
-  }
-
-  async function removePosition() {
-    if (!pendingDelete) return;
-    setBusyId(pendingDelete.id);
-    try {
-      await deletePosition.mutateAsync(pendingDelete.id);
-      toast.success("Đã xóa vị trí tuyển dụng.");
-      setPendingDelete(null);
-    } catch (error) {
-      toast.error(resolveApiError(error, "Không xóa được vị trí tuyển dụng."));
     } finally {
       setBusyId(null);
     }
@@ -208,17 +188,11 @@ export function RecruitmentPositionsPage() {
                 }
               />
             )}
-            {canManageDeletion && (
-              <Button
-                variant="ghost"
-                size="sm"
-                aria-label={`Xóa ${position.title.vi}`}
-                disabled={busy}
-                onClick={() => setPendingDelete(position)}
-              >
-                <span className="text-red-600">Xóa</span>
-              </Button>
-            )}
+            <DeleteContentButton
+              kind="recruitment"
+              id={position.id}
+              title={position.title.vi}
+            />
           </div>
         );
       },
@@ -279,23 +253,6 @@ export function RecruitmentPositionsPage() {
             ? "Chưa có vị trí tuyển dụng."
             : "Không có vị trí ở trạng thái này."
         }
-      />
-
-      <ConfirmDialog
-        open={pendingDelete !== null}
-        onOpenChange={(open) => {
-          if (!open && busyId === null) setPendingDelete(null);
-        }}
-        title="Xóa vị trí tuyển dụng?"
-        description={
-          <>
-            Vị trí <strong>{pendingDelete?.title.vi}</strong> sẽ bị xóa và không
-            thể khôi phục.
-          </>
-        }
-        confirmLabel="Xóa vị trí"
-        submitting={pendingDelete !== null && busyId === pendingDelete.id}
-        onConfirm={() => void removePosition()}
       />
     </div>
   );

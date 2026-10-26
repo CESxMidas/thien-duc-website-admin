@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { DeleteContentButton } from "@/components/content/DeleteContentButton";
 import { toast } from "sonner";
 import { Check, Clock, Inbox, Loader2, X } from "lucide-react";
 
@@ -127,6 +128,11 @@ export function ProfileRequestsPage() {
                           </div>
                         </div>
                         <div className="flex shrink-0 gap-2">
+                          <DeleteContentButton
+                            kind="profile-requests"
+                            id={row.id}
+                            title={`Yêu cầu của ${row.user.name}`}
+                          />
                           <Button
                             size="sm"
                             disabled={review.isPending}
@@ -184,6 +190,11 @@ export function ProfileRequestsPage() {
                           : ""}
                       </span>
                     )}
+                    <DeleteContentButton
+                      kind="profile-requests"
+                      id={row.id}
+                      title={`Yêu cầu của ${row.user.name}`}
+                    />
                   </li>
                 ))}
               </ul>

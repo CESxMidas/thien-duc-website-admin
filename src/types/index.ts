@@ -8,9 +8,7 @@ export type ContentStatus = "DRAFT" | "PENDING" | "PUBLISHED";
 
 /** Trạng thái dự án (ProjectStatus) — khớp enum Prisma của backend. */
 export type ProjectStatus =
-  | "DA_BAN_GIAO"
-  | "DANG_THI_CONG"
-  | "CHUAN_BI_KHOI_CONG";
+  "DA_BAN_GIAO" | "DANG_THI_CONG" | "CHUAN_BI_KHOI_CONG";
 
 /** Trạng thái xử lý form liên hệ (lead). */
 export type LeadStatus = "NEW" | "IN_PROGRESS" | "DONE";
@@ -31,6 +29,7 @@ export interface AuthUser {
   email: string;
   name: string;
   role: Role;
+  canDeleteCms?: boolean;
 }
 
 export interface RecruitmentPosition {
@@ -325,6 +324,7 @@ export interface AdminUser {
   name: string;
   email: string;
   role: Role;
+  canDeleteCms?: boolean;
   isActive: boolean;
   createdAt: string;
   /**

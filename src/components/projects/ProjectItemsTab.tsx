@@ -1,3 +1,4 @@
+import { DeleteContentButton } from "@/components/content/DeleteContentButton";
 import { slugify } from "@/lib/slugify";
 import { ContentOrderDialog } from "@/components/content/ContentOrderDialog";
 // Tab "Hạng mục" của modal chi tiết dự án: các hạng mục con (`project_items`)
@@ -688,6 +689,11 @@ export function ProjectItemsTab({ project }: { project: ProjectDetail }) {
                   </p>
                 </div>
                 <div className="flex shrink-0 gap-1">
+                  <DeleteContentButton
+                    kind="project-items"
+                    id={item.id}
+                    title={item.title.vi}
+                  />
                   {canEdit && (
                     <Button
                       variant="ghost"
