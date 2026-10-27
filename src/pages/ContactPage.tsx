@@ -32,7 +32,7 @@ const columns: Column<Lead>[] = [
         <p className="font-medium text-ink">{l.name}</p>
         <p className="text-xs text-slate">
           {l.phone}
-          {l.email ? ` · ${l.email}` : ""}
+          {l.email ? ` | ${l.email}` : ""}
         </p>
       </div>
     ),

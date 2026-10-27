@@ -357,7 +357,7 @@ export function NewsPage() {
         title="Tin tức"
         description={
           pendingCount > 0
-            ? `${pendingCount} bài đang chờ duyệt. Luồng: nháp → gửi duyệt → đã đăng.`
+            ? `${pendingCount} bài đang chờ duyệt. Luồng: nháp - gửi duyệt - đã đăng.`
             : "Chuyên mục và bài viết."
         }
         actions={

@@ -5,7 +5,7 @@ const OPTIMIZE_ABOVE_BYTES = 2 * 1024 * 1024;
 const MAX_SOURCE_PIXELS = 64_000_000;
 export const ACCEPTED_MIME = ["image/jpeg", "image/png", "image/webp", "image/avif"];
 export const IMAGE_UPLOAD_HINT =
-  "JPG, PNG, WebP, AVIF · tối đa 50MB/ảnh. Ảnh lớn được tự tối ưu trước khi tải lên.";
+  "JPG, PNG, WebP, AVIF | tối đa 50MB/ảnh. Ảnh lớn được tự tối ưu trước khi tải lên.";
 
 export class ImageUploadError extends Error {}
 

@@ -65,7 +65,7 @@ describe("SchedulePublishDialog — mở và nhãn", () => {
   it("hiện múi giờ thành CHỮ, không giấu trong tooltip", async () => {
     renderDialog();
     expect(
-      await screen.findByText("Múi giờ: GMT+7 — Việt Nam"),
+      await screen.findByText("Múi giờ: GMT+7 - Việt Nam"),
     ).toBeInTheDocument();
   });
 
@@ -84,7 +84,7 @@ describe("SchedulePublishDialog — mở và nhãn", () => {
     const describedBy = fields().date.getAttribute("aria-describedby");
     expect(describedBy).toBeTruthy();
     expect(document.getElementById(describedBy!)).toHaveTextContent(
-      "Múi giờ: GMT+7 — Việt Nam",
+      "Múi giờ: GMT+7 - Việt Nam",
     );
   });
 });

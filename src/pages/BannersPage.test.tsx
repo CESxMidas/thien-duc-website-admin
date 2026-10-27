@@ -51,8 +51,8 @@ const seededBanners: Banner[] = [
     image: "/images/banners/home/home-banner-hung-phu-aerial-01.jpg",
     eyebrow: { vi: "Hạng mục nổi bật", en: "Signature building" },
     title: {
-      vi: "Fancy Tower — 196 căn hộ tại Hưng Phú",
-      en: "Fancy Tower — 196 homes at Hung Phu",
+      vi: "Fancy Tower - 196 căn hộ tại Hưng Phú",
+      en: "Fancy Tower - 196 homes at Hung Phu",
     },
     subtitle: {
       vi: "19 tầng nổi và 1 tầng hầm, 196 căn hộ.",
@@ -95,8 +95,8 @@ const seededBanners: Banner[] = [
     image: "/images/banners/home/home-banner-hung-phu-master-plan-top-01.jpg",
     eyebrow: { vi: "Giới thiệu công ty", en: "About Thien Duc" },
     title: {
-      vi: "Thiên Đức — xây dựng từ năm 2010",
-      en: "Thien Duc — building since 2010",
+      vi: "Thiên Đức - xây dựng từ năm 2010",
+      en: "Thien Duc - building since 2010",
     },
     subtitle: {
       vi: "Từ hợp tác CapitaLand đến chủ đầu tư phía Nam.",
@@ -335,7 +335,7 @@ describe("BannersPage — nội dung banner đã seed", () => {
         // Thông điệp mở rộng cùng lúc `href` chuyển sang dùng hàng rào
         // `isSafeInternalPath` (khớp `@IsSafeInternalPath` của backend): ngoài
         // "phải bắt đầu bằng /" nay còn chặn `//host` và mọi scheme.
-        "Đường dẫn nội bộ, bắt đầu bằng “/” (không nhận scheme hay “//host”).",
+        "Đường dẫn nội bộ, bắt đầu bằng / (không nhận scheme hay //host).",
       ),
     ).toBeInTheDocument();
     expect(updateBanner).not.toHaveBeenCalled();

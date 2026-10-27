@@ -272,7 +272,7 @@ export function MediaPage() {
                       asset.format?.toUpperCase(),
                     ]
                       .filter(Boolean)
-                      .join(" · ")}
+                      .join(" | ")}
                   </p>
                 </figcaption>
               </figure>

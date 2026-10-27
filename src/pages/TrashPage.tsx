@@ -79,7 +79,7 @@ function TrashList({ kind }: { kind: CmsRecordKind }) {
       toast.error(resolveApiError(err, "Không khôi phục được nội dung."));
     }
   }
-  if (query.isPending) return <p role="status">Đang tải thùng rác…</p>;
+  if (query.isPending) return <p role="status">Đang tải thùng rác...</p>;
   if (query.isError)
     return (
       <div>

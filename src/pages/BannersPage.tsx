@@ -188,7 +188,7 @@ export function BannersPage() {
             {state !== "ALWAYS" && (
               <span className="hidden text-xs text-slate md:inline">
                 {formatBound(banner.displayFrom, NO_START_LABEL)}
-                {" → "}
+                {" - "}
                 {formatBound(banner.displayUntil, NO_END_LABEL)}
               </span>
             )}

@@ -127,6 +127,6 @@ describe("Quản lý thông tin liên hệ công ty", () => {
     expect(
       screen.getByRole("textbox", { name: "Số điện thoại *" }),
     ).toBeDisabled();
-    expect(screen.getByRole("button", { name: "Đang lưu…" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Đang lưu..." })).toBeDisabled();
   });
 });

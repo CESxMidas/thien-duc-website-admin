@@ -143,7 +143,7 @@ export function optionalImageField() {
     .trim()
     .max(MAX_URL_LENGTH, `Đường dẫn tối đa ${MAX_URL_LENGTH} ký tự.`)
     .refine((value) => value === "" || isSafeImageRef(value), {
-      message: 'Ảnh phải là đường dẫn nội bộ bắt đầu bằng “/” hoặc URL https://.',
+      message: 'Ảnh phải là đường dẫn nội bộ bắt đầu bằng / hoặc URL https://.',
     });
 }
 
@@ -158,7 +158,7 @@ export function optionalImageGalleryField() {
         .max(MAX_URL_LENGTH, `Đường dẫn tối đa ${MAX_URL_LENGTH} ký tự.`)
         .refine(isSafeImageRef, {
           message:
-            "Ảnh phải là đường dẫn nội bộ bắt đầu bằng “/” hoặc URL https://.",
+            "Ảnh phải là đường dẫn nội bộ bắt đầu bằng / hoặc URL https://.",
         }),
     )
     .max(50, "Tối đa 50 ảnh phụ.");
@@ -171,7 +171,7 @@ export function requiredImageField(message: string) {
     .min(1, message)
     .max(MAX_URL_LENGTH, `Đường dẫn tối đa ${MAX_URL_LENGTH} ký tự.`)
     .refine(isSafeImageRef, {
-      message: 'Ảnh phải là đường dẫn nội bộ bắt đầu bằng “/” hoặc URL https://.',
+      message: 'Ảnh phải là đường dẫn nội bộ bắt đầu bằng / hoặc URL https://.',
     });
 }
 
@@ -183,7 +183,7 @@ export function internalHrefField() {
     .min(1, "Cần đường dẫn đích.")
     .max(MAX_URL_LENGTH, `Đường dẫn tối đa ${MAX_URL_LENGTH} ký tự.`)
     .refine(isSafeInternalPath, {
-      message: 'Đường dẫn nội bộ, bắt đầu bằng “/” (không nhận scheme hay “//host”).',
+      message: 'Đường dẫn nội bộ, bắt đầu bằng / (không nhận scheme hay //host).',
     });
 }
 

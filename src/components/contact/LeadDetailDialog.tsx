@@ -100,7 +100,7 @@ export function LeadDetailDialog({
           />
           <Field
             label="Nhu cầu"
-            value={lead.inquiryType ?? <span className="text-slate">—</span>}
+            value={lead.inquiryType ?? <span className="text-slate">-</span>}
           />
           <Field label="Thời gian gửi" value={formatDateTime(lead.createdAt)} />
           <Field

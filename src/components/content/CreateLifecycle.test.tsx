@@ -276,7 +276,7 @@ describe("Tạo dự án hợp tác — không kèm lệnh đăng", () => {
       ["Quận 2, TP.HCM", "Bến Tre"],
       ["CapitaLand (Singapore)", "Đối tác"],
       ["Đồng chủ đầu tư", "Đồng phát triển"],
-      ["25.295 m² · 4 tòa tháp · 1.152 căn hộ", "10 ha"],
+      ["25.295 m² | 4 tòa tháp | 1.152 căn hộ", "10 ha"],
       ["Đã bàn giao", "Đang triển khai"],
     ]);
   }

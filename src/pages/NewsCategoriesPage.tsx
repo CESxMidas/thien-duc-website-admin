@@ -194,7 +194,7 @@ export function NewsCategoriesPage() {
             className="text-xs text-slate"
             title="Chưa hiện trên website cho tới khi có bài được đăng"
           >
-            0 · chưa hiện
+            0 | chưa hiện
           </span>
         ),
     },

@@ -682,7 +682,7 @@ export function ProjectItemsTab({ project }: { project: ProjectDetail }) {
                   </div>
                   <p className="truncate text-xs text-slate">
                     /{item.slug}
-                    {" · "}
+                    {" | "}
                     {item.status
                       ? projectStatusLabel[item.status]
                       : `Theo dự án (${projectStatusLabel[project.status]})`}

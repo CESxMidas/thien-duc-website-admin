@@ -263,7 +263,7 @@ export function CooperationFormDialog({
         media={
           <MediaSection
             label="Ảnh chính"
-            hint="Ảnh phối cảnh — không bắt buộc; không có thì thẻ dùng nền thương hiệu."
+            hint="Ảnh phối cảnh - không bắt buộc; không có thì thẻ dùng nền thương hiệu."
           >
             <FormField
               control={form.control}
@@ -432,13 +432,13 @@ export function CooperationFormDialog({
                       value={field.value}
                       onChange={field.onChange}
                       placeholder={{
-                        vi: "25.295 m² · 4 tòa tháp · 1.152 căn hộ",
-                        en: "25,295 m² · 4 towers · 1,152 apartments",
+                        vi: "25.295 m² | 4 tòa tháp | 1.152 căn hộ",
+                        en: "25,295 m² | 4 towers | 1,152 apartments",
                       }}
                     />
                   </FormControl>
                   <FormDescription>
-                    Diện tích, số tháp, số căn… ngăn cách bằng dấu “·”.
+                    Nhập diện tích, số tháp và số căn hộ, ngăn cách bằng dấu |.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -459,7 +459,7 @@ export function CooperationFormDialog({
                     />
                   </FormControl>
                   <FormDescription>
-                    Mô tả tiến độ hiển thị trên thẻ, ví dụ “Đã bàn giao”.
+                    Mô tả tiến độ hiển thị trên thẻ, ví dụ Đã bàn giao.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>

@@ -9,7 +9,7 @@ export function CrashFallback() {
         Trang quản trị gặp sự cố
       </h1>
       <p className="text-sm text-slate">
-        Lỗi đã được ghi nhận. Vui lòng tải lại trang — nếu vẫn lỗi, báo đội kỹ
+        Lỗi đã được ghi nhận. Vui lòng tải lại trang - nếu vẫn lỗi, báo đội kỹ
         thuật.
       </p>
       <button

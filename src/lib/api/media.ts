@@ -61,7 +61,7 @@ export function deleteMedia(id: string): Promise<{ hidden: boolean }> {
 
 /** `1536000` → `1,5 MB`. Cloudinary trả `bytes`, UI cần đơn vị người đọc được. */
 export function formatBytes(bytes: number | null): string {
-  if (bytes === null) return "—";
+  if (bytes === null) return "-";
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
   return `${(bytes / (1024 * 1024)).toFixed(1).replace(".", ",")} MB`;

@@ -132,7 +132,7 @@ export function DashboardPage() {
                       <p className="truncate text-sm font-medium text-ink">
                         {lead.name}{" "}
                         <span className="font-normal text-slate">
-                          · {lead.phone}
+                          | {lead.phone}
                         </span>
                       </p>
                       <p className="truncate text-xs text-slate">

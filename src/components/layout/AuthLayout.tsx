@@ -44,7 +44,7 @@ export function AuthLayout({ children }: { children: ReactNode }) {
       <div className="relative hidden lg:block">
         <img
           src={withBase("/images/login-hero.jpg")}
-          alt="Phối cảnh tổng thể Khu đô thị Hưng Phú — Thiên Đức"
+          alt="Phối cảnh tổng thể Khu đô thị Hưng Phú - Thiên Đức"
           className="absolute inset-0 h-full w-full object-cover"
         />
         {/* Lớp phủ màu thương hiệu để chữ trên ảnh đủ tương phản */}

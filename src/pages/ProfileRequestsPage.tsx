@@ -110,7 +110,7 @@ export function ProfileRequestsPage() {
                               </Badge>
                             </p>
                             <p className="text-xs text-slate">
-                              {row.user.email} · gửi{" "}
+                              {row.user.email} | gửi{" "}
                               {formatDateTime(row.createdAt)}
                             </p>
                             <ul className="mt-2 space-y-0.5 text-sm text-ink">
@@ -179,14 +179,14 @@ export function ProfileRequestsPage() {
                       {row.user.name}
                       <span className="text-slate">
                         {" "}
-                        · {Object.keys(row.payload).length} thay đổi
+                        | {Object.keys(row.payload).length} thay đổi
                       </span>
                     </span>
                     {row.reviewedBy && (
                       <span className="hidden text-xs text-slate sm:block">
                         bởi {row.reviewedBy.name}
                         {row.reviewedAt
-                          ? ` · ${formatDateTime(row.reviewedAt)}`
+                          ? ` | ${formatDateTime(row.reviewedAt)}`
                           : ""}
                       </span>
                     )}

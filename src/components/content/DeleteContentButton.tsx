@@ -89,7 +89,7 @@ function DeleteConfirmation({
       onOpenChange={(value) => {
         if (!value && !mutation.isPending) onClose();
       }}
-      title={`Xóa “${title}”?`}
+      title={`Xóa ${title}?`}
       description={
         <div className="space-y-3">
           {!permanentOnly && (
@@ -105,7 +105,7 @@ function DeleteConfirmation({
                   onChange={() => setPermanent(false)}
                   className="size-4 shrink-0 accent-brand"
                 />
-                Đưa vào thùng rác — có thể khôi phục
+                Đưa vào thùng rác (có thể khôi phục)
               </label>
               <label className="flex min-h-11 items-center gap-3">
                 <input
@@ -115,7 +115,7 @@ function DeleteConfirmation({
                   onChange={() => setPermanent(true)}
                   className="size-4 shrink-0 accent-brand"
                 />
-                Xóa vĩnh viễn — không thể khôi phục
+                Xóa vĩnh viễn (không thể khôi phục)
               </label>
             </fieldset>
           )}

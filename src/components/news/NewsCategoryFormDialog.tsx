@@ -160,7 +160,7 @@ export function NewsCategoryFormDialog({
                   />
                 </FormControl>
                 <FormDescription>
-                  Tiếng Anh không bắt buộc — bỏ trống thì bản tiếng Anh của
+                  Tiếng Anh không bắt buộc - bỏ trống thì bản tiếng Anh của
                   website dùng lại tên tiếng Việt.
                 </FormDescription>
                 <FormMessage />
@@ -193,7 +193,7 @@ export function NewsCategoryFormDialog({
                 </FormControl>
                 <FormDescription>
                   {isEdit
-                    ? "Slug quyết định URL công khai của chuyên mục và không đổi được sau khi tạo — đổi sẽ làm hỏng các liên kết đã chia sẻ và đã được Google lập chỉ mục."
+                    ? "Slug quyết định URL công khai của chuyên mục và không đổi được sau khi tạo - đổi sẽ làm hỏng các liên kết đã chia sẻ và đã được Google lập chỉ mục."
                     : "Chỉ gồm chữ thường không dấu, số và dấu gạch ngang. Sau khi tạo sẽ KHÔNG đổi được, vì đây là URL công khai."}
                 </FormDescription>
                 <FormMessage />

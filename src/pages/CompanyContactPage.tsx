@@ -73,7 +73,7 @@ export function CompanyContactPage() {
       />
       {query.isPending ? (
         <p role="status" className="py-8 text-sm text-slate">
-          Đang tải thông tin liên hệ…
+          Đang tải thông tin liên hệ...
         </p>
       ) : !query.data ? (
         <Card>
@@ -255,7 +255,7 @@ function CompanyContactEditor({ data }: { data: CompanyContact }) {
                   ) : (
                     <Save className="size-4" />
                   )}
-                  {busy ? "Đang lưu…" : "Lưu thông tin"}
+                  {busy ? "Đang lưu..." : "Lưu thông tin"}
                 </Button>
                 <Button
                   type="button"

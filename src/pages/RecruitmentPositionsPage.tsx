@@ -108,7 +108,7 @@ export function RecruitmentPositionsPage() {
           title={position.title.vi}
           fallbackIcon={BriefcaseBusiness}
           fallbackTitle="Vị trí tuyển dụng"
-          metadata={`${position.department.vi} · ${position.location.vi}`}
+          metadata={`${position.department.vi} | ${position.location.vi}`}
           detail={position.type.vi}
         />
       ),

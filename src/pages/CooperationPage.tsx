@@ -193,7 +193,7 @@ export function CooperationPage() {
                 title={
                   canReorder
                     ? undefined
-                    : "Danh sách có dự án đã đăng hoặc đã lên lịch — chỉ quản trị viên đổi được thứ tự."
+                    : "Danh sách có dự án đã đăng hoặc đã lên lịch - chỉ quản trị viên đổi được thứ tự."
                 }
                 onClick={() => void move(index, -1)}
                 className="text-slate transition hover:text-brand disabled:opacity-30"
@@ -207,7 +207,7 @@ export function CooperationPage() {
                 title={
                   canReorder
                     ? undefined
-                    : "Danh sách có dự án đã đăng hoặc đã lên lịch — chỉ quản trị viên đổi được thứ tự."
+                    : "Danh sách có dự án đã đăng hoặc đã lên lịch - chỉ quản trị viên đổi được thứ tự."
                 }
                 onClick={() => void move(index, 1)}
                 className="text-slate transition hover:text-brand disabled:opacity-30"
@@ -437,7 +437,7 @@ export function CooperationPage() {
             Chưa có dự án hợp tác nào
           </h2>
           <p className="mt-2 max-w-md text-sm text-slate">
-            Section “Dự án hợp tác” trên trang chủ đang bị ẩn. Thêm ít nhất một
+            Section Dự án hợp tác trên trang chủ đang bị ẩn. Thêm ít nhất một
             dự án và đăng để nó hiển thị.
           </p>
         </div>

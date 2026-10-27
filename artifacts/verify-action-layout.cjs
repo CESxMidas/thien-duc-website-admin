@@ -27,6 +27,7 @@ const assert = require('node:assert/strict');
  await page.screenshot({path:'artifacts/actions-inline-1920.png'});
  await page.locator('tbody tr').first().locator('td:last-child button').first().click();
  const dialog=page.getByRole('dialog'); await dialog.getByRole('radio').nth(1).check();
+ assert(!/[\u201c\u201d\u2014\u2013\u2026\u2192\u00b7]/.test(await dialog.innerText()),'decorative punctuation in dialog');
  for(const width of [1440,375]){await page.setViewportSize({width,height:900});await page.screenshot({path:`artifacts/delete-dialog-${width}.png`});assert(await dialog.evaluate(el=>el.scrollWidth<=el.clientWidth),'dialog overflow');}
  await browser.close(); console.log('PASS: actions remain on one row at 1920/1440/1024/375; no page overflow; permanent-delete dialog fits desktop/mobile. API requests intercepted; no data changed.');
 })().catch(e=>{console.error(e);process.exit(1)});

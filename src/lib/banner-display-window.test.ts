@@ -116,14 +116,14 @@ describe("formatBound — hiển thị theo giờ Việt Nam", () => {
   it("instant UTC hiện thành giờ VN dd/MM/yyyy", () => {
     // 01:00Z = 08:00 giờ Việt Nam cùng ngày.
     expect(formatBound("2026-09-01T01:00:00.000Z", NO_START_LABEL)).toBe(
-      "01/09/2026 · 08:00",
+      "01/09/2026 | 08:00",
     );
   });
 
   it("qua nửa đêm UTC vẫn ra đúng ngày Việt Nam", () => {
     // 17:00Z ngày 31/08 = 00:00 ngày 01/09 giờ VN.
     expect(formatBound("2026-08-31T17:00:00.000Z", NO_START_LABEL)).toBe(
-      "01/09/2026 · 00:00",
+      "01/09/2026 | 00:00",
     );
   });
 });

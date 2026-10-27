@@ -160,7 +160,7 @@ describe("toVietnamFields — UTC về hai ô nhập theo giờ Việt Nam", () 
 describe("định dạng hiển thị", () => {
   it("dòng phụ dưới huy hiệu: 20/08/2026 · 08:00", () => {
     expect(formatVietnamDateTime("2026-08-20T01:00:00.000Z")).toBe(
-      "20/08/2026 · 08:00",
+      "20/08/2026 | 08:00",
     );
   });
 
@@ -176,7 +176,7 @@ describe("định dạng hiển thị", () => {
   });
 
   it("nhãn múi giờ là chữ hiển thị được, không phải mã vùng", () => {
-    expect(VIETNAM_TIMEZONE_LABEL).toBe("GMT+7 — Việt Nam");
+    expect(VIETNAM_TIMEZONE_LABEL).toBe("GMT+7 - Việt Nam");
   });
 });
 

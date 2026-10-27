@@ -209,7 +209,7 @@ describe("ProjectsPage — huy hiệu trạng thái xuất bản", () => {
   it("dự án đã lên lịch hiện mốc hẹn theo giờ Việt Nam", () => {
     renderPage();
     expect(
-      within(row("Dự án đã lên lịch")).getByText("20/08/2026 · 08:00"),
+      within(row("Dự án đã lên lịch")).getByText("20/08/2026 | 08:00"),
     ).toBeInTheDocument();
   });
 

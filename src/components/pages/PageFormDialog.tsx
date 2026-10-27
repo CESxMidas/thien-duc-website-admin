@@ -253,7 +253,7 @@ export function PageFormDialog({ trigger, page }: PageFormDialogProps) {
             ? "Nội dung trang tĩnh. Website công khai chỉ hiển thị trang đã đăng."
             : showSchedule
               ? "Trang mới luôn lưu ở trạng thái nháp. Chọn Đăng ngay hoặc Đặt lịch nếu muốn đưa trang ra website."
-              : "Trang mới lưu ở trạng thái nháp — website công khai chỉ hiển thị trang đã đăng."
+              : "Trang mới lưu ở trạng thái nháp - website công khai chỉ hiển thị trang đã đăng."
         }
         footer={
           <>

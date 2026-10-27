@@ -77,7 +77,7 @@ function PermissionsEditor({
             disabled={mutation.isPending || !dirty}
             onClick={() => void save()}
           >
-            {mutation.isPending ? "Đang lưu…" : "Lưu quyền xóa"}
+            {mutation.isPending ? "Đang lưu..." : "Lưu quyền xóa"}
           </Button>
         </>
       }

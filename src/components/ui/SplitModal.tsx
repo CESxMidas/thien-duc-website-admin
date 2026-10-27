@@ -145,7 +145,7 @@ export function MediaSection({
             `font-weight` của nhãn.
           */}
           {typeof count === "number" ? (
-            <span className="ml-1 tabular-nums">· {count}</span>
+            <span className="ml-1 tabular-nums">| {count}</span>
           ) : null}
         </h3>
         {action}

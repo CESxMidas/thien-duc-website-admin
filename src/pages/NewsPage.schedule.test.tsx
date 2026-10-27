@@ -190,7 +190,7 @@ describe("NewsPage — huy hiệu trạng thái", () => {
   it("bài đã lên lịch hiện mốc hẹn theo giờ Việt Nam", () => {
     renderPage();
     expect(
-      within(row("Bài đã lên lịch")).getByText("20/08/2026 · 08:00"),
+      within(row("Bài đã lên lịch")).getByText("20/08/2026 | 08:00"),
     ).toBeInTheDocument();
   });
 

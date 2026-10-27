@@ -215,7 +215,7 @@ export function RecruitmentPositionFormDialog({
         >
           {detailLoading ? (
             <p role="status" className="text-sm text-slate">
-              Đang tải thông tin vị trí tuyển dụng…
+              Đang tải thông tin vị trí tuyển dụng...
             </p>
           ) : null}
           {isEdit && detail ? (

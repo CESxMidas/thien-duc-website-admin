@@ -298,7 +298,7 @@ export function ProjectFormDialog({
         media={
           <MediaSection
             label="Ảnh chính"
-            hint="Ảnh đại diện dự án — hiện ở thẻ danh sách và đầu trang chi tiết."
+            hint="Ảnh đại diện dự án - hiện ở thẻ danh sách và đầu trang chi tiết."
           >
             <FormField
               control={form.control}

@@ -20,7 +20,7 @@
 export const VIETNAM_UTC_OFFSET = "+07:00";
 
 /** Nhãn múi giờ hiện cạnh ô nhập — luôn hiện, không giấu trong tooltip. */
-export const VIETNAM_TIMEZONE_LABEL = "GMT+7 — Việt Nam";
+export const VIETNAM_TIMEZONE_LABEL = "GMT+7 - Việt Nam";
 
 const VIETNAM_OFFSET_MS = 7 * 60 * 60 * 1000;
 
@@ -110,7 +110,7 @@ export function formatVietnamDateTime(iso: string): string | null {
   const fields = toVietnamFields(iso);
   if (!fields) return null;
   const [year, month, day] = fields.date.split("-");
-  return `${day}/${month}/${year} · ${fields.time}`;
+  return `${day}/${month}/${year} | ${fields.time}`;
 }
 
 /** Instant → `08:00, 20/08/2026` (chèn vào câu tóm tắt trong hộp thoại). */

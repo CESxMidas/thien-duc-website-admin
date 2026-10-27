@@ -215,7 +215,7 @@ export function validateDisplayWindowFields(
       return {
         ok: false,
         field: "untilDate",
-        message: "“Hiển thị đến” phải sau “Hiển thị từ”.",
+        message: "Hiển thị đến phải sau Hiển thị từ.",
       };
     }
   }

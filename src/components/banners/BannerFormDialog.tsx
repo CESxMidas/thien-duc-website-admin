@@ -325,7 +325,7 @@ export function BannerFormDialog({ trigger, banner }: BannerFormDialogProps) {
                   name="fromDate"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Hiển thị từ — ngày</FormLabel>
+                      <FormLabel>Hiển thị từ - ngày</FormLabel>
                       <FormControl>
                         <Input type="date" {...field} />
                       </FormControl>
@@ -338,7 +338,7 @@ export function BannerFormDialog({ trigger, banner }: BannerFormDialogProps) {
                   name="fromTime"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Hiển thị từ — giờ</FormLabel>
+                      <FormLabel>Hiển thị từ - giờ</FormLabel>
                       <FormControl>
                         <Input type="time" {...field} />
                       </FormControl>
@@ -357,7 +357,7 @@ export function BannerFormDialog({ trigger, banner }: BannerFormDialogProps) {
                   name="untilDate"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Hiển thị đến — ngày</FormLabel>
+                      <FormLabel>Hiển thị đến - ngày</FormLabel>
                       <FormControl>
                         <Input type="date" {...field} />
                       </FormControl>
@@ -370,7 +370,7 @@ export function BannerFormDialog({ trigger, banner }: BannerFormDialogProps) {
                   name="untilTime"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Hiển thị đến — giờ</FormLabel>
+                      <FormLabel>Hiển thị đến - giờ</FormLabel>
                       <FormControl>
                         <Input type="time" {...field} />
                       </FormControl>

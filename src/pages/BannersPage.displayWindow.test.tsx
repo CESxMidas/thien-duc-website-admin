@@ -166,17 +166,17 @@ describe("Bảng banner — huy hiệu trạng thái cửa sổ", () => {
     // 01:00Z = 08:00 giờ VN.
     expect(
       within(rowOf("Đang trong khoảng")).getByText(
-        "10/09/2026 · 08:00 → 20/09/2026 · 08:00",
+        "10/09/2026 | 08:00 - 20/09/2026 | 08:00",
       ),
     ).toBeInTheDocument();
     expect(
       within(rowOf("Bắt đầu tuần sau")).getByText(
-        "22/09/2026 · 08:00 → Không giới hạn",
+        "22/09/2026 | 08:00 - Không giới hạn",
       ),
     ).toBeInTheDocument();
     expect(
       within(rowOf("Đã qua hạn")).getByText(
-        "Ngay lập tức → 01/09/2026 · 08:00",
+        "Ngay lập tức - 01/09/2026 | 08:00",
       ),
     ).toBeInTheDocument();
   });
@@ -262,10 +262,10 @@ describe("Form banner — phần “Thời gian hiển thị”", () => {
     const dialog = await openEdit(user);
 
     for (const label of [
-      "Hiển thị từ — ngày",
-      "Hiển thị từ — giờ",
-      "Hiển thị đến — ngày",
-      "Hiển thị đến — giờ",
+      "Hiển thị từ - ngày",
+      "Hiển thị từ - giờ",
+      "Hiển thị đến - ngày",
+      "Hiển thị đến - giờ",
     ]) {
       expect(within(dialog).getByLabelText(label)).toHaveValue("");
     }
@@ -295,16 +295,16 @@ describe("Form banner — phần “Thời gian hiển thị”", () => {
     renderPage(<BannersPage />);
     const dialog = await openEdit(user);
 
-    expect(within(dialog).getByLabelText("Hiển thị từ — ngày")).toHaveValue(
+    expect(within(dialog).getByLabelText("Hiển thị từ - ngày")).toHaveValue(
       "2026-09-01",
     );
-    expect(within(dialog).getByLabelText("Hiển thị từ — giờ")).toHaveValue(
+    expect(within(dialog).getByLabelText("Hiển thị từ - giờ")).toHaveValue(
       "08:00",
     );
-    expect(within(dialog).getByLabelText("Hiển thị đến — ngày")).toHaveValue(
+    expect(within(dialog).getByLabelText("Hiển thị đến - ngày")).toHaveValue(
       "2026-09-30",
     );
-    expect(within(dialog).getByLabelText("Hiển thị đến — giờ")).toHaveValue(
+    expect(within(dialog).getByLabelText("Hiển thị đến - giờ")).toHaveValue(
       "17:30",
     );
   });
@@ -317,11 +317,11 @@ describe("Form banner — phần “Thời gian hiển thị”", () => {
     const dialog = await openEdit(user);
 
     await user.type(
-      within(dialog).getByLabelText("Hiển thị từ — ngày"),
+      within(dialog).getByLabelText("Hiển thị từ - ngày"),
       "2026-09-01",
     );
     await user.type(
-      within(dialog).getByLabelText("Hiển thị từ — giờ"),
+      within(dialog).getByLabelText("Hiển thị từ - giờ"),
       "08:00",
     );
     await user.click(
@@ -345,11 +345,11 @@ describe("Form banner — phần “Thời gian hiển thị”", () => {
     const dialog = await openEdit(user);
 
     await user.type(
-      within(dialog).getByLabelText("Hiển thị đến — ngày"),
+      within(dialog).getByLabelText("Hiển thị đến - ngày"),
       "2026-12-31",
     );
     await user.type(
-      within(dialog).getByLabelText("Hiển thị đến — giờ"),
+      within(dialog).getByLabelText("Hiển thị đến - giờ"),
       "23:59",
     );
     await user.click(
@@ -368,13 +368,13 @@ describe("Form banner — phần “Thời gian hiển thị”", () => {
   it.each([
     [
       "xoá biên dưới",
-      ["Hiển thị từ — ngày", "Hiển thị từ — giờ"],
+      ["Hiển thị từ - ngày", "Hiển thị từ - giờ"],
       "displayFrom",
       "displayUntil",
     ],
     [
       "xoá biên trên",
-      ["Hiển thị đến — ngày", "Hiển thị đến — giờ"],
+      ["Hiển thị đến - ngày", "Hiển thị đến - giờ"],
       "displayUntil",
       "displayFrom",
     ],
@@ -421,10 +421,10 @@ describe("Form banner — phần “Thời gian hiển thị”", () => {
     const dialog = await openEdit(user);
 
     for (const label of [
-      "Hiển thị từ — ngày",
-      "Hiển thị từ — giờ",
-      "Hiển thị đến — ngày",
-      "Hiển thị đến — giờ",
+      "Hiển thị từ - ngày",
+      "Hiển thị từ - giờ",
+      "Hiển thị đến - ngày",
+      "Hiển thị đến - giờ",
     ]) {
       await user.clear(within(dialog).getByLabelText(label));
     }
@@ -462,10 +462,10 @@ describe("Form banner — phần “Thời gian hiển thị”", () => {
       values: [string, string, string, string],
     ) {
       const labels = [
-        "Hiển thị từ — ngày",
-        "Hiển thị từ — giờ",
-        "Hiển thị đến — ngày",
-        "Hiển thị đến — giờ",
+        "Hiển thị từ - ngày",
+        "Hiển thị từ - giờ",
+        "Hiển thị đến - ngày",
+        "Hiển thị đến - giờ",
       ] as const;
       for (const [index, label] of labels.entries()) {
         await user.type(within(dialog).getByLabelText(label), values[index]);
@@ -492,7 +492,7 @@ describe("Form banner — phần “Thời gian hiển thị”", () => {
 
       expect(
         await within(dialog).findByText(
-          "“Hiển thị đến” phải sau “Hiển thị từ”.",
+          "Hiển thị đến phải sau Hiển thị từ.",
         ),
       ).toBeInTheDocument();
       expect(updateBanner).not.toHaveBeenCalled();
@@ -505,7 +505,7 @@ describe("Form banner — phần “Thời gian hiển thị”", () => {
       const dialog = await openEdit(user);
 
       await user.type(
-        within(dialog).getByLabelText("Hiển thị từ — ngày"),
+        within(dialog).getByLabelText("Hiển thị từ - ngày"),
         "2026-09-01",
       );
       await user.click(
@@ -561,11 +561,11 @@ describe("Tạo banner mới — cấu hình cửa sổ trong MỘT lượt gử
       "Banner sự kiện tháng 9",
     );
     await user.type(
-      within(dialog).getByLabelText("Hiển thị từ — ngày"),
+      within(dialog).getByLabelText("Hiển thị từ - ngày"),
       "2026-09-20",
     );
     await user.type(
-      within(dialog).getByLabelText("Hiển thị từ — giờ"),
+      within(dialog).getByLabelText("Hiển thị từ - giờ"),
       "08:00",
     );
 
