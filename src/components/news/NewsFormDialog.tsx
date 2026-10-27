@@ -189,6 +189,8 @@ export function NewsFormDialog({ trigger, post }: NewsFormDialogProps) {
   // lại, nút `disabled` một mình không cứu được.
   const [running, setRunning] = useState(false);
   const runningRef = useRef(false);
+  // Chỉ dừng tự tạo khi sửa trực tiếp ô đường dẫn; dirtyFields cũng đổi khi bộ gõ thay chữ.
+  const slugEdited = useRef(false);
 
   const form = useForm<NewsFormValues>({
     resolver: zodResolver(newsSchema),
@@ -198,6 +200,7 @@ export function NewsFormDialog({ trigger, post }: NewsFormDialogProps) {
   useEffect(() => {
     if (open) {
       form.reset(toFormValues(post));
+      slugEdited.current = false;
       setPendingSchedule(null);
     }
   }, [open, post, form]);
@@ -521,7 +524,7 @@ export function NewsFormDialog({ trigger, post }: NewsFormDialogProps) {
                     value={field.value}
                     onChange={(value) => {
                       field.onChange(value);
-                      if (!isEdit && !form.getFieldState("slug").isDirty) {
+                      if (!isEdit && !slugEdited.current) {
                         form.setValue("slug", slugify(value.vi), {
                           shouldValidate: form.formState.isSubmitted,
                         });
@@ -545,7 +548,14 @@ export function NewsFormDialog({ trigger, post }: NewsFormDialogProps) {
               <FormItem>
                 <FormLabel>Đường dẫn bài viết</FormLabel>
                 <FormControl>
-                  <Input placeholder="le-khoi-cong-fancy-tower" {...field} />
+                  <Input
+                    placeholder="le-khoi-cong-fancy-tower"
+                    {...field}
+                    onChange={(event) => {
+                      slugEdited.current = true;
+                      field.onChange(event);
+                    }}
+                  />
                 </FormControl>
                 <FormDescription>
                   {isEdit

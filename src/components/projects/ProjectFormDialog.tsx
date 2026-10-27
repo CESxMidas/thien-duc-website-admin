@@ -105,6 +105,8 @@ export function ProjectFormDialog({
   // lại, nút `disabled` một mình không cứu được.
   const [running, setRunning] = useState(false);
   const runningRef = useRef(false);
+  // Chỉ dừng tự tạo khi sửa trực tiếp ô đường dẫn; dirtyFields cũng đổi khi bộ gõ thay chữ.
+  const slugEdited = useRef(false);
 
   const form = useForm<ProjectFormValues>({
     resolver: zodResolver(projectSchema),
@@ -115,6 +117,7 @@ export function ProjectFormDialog({
   useEffect(() => {
     if (open) {
       form.reset(toFormValues(project));
+      slugEdited.current = false;
       setPendingSchedule(null);
       setScheduleError(null);
     }
@@ -386,7 +389,7 @@ export function ProjectFormDialog({
                     value={field.value}
                     onChange={(value) => {
                       field.onChange(value);
-                      if (!isEdit && !form.getFieldState("slug").isDirty) {
+                      if (!isEdit && !slugEdited.current) {
                         form.setValue("slug", slugify(value.vi), {
                           shouldValidate: form.formState.isSubmitted,
                         });
@@ -410,7 +413,14 @@ export function ProjectFormDialog({
               <FormItem>
                 <FormLabel>Slug dự án</FormLabel>
                 <FormControl>
-                  <Input placeholder="khu-do-thi-hung-phu" {...field} />
+                  <Input
+                    placeholder="khu-do-thi-hung-phu"
+                    {...field}
+                    onChange={(event) => {
+                      slugEdited.current = true;
+                      field.onChange(event);
+                    }}
+                  />
                 </FormControl>
                 <FormDescription>
                   {isEdit

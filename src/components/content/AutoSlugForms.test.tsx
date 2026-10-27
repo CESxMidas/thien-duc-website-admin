@@ -51,6 +51,68 @@ describe.each([
     slug: "Slug trang nội dung",
   },
 ])("Tự tạo đường dẫn $name", ({ Form, title, slug }) => {
+  it("không ngừng tự tạo khi bộ gõ thay chữ d bằng đ qua giá trị rỗng", async () => {
+    const user = userEvent.setup();
+    render(
+      <MemoryRouter>
+        <Form trigger={<button>Tạo mới</button>} />
+      </MemoryRouter>,
+    );
+    await user.click(screen.getByRole("button", { name: "Tạo mới" }));
+    const nameInput = screen.getByRole("textbox", { name: title });
+    fireEvent.change(nameInput, { target: { value: "d" } });
+    fireEvent.compositionStart(nameInput);
+    fireEvent.change(nameInput, { target: { value: "" } });
+    fireEvent.change(nameInput, { target: { value: "đ" } });
+    fireEvent.compositionEnd(nameInput, { data: "đ" });
+    fireEvent.change(nameInput, { target: { value: "đô thị Hưng Phú" } });
+    expect(screen.getByRole("textbox", { name: slug })).toHaveValue(
+      "do-thi-hung-phu",
+    );
+    await user.clear(nameInput);
+    expect(screen.getByRole("textbox", { name: slug })).toHaveValue("");
+    await user.type(nameInput, "Dự án Bến Tre");
+    expect(screen.getByRole("textbox", { name: slug })).toHaveValue("du-an-ben-tre");
+  });
+
+  it("tiếp tục tạo đường dẫn khi gõ từng chữ tiếng Việt có dấu", async () => {
+    const user = userEvent.setup();
+    render(
+      <MemoryRouter>
+        <Form trigger={<button>Tạo mới</button>} />
+      </MemoryRouter>,
+    );
+    await user.click(screen.getByRole("button", { name: "Tạo mới" }));
+    const nameInput = screen.getByRole("textbox", { name: title });
+    await user.type(nameInput, "Dự án Khu đô thị Hưng Phú");
+    expect(screen.getByRole("textbox", { name: slug })).toHaveValue(
+      "du-an-khu-do-thi-hung-phu",
+    );
+    await user.tab();
+    await user.click(nameInput);
+    await user.type(nameInput, " Bến Tre");
+    expect(screen.getByRole("textbox", { name: slug })).toHaveValue(
+      "du-an-khu-do-thi-hung-phu-ben-tre",
+    );
+  });
+
+  it("bật lại tự tạo khi đóng form và mở lần tạo mới tiếp theo", async () => {
+    const user = userEvent.setup();
+    render(
+      <MemoryRouter>
+        <Form trigger={<button>Tạo mới</button>} />
+      </MemoryRouter>,
+    );
+    await user.click(screen.getByRole("button", { name: "Tạo mới" }));
+    await user.type(screen.getByRole("textbox", { name: slug }), "duong-dan-rieng");
+    await user.click(screen.getByRole("button", { name: "Hủy" }));
+    await user.click(screen.getByRole("button", { name: "Tạo mới" }));
+    await user.type(screen.getByRole("textbox", { name: title }), "Khu đô thị Hưng Phú");
+    expect(screen.getByRole("textbox", { name: slug })).toHaveValue(
+      "khu-do-thi-hung-phu",
+    );
+  });
+
   it("chuyển tên có dấu thành đường dẫn và theo sát tên tới khi người dùng chỉnh riêng", async () => {
     const user = userEvent.setup();
     render(

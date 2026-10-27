@@ -85,6 +85,8 @@ export function PageFormDialog({ trigger, page }: PageFormDialogProps) {
   // lại, nút `disabled` một mình không cứu được.
   const [running, setRunning] = useState(false);
   const runningRef = useRef(false);
+  // Chỉ dừng tự tạo khi sửa trực tiếp ô đường dẫn; dirtyFields cũng đổi khi bộ gõ thay chữ.
+  const slugEdited = useRef(false);
 
   const form = useForm<PageFormValues>({
     resolver: zodResolver(pageSchema),
@@ -94,6 +96,7 @@ export function PageFormDialog({ trigger, page }: PageFormDialogProps) {
   useEffect(() => {
     if (open) {
       form.reset(toFormValues(page));
+      slugEdited.current = false;
       setPendingSchedule(null);
       setScheduleError(null);
     }
@@ -331,6 +334,10 @@ export function PageFormDialog({ trigger, page }: PageFormDialogProps) {
                   <Input
                     placeholder="gioi-thieu"
                     {...field}
+                    onChange={(event) => {
+                      slugEdited.current = true;
+                      field.onChange(event);
+                    }}
                     disabled={isEdit}
                   />
                 </FormControl>
@@ -355,7 +362,7 @@ export function PageFormDialog({ trigger, page }: PageFormDialogProps) {
                     value={field.value}
                     onChange={(value) => {
                       field.onChange(value);
-                      if (!isEdit && !form.getFieldState("slug").isDirty) {
+                      if (!isEdit && !slugEdited.current) {
                         form.setValue("slug", slugify(value.vi), {
                           shouldValidate: form.formState.isSubmitted,
                         });
