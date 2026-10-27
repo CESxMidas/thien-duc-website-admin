@@ -124,7 +124,7 @@ export function UsersPage() {
     {
       key: "actions",
       header: "Thao tác",
-      headerClassName: "w-[384px] text-right",
+      headerClassName: "w-px text-right",
       cellClassName: "whitespace-nowrap",
       render: (u) => {
         if (!canManage)
@@ -223,8 +223,7 @@ export function UsersPage() {
           ) : null
         }
       />
-      <DataTable
-        minWidth={1000}
+      <DataTable layout="auto"
         columns={columns}
         rows={users}
         loading={isLoading}

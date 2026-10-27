@@ -288,7 +288,7 @@ export function CooperationPage() {
     {
       key: "actions",
       header: "",
-      headerClassName: "w-[512px] text-right",
+      headerClassName: "w-px text-right",
       cellClassName: "whitespace-nowrap",
       render: (project) => (
         <div
@@ -442,8 +442,7 @@ export function CooperationPage() {
           </p>
         </div>
       ) : (
-        <DataTable
-          minWidth={1160}
+        <DataTable layout="auto"
           columns={columns}
           rows={projects}
           loading={isLoading}

@@ -145,7 +145,7 @@ export function RecruitmentPositionsPage() {
     {
       key: "actions",
       header: "Thao tác",
-      headerClassName: "w-[384px] text-right",
+      headerClassName: "w-px text-right",
       cellClassName: "whitespace-nowrap",
       render: (position) => {
         const busy = busyId === position.id;
@@ -246,8 +246,7 @@ export function RecruitmentPositionsPage() {
         </Select>
       </div>
 
-      <DataTable
-        minWidth={1000}
+      <DataTable layout="auto"
         columns={columns}
         rows={visiblePositions}
         loading={isLoading}

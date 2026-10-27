@@ -19,7 +19,12 @@ const assert = require('node:assert/strict');
   const rows=await page.locator('tbody tr').all();
   for(const row of rows){const ys=await row.locator('td:last-child button').evaluateAll(btns=>btns.map(b=>Math.round(b.getBoundingClientRect().top+b.getBoundingClientRect().height/2)));assert(Math.max(...ys)-Math.min(...ys)<7,'wrapped actions '+width+': '+ys);}
  }
- await page.setViewportSize({width:1920,height:1000}); await page.screenshot({path:'artifacts/actions-inline-1920.png'});
+ projects[1]={...base,id:'published',slug:'published',contentStatus:'PUBLISHED',publishedAt:new Date().toISOString()};
+ await page.reload(); await page.locator('tbody tr').first().waitFor();
+ await page.setViewportSize({width:1920,height:1000});
+ const space=await page.locator('tbody tr').first().locator('td:last-child').evaluate(cell=>{const buttons=[...cell.querySelectorAll('button')].map(el=>el.getBoundingClientRect());return {cell:cell.clientWidth,buttons:Math.max(...buttons.map(r=>r.right))-Math.min(...buttons.map(r=>r.left))};});
+ assert(space.cell-space.buttons<40,'unused action column space '+JSON.stringify(space));console.log('Compact action column:',space);
+ await page.screenshot({path:'artifacts/actions-inline-1920.png'});
  await page.locator('tbody tr').first().locator('td:last-child button').first().click();
  const dialog=page.getByRole('dialog'); await dialog.getByRole('radio').nth(1).check();
  for(const width of [1440,375]){await page.setViewportSize({width,height:900});await page.screenshot({path:`artifacts/delete-dialog-${width}.png`});assert(await dialog.evaluate(el=>el.scrollWidth<=el.clientWidth),'dialog overflow');}

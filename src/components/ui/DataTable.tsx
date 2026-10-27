@@ -29,6 +29,7 @@ export function DataTable<T extends { id: string }>({
   emptyText = "Chưa có dữ liệu.",
   onRowClick,
   minWidth,
+  layout = "fixed",
 }: {
   columns: Column<T>[];
   rows: T[];
@@ -38,10 +39,15 @@ export function DataTable<T extends { id: string }>({
   onRowClick?: (row: T) => void;
   /** Bảng nhiều thao tác được cuộn ngang trong khung, giữ nút trên một hàng. */
   minWidth?: number;
+  /** Tự cân đối cột theo nội dung, dùng cho bảng có nhóm nút không xuống hàng. */
+  layout?: "fixed" | "auto";
 }) {
   return (
     <div className="overflow-hidden rounded-xl border border-line bg-white">
-      <Table style={minWidth ? { minWidth } : undefined}>
+      <Table
+        className={layout === "auto" ? "table-auto" : undefined}
+        style={minWidth ? { minWidth } : undefined}
+      >
         <TableHeader>
           <TableRow className="border-line bg-cream/60 hover:bg-cream/60">
             {columns.map((col) => (

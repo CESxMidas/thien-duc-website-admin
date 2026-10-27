@@ -170,8 +170,7 @@ export function ProjectsPage() {
     {
       key: "title",
       header: "Dự án",
-      headerClassName: "w-48",
-      cellClassName: "w-48",
+      cellClassName: "min-w-48",
       render: (p) => (
         <ContentListCell
           title={p.title.vi}
@@ -262,7 +261,7 @@ export function ProjectsPage() {
     {
       key: "actions",
       header: "Thao tác",
-      headerClassName: "w-[512px] text-right",
+      headerClassName: "w-px text-right",
       cellClassName: "whitespace-nowrap",
       render: (p) => {
         const busy = busySlug === p.slug;
@@ -429,8 +428,7 @@ export function ProjectsPage() {
         })}
       </div>
 
-      <DataTable
-        minWidth={1500}
+      <DataTable layout="auto"
         columns={columns}
         rows={rows}
         loading={isLoading}

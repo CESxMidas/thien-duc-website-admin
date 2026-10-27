@@ -223,7 +223,7 @@ export function NewsPage() {
     {
       key: "actions",
       header: "Thao tác",
-      headerClassName: "w-[512px] text-right",
+      headerClassName: "w-px text-right",
       cellClassName: "whitespace-nowrap",
       render: (post) => {
         const busy = busySlug === post.slug;
@@ -434,8 +434,7 @@ export function NewsPage() {
         </div>
       )}
 
-      <DataTable
-        minWidth={1200}
+      <DataTable layout="auto"
         columns={columns}
         rows={rows}
         loading={isLoading}

@@ -174,7 +174,7 @@ export function PagesPage() {
     {
       key: "actions",
       header: "",
-      headerClassName: "w-[512px] text-right",
+      headerClassName: "w-px text-right",
       cellClassName: "whitespace-nowrap",
       render: (page) => (
         <div
@@ -297,8 +297,7 @@ export function PagesPage() {
           />
         }
       />
-      <DataTable
-        minWidth={1160}
+      <DataTable layout="auto"
         columns={columns}
         rows={pages}
         loading={isLoading}
