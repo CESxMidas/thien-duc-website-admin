@@ -174,9 +174,11 @@ export function PagesPage() {
     {
       key: "actions",
       header: "",
+      headerClassName: "w-[512px] text-right",
+      cellClassName: "whitespace-nowrap",
       render: (page) => (
         <div
-          className="flex flex-wrap items-center gap-1"
+          className="flex whitespace-nowrap [&>*]:shrink-0 flex-nowrap items-center gap-1"
           onClick={(event) => event.stopPropagation()}
         >
           <DeleteContentButton
@@ -296,6 +298,7 @@ export function PagesPage() {
         }
       />
       <DataTable
+        minWidth={1160}
         columns={columns}
         rows={pages}
         loading={isLoading}

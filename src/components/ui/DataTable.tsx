@@ -28,6 +28,7 @@ export function DataTable<T extends { id: string }>({
   loading = false,
   emptyText = "Chưa có dữ liệu.",
   onRowClick,
+  minWidth,
 }: {
   columns: Column<T>[];
   rows: T[];
@@ -35,12 +36,12 @@ export function DataTable<T extends { id: string }>({
   emptyText?: string;
   /** Có truyền thì hàng bấm được (mở chi tiết) — thêm cursor + hover ấm. */
   onRowClick?: (row: T) => void;
+  /** Bảng nhiều thao tác được cuộn ngang trong khung, giữ nút trên một hàng. */
+  minWidth?: number;
 }) {
   return (
-    // Không đặt `min-w-*` cho bảng: chuỗi dài như slug/URL tự xuống dòng trong ô,
-    // thay vì kéo cả CSM sinh thanh cuộn ngang.
     <div className="overflow-hidden rounded-xl border border-line bg-white">
-      <Table>
+      <Table style={minWidth ? { minWidth } : undefined}>
         <TableHeader>
           <TableRow className="border-line bg-cream/60 hover:bg-cream/60">
             {columns.map((col) => (

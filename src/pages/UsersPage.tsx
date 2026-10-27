@@ -124,8 +124,8 @@ export function UsersPage() {
     {
       key: "actions",
       header: "Thao tác",
-      headerClassName: "w-80 text-right",
-      cellClassName: "w-80 whitespace-normal",
+      headerClassName: "w-[384px] text-right",
+      cellClassName: "whitespace-nowrap",
       render: (u) => {
         if (!canManage)
           return u.role !== "SUPER_ADMIN" && u.id !== currentUser?.id ? (
@@ -137,7 +137,7 @@ export function UsersPage() {
           // stopPropagation: hàng đã bấm được để mở chi tiết — các nút thao
           // tác không được kích hoạt luôn cả modal.
           <div
-            className="flex flex-wrap justify-end gap-1"
+            className="flex whitespace-nowrap [&>*]:shrink-0 flex-nowrap justify-end gap-1"
             onClick={(e) => e.stopPropagation()}
           >
             <DeletePermissionsDialog user={u} />
@@ -224,6 +224,7 @@ export function UsersPage() {
         }
       />
       <DataTable
+        minWidth={1000}
         columns={columns}
         rows={users}
         loading={isLoading}

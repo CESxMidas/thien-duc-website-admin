@@ -288,10 +288,11 @@ export function CooperationPage() {
     {
       key: "actions",
       header: "",
-      headerClassName: "text-right",
+      headerClassName: "w-[512px] text-right",
+      cellClassName: "whitespace-nowrap",
       render: (project) => (
         <div
-          className="flex flex-wrap justify-end gap-1"
+          className="flex whitespace-nowrap [&>*]:shrink-0 flex-nowrap justify-end gap-1"
           onClick={(event) => event.stopPropagation()}
         >
           <DeleteContentButton
@@ -441,7 +442,12 @@ export function CooperationPage() {
           </p>
         </div>
       ) : (
-        <DataTable columns={columns} rows={projects} loading={isLoading} />
+        <DataTable
+          minWidth={1160}
+          columns={columns}
+          rows={projects}
+          loading={isLoading}
+        />
       )}
 
       {/* Dùng lại đúng hộp thoại của Tin tức/Dự án — cùng ràng buộc giờ Việt

@@ -262,8 +262,8 @@ export function ProjectsPage() {
     {
       key: "actions",
       header: "Thao tác",
-      headerClassName: "w-64 border-l border-line/70 pr-4 text-right",
-      cellClassName: "w-64 border-l border-line/70 px-3",
+      headerClassName: "w-[512px] text-right",
+      cellClassName: "whitespace-nowrap",
       render: (p) => {
         const busy = busySlug === p.slug;
         const state = deriveProjectPublicationState(p, now);
@@ -282,7 +282,7 @@ export function ProjectsPage() {
           // stopPropagation: hàng đã bấm được để mở chi tiết — các nút thao tác
           // không được kích hoạt luôn cả modal.
           <div
-            className="flex max-w-full flex-wrap items-center justify-end gap-1.5 py-1"
+            className="flex whitespace-nowrap [&>*]:shrink-0 max-w-full flex-nowrap items-center justify-end gap-1.5 py-1"
             onClick={(e) => e.stopPropagation()}
           >
             <DeleteContentButton kind="projects" id={p.id} title={p.title.vi} />
@@ -430,6 +430,7 @@ export function ProjectsPage() {
       </div>
 
       <DataTable
+        minWidth={1500}
         columns={columns}
         rows={rows}
         loading={isLoading}

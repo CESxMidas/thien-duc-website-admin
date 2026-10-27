@@ -223,8 +223,8 @@ export function NewsPage() {
     {
       key: "actions",
       header: "Thao tác",
-      headerClassName: "w-80 text-right",
-      cellClassName: "w-80 whitespace-normal",
+      headerClassName: "w-[512px] text-right",
+      cellClassName: "whitespace-nowrap",
       render: (post) => {
         const busy = busySlug === post.slug;
         const state = derivePublicationState(post, now);
@@ -242,7 +242,7 @@ export function NewsPage() {
         return (
           <div
             // Cho nút xuống hàng trong cột, không đè lên mốc cập nhật bên cạnh.
-            className="flex flex-wrap items-center justify-end gap-1"
+            className="flex whitespace-nowrap [&>*]:shrink-0 flex-nowrap items-center justify-end gap-1"
             // Bảng có onRowClick ở nơi khác; chặn nổi bọt để bấm nút không mở hàng.
             onClick={(event) => event.stopPropagation()}
           >
@@ -435,6 +435,7 @@ export function NewsPage() {
       )}
 
       <DataTable
+        minWidth={1200}
         columns={columns}
         rows={rows}
         loading={isLoading}

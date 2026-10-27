@@ -145,12 +145,14 @@ export function RecruitmentPositionsPage() {
     {
       key: "actions",
       header: "Thao tác",
+      headerClassName: "w-[384px] text-right",
+      cellClassName: "whitespace-nowrap",
       render: (position) => {
         const busy = busyId === position.id;
         const actions = contentStatusActions(user?.role, position.status);
         return (
           <div
-            className="flex flex-wrap items-center justify-end gap-1"
+            className="flex whitespace-nowrap [&>*]:shrink-0 flex-nowrap items-center justify-end gap-1"
             onClick={(event) => event.stopPropagation()}
           >
             {busy && <Loader2 className="size-4 animate-spin text-slate" />}
@@ -245,6 +247,7 @@ export function RecruitmentPositionsPage() {
       </div>
 
       <DataTable
+        minWidth={1000}
         columns={columns}
         rows={visiblePositions}
         loading={isLoading}

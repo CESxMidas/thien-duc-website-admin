@@ -6,6 +6,7 @@ import { Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { SplitModal } from "@/components/ui/SplitModal";
+import type { SplitModalSize } from "@/components/ui/SplitModal";
 
 export function ConfirmDialog({
   open,
@@ -16,6 +17,7 @@ export function ConfirmDialog({
   submitting = false,
   confirmDisabled = false,
   onConfirm,
+  size = "default",
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -25,12 +27,13 @@ export function ConfirmDialog({
   submitting?: boolean;
   confirmDisabled?: boolean;
   onConfirm: () => void;
+  size?: SplitModalSize;
 }) {
   return (
     <SplitModal
       open={open}
       onOpenChange={onOpenChange}
-      size="default"
+      size={size}
       title={title}
       footer={
         <>

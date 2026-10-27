@@ -25,7 +25,10 @@ export function DeleteContentButton(props: Props) {
   const [open, setOpen] = useState(false);
   if (!canDeleteContent(user)) return null;
   return (
-    <span onClick={(event) => event.stopPropagation()}>
+    <span
+      className="inline-flex shrink-0"
+      onClick={(event) => event.stopPropagation()}
+    >
       <Button
         type="button"
         variant="ghost"
@@ -82,6 +85,7 @@ function DeleteConfirmation({
   return (
     <ConfirmDialog
       open
+      size="wide"
       onOpenChange={(value) => {
         if (!value && !mutation.isPending) onClose();
       }}
@@ -99,7 +103,7 @@ function DeleteConfirmation({
                   name="delete-mode"
                   checked={!permanent}
                   onChange={() => setPermanent(false)}
-                  className="size-4 accent-brand"
+                  className="size-4 shrink-0 accent-brand"
                 />
                 Đưa vào thùng rác — có thể khôi phục
               </label>
@@ -109,7 +113,7 @@ function DeleteConfirmation({
                   name="delete-mode"
                   checked={permanent}
                   onChange={() => setPermanent(true)}
-                  className="size-4 accent-brand"
+                  className="size-4 shrink-0 accent-brand"
                 />
                 Xóa vĩnh viễn — không thể khôi phục
               </label>
@@ -117,9 +121,8 @@ function DeleteConfirmation({
           )}
           {permanent ? (
             <>
-              <p className="font-medium text-destructive">
-                Nội dung sẽ bị xóa vĩnh viễn khỏi CMS. Thao tác này không thể
-                hoàn tác.
+              <p className="text-pretty font-medium text-destructive">
+                Xóa vĩnh viễn khỏi CMS. Không thể khôi phục.
               </p>
               <label className="flex min-h-11 items-center gap-3">
                 <input
@@ -127,13 +130,13 @@ function DeleteConfirmation({
                   checked={acknowledged}
                   disabled={mutation.isPending}
                   onChange={(event) => setAcknowledged(event.target.checked)}
-                  className="size-4 accent-brand"
+                  className="size-4 shrink-0 accent-brand"
                 />
                 Tôi hiểu và đồng ý xóa vĩnh viễn.
               </label>
             </>
           ) : (
-            <p>
+            <p className="text-pretty">
               Nội dung ngừng hiển thị và có thể khôi phục trong mục Thùng rác.
             </p>
           )}
