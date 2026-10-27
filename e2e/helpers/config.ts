@@ -52,7 +52,7 @@ for (const url of [ADMIN_ORIGIN, ADMIN_URL, FRONTEND_URL, API_URL]) {
  * đi lạc ra ngoài app. Playwright cũng KHÔNG biết gì về `basename` của React
  * Router, nên không có cơ chế nào tự sửa hộ.
  *
- * `adminPath('/dang-nhap')` → `'/admin/dang-nhap'`.
+ * `adminPath('/')` → `'/admin/'` (đường vào gốc trên dev server).
  */
 export function adminPath(path: string): string {
   return `${ADMIN_BASE_PATH}/${path.replace(/^\/+/, '')}`;

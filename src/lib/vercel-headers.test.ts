@@ -102,7 +102,7 @@ describe("vercel.json — header bảo mật Admin SPA", () => {
   it("redirect gốc / về /admin/ (tạm thời, không permanent)", () => {
     const redirect = config.redirects?.find((r) => r.source === "/");
     expect(redirect).toBeDefined();
-    expect(redirect!.destination).toBe("/admin/");
+    expect(redirect!.destination).toBe("/admin");
     // 307/308 tạm: không để trình duyệt cache vĩnh viễn một quyết định hạ tầng.
     expect(redirect!.permanent).toBe(false);
   });

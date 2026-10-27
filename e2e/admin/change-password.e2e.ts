@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { adminPath, uniqueE2eEmail } from '../helpers/config';
-import { apiLogin, deleteTestUsers, getTestUser, upsertTestUser } from '../helpers/api';
+import { apiLogin, deleteTestUsers, getTestUser, upsertTestUser, getOutbox } from '../helpers/api';
 import { expectLoggedIn, uiLogin } from '../helpers/auth';
 
 /**
@@ -69,11 +69,17 @@ test('đổi mật khẩu thành công: về /admin/dang-nhap, mật khẩu cũ 
   await dialog.getByLabel('Mật khẩu hiện tại', { exact: true }).fill(OLD_PW);
   await dialog.getByLabel('Mật khẩu mới', { exact: true }).fill(NEW_PW);
   await dialog.getByLabel('Xác nhận mật khẩu mới', { exact: true }).fill(NEW_PW);
-  await dialog.getByRole('button', { name: 'Đổi mật khẩu' }).click();
+  await dialog.getByRole('button', { name: 'Gửi mã xác nhận' }).click();
+  await expect(dialog.getByLabel('Mã xác nhận', { exact: true })).toBeVisible();
+  const email = (await getOutbox(fixtureEmail)).find(entry => entry.type === 'password-change');
+  const code = email?.text.match(/\b\d{6}\b/)?.[0];
+  if (!code) throw new Error('Không tìm thấy mã đổi mật khẩu trong hộp thư kiểm thử.');
+  await dialog.getByLabel('Mã xác nhận', { exact: true }).fill(code);
+  await dialog.getByRole('button', { name: 'Xác nhận đổi mật khẩu' }).click();
 
   // 1. Bị đá về trang đăng nhập, GIỮ tiền tố /admin.
-  await page.waitForURL(`**${adminPath('/dang-nhap')}`);
-  expect(new URL(page.url()).pathname).toBe(adminPath('/dang-nhap'));
+  await page.waitForURL(/\/admin\/?$/);
+  expect(new URL(page.url()).pathname.replace(/\/$/, '')).toBe('/admin');
 
   // Token phía client đã bị dọn sạch ở CẢ hai kiểu lưu.
   const tokens = await page.evaluate(() => ({
@@ -115,7 +121,7 @@ test('sai mật khẩu hiện tại: báo lỗi, KHÔNG đăng xuất, mật kh�
   await dialog.getByLabel('Mật khẩu hiện tại', { exact: true }).fill('SaiHoanToan!123');
   await dialog.getByLabel('Mật khẩu mới', { exact: true }).fill(NEW_PW);
   await dialog.getByLabel('Xác nhận mật khẩu mới', { exact: true }).fill(NEW_PW);
-  await dialog.getByRole('button', { name: 'Đổi mật khẩu' }).click();
+  await dialog.getByRole('button', { name: 'Gửi mã xác nhận' }).click();
 
   await expect(page.getByText('Mật khẩu hiện tại không đúng.')).toBeVisible();
 

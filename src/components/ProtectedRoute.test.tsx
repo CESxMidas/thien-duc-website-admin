@@ -34,7 +34,7 @@ function renderGuarded(roles?: Role[]) {
             </ProtectedRoute>
           }
         />
-        <Route path="/dang-nhap" element={<div>LOGIN</div>} />
+        <Route path="/" element={<div>LOGIN</div>} />
         <Route path="/403" element={<div>FORBIDDEN</div>} />
       </Routes>
     </MemoryRouter>,

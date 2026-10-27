@@ -6,7 +6,7 @@ export const ACCESS_TOKEN_KEY = 'td_admin_access_token';
 export const REFRESH_TOKEN_KEY = 'td_admin_refresh_token';
 
 export async function gotoLogin(page: Page): Promise<void> {
-  await page.goto(adminPath('/dang-nhap'));
+  await page.goto(adminPath('/'));
   await expect(
     page.getByRole('heading', { name: 'Đăng nhập hệ thống quản trị' }),
   ).toBeVisible();

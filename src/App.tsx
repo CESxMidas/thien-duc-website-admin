@@ -3,7 +3,7 @@ import { toRouterBasename } from "@/lib/base-path";
 import { AuthProvider } from "@/context/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AdminLayout } from "@/components/layout/AdminLayout";
-import { LoginPage } from "@/pages/LoginPage";
+import { AdminEntry, LegacyLoginRedirect } from "@/components/AdminEntry";
 import { AccountSetupPage } from "@/pages/AccountSetupPage";
 import { ForgotPasswordPage } from "@/pages/ForgotPasswordPage";
 import { ResetPasswordPage } from "@/pages/ResetPasswordPage";
@@ -31,7 +31,10 @@ export default function App() {
     <AuthProvider>
       <BrowserRouter basename={toRouterBasename()}>
         <Routes>
-          <Route path="/dang-nhap" element={<LoginPage />} />
+          <Route path="/" element={<AdminEntry />}>
+            <Route index element={<DashboardPage />} />
+          </Route>
+          <Route path="/dang-nhap" element={<LegacyLoginRedirect />} />
           <Route path="/thiet-lap-tai-khoan" element={<AccountSetupPage />} />
           <Route path="/quen-mat-khau" element={<ForgotPasswordPage />} />
           <Route path="/dat-lai-mat-khau" element={<ResetPasswordPage />} />
@@ -43,7 +46,6 @@ export default function App() {
               </ProtectedRoute>
             }
           >
-            <Route index element={<DashboardPage />} />
             <Route path="du-an" element={<ProjectsPage />} />
             <Route path="tin-tuc" element={<NewsPage />} />
             <Route path="tin-tuc/chuyen-muc" element={<NewsCategoriesPage />} />

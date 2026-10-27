@@ -45,6 +45,7 @@ export function toRouterBasename(base: string = RAW_BASE): string {
  */
 export function withBase(path: string, base: string = RAW_BASE): string {
   const prefix = base.endsWith("/") ? base : `${base}/`;
+  if (!path.replace(/^\/+/, "")) return prefix.replace(/\/+$/, "") || "/";
   // Cắt MỌI `/` đầu của path con: `prefix` đã có sẵn một cái.
   return `${prefix}${path.replace(/^\/+/, "")}`;
 }

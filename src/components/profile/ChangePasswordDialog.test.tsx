@@ -279,14 +279,16 @@ describe("ChangePasswordDialog", () => {
     // trang 404 của website công khai, không phải trang đăng nhập CMS.
     const spy = vi
       .spyOn(basePath, "withBase")
-      .mockImplementation((path: string) => `/admin${path}`);
+      .mockImplementation((path: string) =>
+        path === "/" ? "/admin" : `/admin${path}`,
+      );
 
     const { user } = setup();
     await submitValid(user);
 
     await waitFor(() => expect(assign).toHaveBeenCalledTimes(1));
     expect(spy).toHaveBeenCalledWith(LOGIN_PATH);
-    expect(assign).toHaveBeenCalledWith("/admin/dang-nhap");
+    expect(assign).toHaveBeenCalledWith("/admin");
   });
 
   it("sai mật khẩu hiện tại (400): hiện message của backend, KHÔNG đăng xuất", async () => {

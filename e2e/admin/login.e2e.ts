@@ -74,7 +74,7 @@ test.describe('Admin — Đăng nhập (mục 6)', () => {
   }) => {
     await uiLogin(page, seed.admin.email, 'SaiMatKhau!123');
     await expect(page.locator('[data-sonner-toast]')).toBeVisible();
-    await expect(page).toHaveURL(/\/dang-nhap$/);
+    await expect(page).toHaveURL(/\/admin\/?$/);
     // Mật khẩu bị xóa sau lỗi (không giữ lại trên form).
     await expect(page.getByLabel('Mật khẩu', { exact: true })).toHaveValue('');
   });
@@ -84,7 +84,7 @@ test.describe('Admin — Đăng nhập (mục 6)', () => {
   }) => {
     await uiLogin(page, pendingUser, FIXTURE_PW);
     await expect(page.locator('[data-sonner-toast]')).toBeVisible();
-    await expect(page).toHaveURL(/\/dang-nhap$/);
+    await expect(page).toHaveURL(/\/admin\/?$/);
   });
 
   test('tài khoản bị vô hiệu hóa (inactive) KHÔNG đăng nhập được', async ({
@@ -92,16 +92,15 @@ test.describe('Admin — Đăng nhập (mục 6)', () => {
   }) => {
     await uiLogin(page, inactiveUser, FIXTURE_PW);
     await expect(page.locator('[data-sonner-toast]')).toBeVisible();
-    await expect(page).toHaveURL(/\/dang-nhap$/);
+    await expect(page).toHaveURL(/\/admin\/?$/);
   });
 
   test('ADMIN đăng nhập thành công → vào khu vực bảo vệ', async ({ page }) => {
     await uiLogin(page, seed.admin.email, seed.admin.password);
     await expectLoggedIn(page);
-    // So theo ĐUÔI, không theo tiền tố: dưới base `/admin`, pathname là
-    // `/admin/dang-nhap` — `startsWith('/dang-nhap')` sẽ luôn false và biến
-    // khẳng định này thành vô nghĩa (test xanh kể cả khi vẫn kẹt ở trang login).
-    await expect(page).toHaveURL((u) => !u.pathname.endsWith('/dang-nhap'));
+    // Form và Tổng quan cùng dùng đường gốc; trạng thái đăng nhập được kiểm
+    // bằng thanh điều hướng ở trên, không suy ra chỉ từ URL.
+    await expect(page).toHaveURL(/\/admin\/?$/);
   });
 
   test('SUPER_ADMIN đăng nhập thành công', async ({ page }) => {
@@ -122,7 +121,7 @@ test.describe('Admin — Đăng nhập (mục 6)', () => {
     // Mở menu người dùng ở topbar (nút có aria-haspopup) rồi bấm "Đăng xuất".
     await page.locator('button[aria-haspopup="true"]').click();
     await page.getByRole('button', { name: 'Đăng xuất' }).click();
-    await expect(page).toHaveURL(/\/dang-nhap$/);
+    await expect(page).toHaveURL(/\/admin\/?$/);
     const tokens = await readStoredTokens(page);
     expect(tokens.local.concat(tokens.session).filter(Boolean)).toHaveLength(0);
   });
@@ -131,7 +130,7 @@ test.describe('Admin — Đăng nhập (mục 6)', () => {
     page,
   }) => {
     await page.goto(adminPath('/tai-khoan'));
-    await expect(page).toHaveURL(/\/dang-nhap$/);
+    await expect(page).toHaveURL(/\/admin\/?$/);
   });
 
   test('điều hướng theo vai trò: EDITOR không thấy mục quản trị', async ({
@@ -175,7 +174,7 @@ test.describe('Admin — Đăng nhập (mục 6)', () => {
     await page.keyboard.press('Space');
     await expect(pwd).toHaveAttribute('type', 'password');
     // Không điều hướng đi đâu (form không bị submit ngoài ý muốn).
-    await expect(page).toHaveURL(/\/dang-nhap$/);
+    await expect(page).toHaveURL(/\/admin\/?$/);
   });
 
   test('nhấn Enter trong ô mật khẩu submit form đăng nhập', async ({ page }) => {

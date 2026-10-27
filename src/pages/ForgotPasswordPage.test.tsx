@@ -101,9 +101,7 @@ describe("ForgotPasswordPage", () => {
     );
 
     await waitFor(() => {
-      expect(
-        screen.getByRole("button", { name: /Đang gửi/i }),
-      ).toBeDisabled();
+      expect(screen.getByRole("button", { name: /Đang gửi/i })).toBeDisabled();
     });
     // Chỉ gọi đúng một lần dù người dùng có bấm thêm.
     expect(requestPasswordReset).toHaveBeenCalledTimes(1);
@@ -130,6 +128,6 @@ describe("ForgotPasswordPage", () => {
     renderPage();
     expect(
       screen.getByRole("link", { name: /Quay lại đăng nhập/i }),
-    ).toHaveAttribute("href", "/dang-nhap");
+    ).toHaveAttribute("href", "/");
   });
 });

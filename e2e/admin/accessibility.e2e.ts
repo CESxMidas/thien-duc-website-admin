@@ -60,7 +60,7 @@ test.describe('§13 — Kiểm thử accessibility (axe)', () => {
   test('Admin đăng nhập: axe + đúng một h1 + nút hiện mật khẩu có tên khả truy cập', async ({
     page,
   }) => {
-    await page.goto(adminPath('/dang-nhap'));
+    await page.goto(adminPath('/'));
     await expect(
       page.getByRole('heading', { name: 'Đăng nhập hệ thống quản trị' }),
     ).toBeVisible();

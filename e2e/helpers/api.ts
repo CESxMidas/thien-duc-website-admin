@@ -139,7 +139,7 @@ export async function getTestUser(
 
 export interface OutboxEntry {
   id: string;
-  type: 'contact' | 'invitation' | 'password-reset';
+  type: 'contact' | 'invitation' | 'password-reset' | 'password-change';
   to: string;
   subject: string;
   text: string;

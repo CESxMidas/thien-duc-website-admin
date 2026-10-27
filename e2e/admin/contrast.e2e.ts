@@ -81,7 +81,7 @@ for (const vp of VIEWPORTS) {
     test('Admin: login/forgot/reset/setup/users — 0 vi phạm tương phản', async ({
       page,
     }) => {
-      await goAdmin(page, '/dang-nhap');
+      await goAdmin(page, '/');
       await expectNoColorContrast(page, `admin-login-${vp.name}`);
       await goAdmin(page, '/quen-mat-khau');
       await expectNoColorContrast(page, `admin-forgot-${vp.name}`);

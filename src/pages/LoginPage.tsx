@@ -1,10 +1,5 @@
 import { useState } from "react";
-import {
-  useNavigate,
-  useLocation,
-  Navigate,
-  Link,
-} from "react-router-dom";
+import { useNavigate, useLocation, Navigate, Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -52,14 +47,22 @@ export function LoginPage() {
     defaultValues: { email: "", password: "" },
   });
 
+  const target = (
+    location.state as {
+      from?: { pathname: string; search?: string; hash?: string };
+    } | null
+  )?.from;
   const from =
-    (location.state as { from?: { pathname: string } } | null)?.from
-      ?.pathname ?? "/";
+    target?.pathname?.startsWith("/") &&
+    !target.pathname.startsWith("//") &&
+    target.pathname !== "/dang-nhap"
+      ? `${target.pathname}${target.search ?? ""}${target.hash ?? ""}`
+      : "/";
 
   // Đang khôi phục phiên (đổi refresh token) → chưa vẽ form để tránh nháy.
   if (isLoading) return null;
 
-  // Đã đăng nhập mà vào /dang-nhap → về Dashboard (hoặc route đã lưu).
+  // Khi dùng riêng trang đăng nhập, tài khoản đã có phiên về route đã lưu.
   if (user) return <Navigate to={from} replace />;
 
   async function onSubmit(values: LoginValues) {
@@ -151,11 +154,7 @@ export function LoginPage() {
             </Link>
           </div>
 
-          <Button
-            type="submit"
-            className="h-11 w-full"
-            disabled={submitting}
-          >
+          <Button type="submit" className="h-11 w-full" disabled={submitting}>
             {submitting ? (
               <Loader2 className="size-4 animate-spin" />
             ) : (

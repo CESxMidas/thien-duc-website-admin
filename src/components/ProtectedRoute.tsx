@@ -2,6 +2,7 @@ import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import type { ReactNode } from "react";
 import type { Role } from "@/types";
+import { LOGIN_PATH } from "@/lib/api/client";
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -18,7 +19,7 @@ export function ProtectedRoute({ children, roles }: ProtectedRouteProps) {
 
   // Chưa đăng nhập → về login, nhớ route đang muốn vào để quay lại sau khi login.
   if (!user) {
-    return <Navigate to="/dang-nhap" replace state={{ from: location }} />;
+    return <Navigate to={LOGIN_PATH} replace state={{ from: location }} />;
   }
 
   // Đã đăng nhập nhưng không đủ quyền → 403.

@@ -155,9 +155,7 @@ describe("ResetPasswordPage", () => {
       screen.getByRole("button", { name: /Đặt lại mật khẩu/i }),
     );
 
-    expect(
-      await screen.findByText(/ít nhất 8 ký tự/i),
-    ).toBeInTheDocument();
+    expect(await screen.findByText(/ít nhất 8 ký tự/i)).toBeInTheDocument();
     expect(resetPassword).not.toHaveBeenCalled();
   });
 
@@ -240,7 +238,7 @@ describe("ResetPasswordPage", () => {
       name: /Đặt lại mật khẩu thành công/i,
     });
     await userEvent.click(screen.getByRole("button", { name: /Đăng nhập/i }));
-    expect(navigateSpy).toHaveBeenCalledWith("/dang-nhap", { replace: true });
+    expect(navigateSpy).toHaveBeenCalledWith("/", { replace: true });
   });
 
   it("token chết giữa chừng (backend từ chối) → chuyển sang trạng thái không hợp lệ", async () => {
@@ -294,6 +292,6 @@ describe("ResetPasswordPage", () => {
     ).toHaveAttribute("href", "/quen-mat-khau");
     expect(
       screen.getByRole("link", { name: /Quay lại đăng nhập/i }),
-    ).toHaveAttribute("href", "/dang-nhap");
+    ).toHaveAttribute("href", "/");
   });
 });

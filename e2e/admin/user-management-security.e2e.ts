@@ -343,7 +343,7 @@ test.describe('§9 — Bảo mật quản lý tài khoản', () => {
   }) => {
     // Chưa đăng nhập → chuyển hướng.
     await page.goto(adminPath('/tai-khoan'));
-    await expect(page).toHaveURL(/\/dang-nhap$/);
+    await expect(page).toHaveURL(/\/admin\/?$/);
 
     // Đăng nhập, mở danh sách, rồi đăng xuất.
     await uiLogin(page, seed.superAdmin.email, seed.superAdmin.password);
@@ -354,7 +354,7 @@ test.describe('§9 — Bảo mật quản lý tài khoản', () => {
     ).toBeVisible();
     await page.locator('button[aria-haspopup="true"]').click();
     await page.getByRole('button', { name: 'Đăng xuất' }).click();
-    await expect(page).toHaveURL(/\/dang-nhap$/);
+    await expect(page).toHaveURL(/\/admin\/?$/);
 
     // Back sau khi đăng xuất KHÔNG để lộ nội dung được bảo vệ (bảng tài khoản).
     await page.goBack();
@@ -363,7 +363,7 @@ test.describe('§9 — Bảo mật quản lý tài khoản', () => {
     ).toHaveCount(0);
     // Điều hướng thẳng lại route bảo vệ khi đã đăng xuất → bị đẩy về đăng nhập.
     await page.goto(adminPath('/tai-khoan'));
-    await expect(page).toHaveURL(/\/dang-nhap$/);
+    await expect(page).toHaveURL(/\/admin\/?$/);
   });
 
   // ---------------- Mục 10: quyền riêng tư response ----------------

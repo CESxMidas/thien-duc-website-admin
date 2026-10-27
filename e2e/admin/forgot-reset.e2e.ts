@@ -136,7 +136,7 @@ test.describe('Admin — Quên/Đặt lại mật khẩu (mục 8)', () => {
     // Mật khẩu cũ KHÔNG đăng nhập được nữa.
     await uiLogin(page, resetUser, INITIAL_PW);
     await expect(page.locator('[data-sonner-toast]')).toBeVisible();
-    await expect(page).toHaveURL(/\/dang-nhap$/);
+    await expect(page).toHaveURL(/\/admin\/?$/);
 
     // Mật khẩu mới đăng nhập được.
     await uiLogin(page, resetUser, NEW_PW);

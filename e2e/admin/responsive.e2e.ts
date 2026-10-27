@@ -116,7 +116,7 @@ for (const vp of VIEWPORTS) {
     test('Admin: login/forgot/reset/setup không tràn ngang + control chính hiển thị', async ({
       page,
     }) => {
-      await page.goto(adminPath('/dang-nhap'));
+      await page.goto(adminPath('/'));
       await expect(
         page.getByRole('button', { name: 'Đăng nhập' }),
       ).toBeVisible();

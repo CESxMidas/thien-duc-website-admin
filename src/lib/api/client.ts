@@ -11,7 +11,7 @@ const ACCESS_TOKEN_KEY = "td_admin_access_token";
 const REFRESH_TOKEN_KEY = "td_admin_refresh_token";
 
 /** Đường dẫn trang đăng nhập (khớp route trong App.tsx). */
-export const LOGIN_PATH = "/dang-nhap";
+export const LOGIN_PATH = "/";
 
 /** Trang quên mật khẩu — công khai (khớp route trong App.tsx). */
 export const FORGOT_PASSWORD_PATH = "/quen-mat-khau";
@@ -114,17 +114,14 @@ interface FetchConfig {
  * hook. Đổi lại, nó **bỏ qua `basename`** của router nên phải tự gắn base
  * (Batch 15B).
  *
- * Không gắn base thì khi phiên hết hạn ở `/admin/du-an`, trình duyệt nhảy tới
- * `https://www.thienduccons.vn/dang-nhap` — trang 404 của WEBSITE CÔNG KHAI,
- * không phải trang đăng nhập CMS. Biên tập viên bị đá khỏi CMS mà không hiểu vì
- * sao.
- *
- * Chốt chống lặp cũng phải so sánh theo base: `location.pathname` là
- * `/admin/dang-nhap` còn `LOGIN_PATH` là `/dang-nhap`, so trực tiếp luôn khác
- * nhau → sẽ tự gán lại location ngay khi đang đứng ở trang đăng nhập.
+ * LOGIN_PATH là `/` theo gốc router; `withBase` đưa về `/admin`, tránh đi lạc
+ * ra trang chủ website công khai. So đường dẫn kèm trạng thái phiên để vừa
+ * dọn được context Tổng quan, vừa không lặp tải lại trên form đăng nhập.
  */
-function redirectToLogin(): void {
-  if (!isAppPath(window.location.pathname, LOGIN_PATH)) {
+function redirectToLogin(hadSession: boolean): void {
+  // Tổng quan và đăng nhập dùng chung URL. Phiên vừa hết ở Tổng quan vẫn
+  // cần tải lại để xóa context/cache, dù pathname đã là /admin.
+  if (hadSession || !isAppPath(window.location.pathname, LOGIN_PATH)) {
     window.location.assign(withBase(LOGIN_PATH));
   }
 }
@@ -191,6 +188,7 @@ async function requestWithRefresh<T>(
   allowRefresh: boolean,
 ): Promise<T> {
   const token = getAccessToken();
+  const hadSession = Boolean(token || getRefreshToken());
   const headers = new Headers(options.headers);
   // Với FormData (upload ảnh) phải để trình duyệt tự đặt Content-Type kèm
   // `boundary` — ép sẵn application/json thì backend không parse được file.
@@ -229,7 +227,7 @@ async function requestWithRefresh<T>(
         }
         clearTokens();
         toast.error("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
-        redirectToLogin();
+        redirectToLogin(hadSession);
       } else if (res.status === 403) {
         toast.error("Bạn không có quyền thực hiện thao tác này.");
       }

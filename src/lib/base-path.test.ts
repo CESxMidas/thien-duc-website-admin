@@ -29,6 +29,11 @@ describe("toRouterBasename", () => {
 });
 
 describe("withBase", () => {
+  it("gốc đăng nhập được chuẩn hóa thành /admin, không có dấu / cuối", () => {
+    expect(withBase("/", "/admin/")).toBe("/admin");
+    expect(withBase("/", "/")).toBe("/");
+    expect(isAppPath("/admin/", "/", "/admin/")).toBe(true);
+  });
   it("ghép path public vào base /admin/", () => {
     expect(withBase("/images/brand/logo-thien-duc.png", "/admin/")).toBe(
       "/admin/images/brand/logo-thien-duc.png",
