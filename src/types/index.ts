@@ -301,6 +301,10 @@ export interface Lead {
   ipAddress: string | null;
   createdAt: string;
   updatedAt: string;
+  applicationPositionId?: string | null;
+  applicationPositionTitle?: string | null;
+  applicationCvLink?: string | null;
+  applicationCv?: { fileName: string; size: number } | null;
 }
 
 /** Ảnh trên Cloudinary (`media_assets`). */

@@ -18,6 +18,14 @@ export function listLeads(): Promise<Lead[]> {
   return apiFetch<Lead[]>("/contact");
 }
 
+export function downloadApplicationCv(id: string): Promise<Blob> {
+  return apiFetch<Blob>(
+    `/contact/${encodeURIComponent(id)}/cv`,
+    {},
+    { responseType: "blob" },
+  );
+}
+
 export function updateLead(id: string, input: UpdateLeadInput): Promise<Lead> {
   return apiFetch<Lead>(`/contact/${id}`, {
     method: "PATCH",

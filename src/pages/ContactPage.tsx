@@ -30,6 +30,11 @@ const columns: Column<Lead>[] = [
     render: (l) => (
       <div>
         <p className="font-medium text-ink">{l.name}</p>
+        {l.applicationPositionTitle && (
+          <p className="mt-1 text-xs font-medium text-brand">
+            Ứng tuyển: {l.applicationPositionTitle}
+          </p>
+        )}
         <p className="text-xs text-slate">
           {l.phone}
           {l.email ? ` | ${l.email}` : ""}
@@ -74,24 +79,38 @@ const columns: Column<Lead>[] = [
 
 export function ContactPage() {
   const [filter, setFilter] = useState<LeadStatus | "ALL">("ALL");
+  const [applicationsOnly, setApplicationsOnly] = useState(false);
   const [detail, setDetail] = useState<Lead | null>(null);
   const { data: leads = [], isLoading } = useLeads();
-  const rows =
-    filter === "ALL" ? leads : leads.filter((l) => l.status === filter);
+  const scopedLeads = applicationsOnly
+    ? leads.filter((lead) => lead.inquiryType === "tuyen-dung")
+    : leads;
+  const rows = scopedLeads.filter(
+    (lead) => filter === "ALL" || lead.status === filter,
+  );
 
   return (
     <div>
       <PageHeader
         title="Liên hệ"
-        description="Danh sách các form liên hệ từ website, bao gồm thông tin khách hàng và nội dung."
+        description="Tiếp nhận liên hệ và hồ sơ ứng tuyển từ website. Bấm vào từng dòng để xem và xử lý."
       />
 
       <div className="mb-4 flex flex-wrap gap-2">
+        <button
+          type="button"
+          aria-pressed={applicationsOnly}
+          onClick={() => setApplicationsOnly((value) => !value)}
+          className={`min-h-9 rounded-full border px-3 py-1 text-sm ${applicationsOnly ? "border-brand bg-brand text-white" : "border-line-strong bg-white text-slate"}`}
+        >
+          Hồ sơ ứng tuyển (
+          {leads.filter((lead) => lead.inquiryType === "tuyen-dung").length})
+        </button>
         {filters.map((f) => {
           const count =
             f.value === "ALL"
-              ? leads.length
-              : leads.filter((l) => l.status === f.value).length;
+              ? scopedLeads.length
+              : scopedLeads.filter((l) => l.status === f.value).length;
           const active = filter === f.value;
           return (
             <button

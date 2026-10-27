@@ -104,6 +104,7 @@ interface FetchConfig {
    * "phiên hết hạn", và được caller tự map thông báo.
    */
   skipAuthHandler?: boolean;
+  responseType?: "blob";
 }
 
 /**
@@ -208,6 +209,9 @@ async function requestWithRefresh<T>(
     });
   }
 
+  if (res.ok && config.responseType === "blob") {
+    return (await res.blob()) as T;
+  }
   let body: ApiEnvelope<T> | null = null;
   try {
     body = (await res.json()) as ApiEnvelope<T>;
