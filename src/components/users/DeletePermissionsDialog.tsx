@@ -7,9 +7,11 @@ import { SplitModal } from "@/components/ui/SplitModal";
 import { apiFetch } from "@/lib/api/client";
 import { resolveApiError } from "@/lib/api-error-message";
 import type { AdminUser } from "@/types";
+import { usePresence } from "@/lib/use-presence";
 
 export function DeletePermissionsDialog({ user }: { user: AdminUser }) {
   const [open, setOpen] = useState(false);
+  const presence = usePresence(open, 180);
   if (user.role === "SUPER_ADMIN") return null;
   return (
     <>
@@ -22,7 +24,13 @@ export function DeletePermissionsDialog({ user }: { user: AdminUser }) {
         <ShieldCheck className="size-4" />
         Quyền xóa
       </Button>
-      {open && <PermissionsEditor user={user} onClose={() => setOpen(false)} />}
+      {presence.mounted && (
+        <PermissionsEditor
+          user={user}
+          open={open}
+          onClose={() => setOpen(false)}
+        />
+      )}
     </>
   );
 }
@@ -30,9 +38,11 @@ export function DeletePermissionsDialog({ user }: { user: AdminUser }) {
 function PermissionsEditor({
   user,
   onClose,
+  open,
 }: {
   user: AdminUser;
   onClose: () => void;
+  open: boolean;
 }) {
   const [selected, setSelected] = useState(user.canDeleteCms === true);
   const [error, setError] = useState<string | null>(null);
@@ -58,7 +68,7 @@ function PermissionsEditor({
   }
   return (
     <SplitModal
-      open
+      open={open}
       onOpenChange={(value) => {
         if (!value && !mutation.isPending) onClose();
       }}

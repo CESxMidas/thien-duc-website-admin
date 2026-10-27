@@ -19,6 +19,7 @@ import { resolveApiError } from "@/lib/api-error-message";
 import { formatDateTime, leadStatusLabel, leadStatusTone } from "@/lib/labels";
 import type { Lead, LeadStatus } from "@/types";
 import { downloadApplicationCv } from "@/lib/api/contact";
+import { useRetainedModalValue } from "@/lib/use-retained-modal-value";
 
 const statusOptions = Object.keys(leadStatusLabel) as LeadStatus[];
 
@@ -34,13 +35,14 @@ function Field({ label, value }: { label: string; value: React.ReactNode }) {
 }
 
 export function LeadDetailDialog({
-  lead,
+  lead: activeLead,
   onClose,
 }: {
   lead: Lead | null;
   onClose: () => void;
 }) {
   const updateLead = useUpdateLead();
+  const { value: lead, open } = useRetainedModalValue(activeLead);
   const [status, setStatus] = useState<LeadStatus>("NEW");
   const [note, setNote] = useState("");
   const [downloading, setDownloading] = useState(false);
@@ -96,7 +98,7 @@ export function LeadDetailDialog({
 
   return (
     <SplitModal
-      open
+      open={open}
       onOpenChange={(open) => !open && onClose()}
       title={lead.name}
       description={

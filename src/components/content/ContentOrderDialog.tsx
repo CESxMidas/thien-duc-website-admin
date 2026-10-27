@@ -14,6 +14,7 @@ import { SplitModal } from "@/components/ui/SplitModal";
 import { useAuth } from "@/context/AuthContext";
 import { apiFetch } from "@/lib/api/client";
 import { resolveApiError } from "@/lib/api-error-message";
+import { usePresence } from "@/lib/use-presence";
 
 type Collection =
   "projects" | "news" | "recruitment-positions" | `projects/${string}/items`;
@@ -23,6 +24,7 @@ type Props = { collection: Collection; items: OrderItem[]; disabled?: boolean };
 export function ContentOrderDialog(props: Props) {
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
+  const presence = usePresence(open, 180);
   if (user?.role !== "ADMIN" && user?.role !== "SUPER_ADMIN") return null;
   return (
     <>
@@ -34,7 +36,9 @@ export function ContentOrderDialog(props: Props) {
         <ListOrdered className="size-4" />
         Sắp xếp hiển thị
       </Button>
-      {open && <OrderEditor {...props} onClose={() => setOpen(false)} />}
+      {presence.mounted && (
+        <OrderEditor {...props} open={open} onClose={() => setOpen(false)} />
+      )}
     </>
   );
 }
@@ -43,7 +47,8 @@ function OrderEditor({
   collection,
   items,
   onClose,
-}: Props & { onClose: () => void }) {
+  open,
+}: Props & { onClose: () => void; open: boolean }) {
   const [ordered, setOrdered] = useState(items);
   const client = useQueryClient();
   const [domain, ...scope] = collection.split("/");
@@ -92,7 +97,7 @@ function OrderEditor({
 
   return (
     <SplitModal
-      open
+      open={open}
       onOpenChange={(open) => {
         if (!open && !mutation.isPending) onClose();
       }}

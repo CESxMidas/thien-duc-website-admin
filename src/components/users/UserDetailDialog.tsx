@@ -8,6 +8,7 @@ import { SplitModal } from "@/components/ui/SplitModal";
 import { useUser } from "@/lib/api/queries";
 import { formatDateTime, roleLabel } from "@/lib/labels";
 import { getUserStatus } from "@/lib/user-status";
+import { useRetainedModalValue } from "@/lib/use-retained-modal-value";
 
 export function UserDetailDialog({
   userId,
@@ -18,12 +19,11 @@ export function UserDetailDialog({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
-  const { data: user, isLoading, isError } = useUser(open ? userId : null);
+  const { data, isLoading, isError } = useUser(open ? userId : null);
+  const retained = useRetainedModalValue(data ?? null);
+  const user = open ? data : retained.value;
 
-  const tempLocked =
-    user?.lockedUntil !== null &&
-    user !== undefined &&
-    new Date(user.lockedUntil!) > new Date();
+  const tempLocked = Boolean(user?.lockedUntil && new Date(user.lockedUntil) > new Date());
 
   return (
     <SplitModal

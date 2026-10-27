@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Trash2 } from "lucide-react";
 import { toast } from "sonner";
@@ -12,6 +12,7 @@ import {
 } from "@/lib/api/cms-trash";
 import { canDeleteContent } from "@/lib/delete-permissions";
 import { resolveApiError } from "@/lib/api-error-message";
+import { usePresence } from "@/lib/use-presence";
 
 type Props = {
   kind: CmsRecordKind;
@@ -23,6 +24,7 @@ type Props = {
 export function DeleteContentButton(props: Props) {
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
+  const presence = usePresence(open, 180);
   if (!canDeleteContent(user)) return null;
   return (
     <span
@@ -40,7 +42,13 @@ export function DeleteContentButton(props: Props) {
         <Trash2 className="size-4" />
         Xóa
       </Button>
-      {open && <DeleteConfirmation {...props} onClose={() => setOpen(false)} />}
+      {presence.mounted && (
+        <DeleteConfirmation
+          {...props}
+          open={open}
+          onClose={() => setOpen(false)}
+        />
+      )}
     </span>
   );
 }
@@ -52,11 +60,19 @@ function DeleteConfirmation({
   onDeleted,
   onClose,
   permanentOnly,
-}: Props & { onClose: () => void }) {
+  open,
+}: Props & { onClose: () => void; open: boolean }) {
   const client = useQueryClient();
   const [error, setError] = useState<string | null>(null);
   const [permanent, setPermanent] = useState(permanentOnly === true);
   const [acknowledged, setAcknowledged] = useState(false);
+  useEffect(() => {
+    if (open) {
+      setPermanent(permanentOnly === true);
+      setAcknowledged(false);
+      setError(null);
+    }
+  }, [open, permanentOnly]);
   const mutation = useMutation({
     mutationFn: () =>
       permanent ? purgeRecord(kind, id) : trashRecord(kind, id),
@@ -84,7 +100,7 @@ function DeleteConfirmation({
   }
   return (
     <ConfirmDialog
-      open
+      open={open}
       size="wide"
       onOpenChange={(value) => {
         if (!value && !mutation.isPending) onClose();

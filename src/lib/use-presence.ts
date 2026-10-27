@@ -19,7 +19,12 @@ export function usePresence(open: boolean, exitMs = 150) {
       setMounted(true);
       return;
     }
-    const timer = window.setTimeout(() => setMounted(false), exitMs);
+    const reduced =
+      window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
+    const timer = window.setTimeout(
+      () => setMounted(false),
+      reduced ? 0 : exitMs,
+    );
     return () => window.clearTimeout(timer);
   }, [open, exitMs]);
 

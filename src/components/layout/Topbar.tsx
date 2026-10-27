@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { Menu, LogOut, ChevronDown, CircleUserRound } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
@@ -9,6 +9,18 @@ export function Topbar({ onMenu }: { onMenu: () => void }) {
   const { user, logout } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const menu = usePresence(menuOpen);
+  const trigger = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    if (!menuOpen) return;
+    const close = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setMenuOpen(false);
+        trigger.current?.focus();
+      }
+    };
+    window.addEventListener("keydown", close);
+    return () => window.removeEventListener("keydown", close);
+  }, [menuOpen]);
 
   return (
     <header className="sticky top-0 z-20 flex h-16 shrink-0 items-center justify-between border-b border-line bg-white/90 px-4 backdrop-blur lg:px-6">
@@ -26,6 +38,7 @@ export function Topbar({ onMenu }: { onMenu: () => void }) {
 
       <div className="relative ml-auto">
         <button
+          ref={trigger}
           className="flex items-center gap-2 rounded-lg px-2 py-1.5 transition-colors duration-150 hover:bg-cream"
           onClick={() => setMenuOpen((v) => !v)}
           aria-haspopup="true"
@@ -67,7 +80,9 @@ export function Topbar({ onMenu }: { onMenu: () => void }) {
                 về đúng chỗ cũ thay vì tắt phụt. */}
             <div
               data-state={menu.state}
-              className="data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:fade-in data-[state=closed]:fade-out data-[state=open]:zoom-in-95 data-[state=closed]:zoom-out-95 slide-in-from-top-1 absolute right-0 z-20 mt-2 w-56 origin-top-right rounded-lg border border-line bg-white py-1 shadow-lg duration-150 ease-enter data-[state=closed]:pointer-events-none data-[state=closed]:ease-exit"
+              className="popover-surface absolute right-0 z-20 mt-2 w-56 origin-top-right rounded-lg border border-line bg-white py-1 shadow-lg"
+              inert={!menuOpen}
+              aria-hidden={!menuOpen}
             >
               <div className="border-b border-line px-4 py-2">
                 <p className="truncate text-sm font-medium text-ink">

@@ -17,7 +17,7 @@ export function Sidebar({
 }) {
   const { user } = useAuth();
   const { data: branding } = useBrandingSettings();
-  const overlay = usePresence(open);
+  const overlay = usePresence(open, 180);
   const items = navItems.filter(
     (item) => !item.roles || (user && item.roles.includes(user.role)),
   );
@@ -40,7 +40,7 @@ export function Sidebar({
       {overlay.mounted && (
         <div
           data-state={overlay.state}
-          className="data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:fade-in data-[state=closed]:fade-out fixed inset-0 z-30 bg-black/40 duration-200 ease-enter data-[state=closed]:duration-150 lg:hidden"
+          className="modal-backdrop fixed inset-0 z-30 bg-black/40 lg:hidden"
           onClick={onClose}
           aria-hidden
         />
@@ -57,8 +57,8 @@ export function Sidebar({
       <aside
         className={`fixed inset-y-0 left-0 z-40 flex w-64 shrink-0 flex-col overflow-hidden bg-espresso text-white transition-[transform,visibility] lg:visible lg:static lg:h-full lg:translate-x-0 lg:transition-none ${
           open
-            ? "visible translate-x-0 duration-200 ease-enter"
-            : "invisible -translate-x-full duration-150 ease-exit"
+            ? "visible translate-x-0 duration-[280ms] ease-enter"
+            : "invisible -translate-x-full duration-[180ms] ease-exit"
         }`}
       >
         <div className="flex h-16 shrink-0 items-center justify-between border-b border-white/10 px-5">

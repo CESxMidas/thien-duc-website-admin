@@ -1,4 +1,5 @@
 import { usePublicationClock } from "@/lib/use-publication-clock";
+import { useRetainedModalValue } from "@/lib/use-retained-modal-value";
 // Modal chi tiết dự án — mở khi bấm vào một hàng ở trang Dự án.
 //
 // Quy chuẩn modal 2 cột (SplitModal): CỘT ẢNH bên trái gom toàn bộ hình ảnh với
@@ -79,7 +80,9 @@ export function ProjectDetailDialog({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
-  const { data: project, isLoading, isError } = useProject(open ? slug : null);
+  const { data, isLoading, isError } = useProject(open ? slug : null);
+  const retained = useRetainedModalValue(data ?? null);
+  const project = open ? data : retained.value;
   const [tab, setTab] = useState<TabValue>("project");
 
   // Mở dự án khác phải bắt đầu lại từ tab Dự án.
