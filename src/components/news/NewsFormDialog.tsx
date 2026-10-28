@@ -137,7 +137,6 @@ function toFormValues(post?: NewsPost): NewsFormValues {
   return {
     title: toBilingualValue(post?.title),
     slug: post?.slug ?? "",
-    summary: toBilingualValue(post?.summary),
     content: {
       vi: paragraphsToText(post?.content, "vi"),
       en: paragraphsToText(post?.content, "en"),
@@ -209,7 +208,6 @@ export function NewsFormDialog({ trigger, post }: NewsFormDialogProps) {
     return {
       slug: values.slug,
       title: toBilingualPayload(values.title),
-      summary: toBilingualPayload(values.summary),
       content: toParagraphPayload(values.content),
       categoryId: values.categoryId,
       author: values.author || undefined,
@@ -561,32 +559,6 @@ export function NewsFormDialog({ trigger, post }: NewsFormDialogProps) {
                   {isEdit
                     ? "Bài đã đăng thì đổi đường dẫn sẽ làm hỏng link cũ."
                     : "Tự tạo từ tiêu đề bài viết. Bạn có thể chỉnh lại nếu cần."}
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="summary"
-            render={({ field }) => (
-              <FormItem>
-                <FormControl>
-                  <BilingualField
-                    label={<FormLabel>Tóm tắt bài viết</FormLabel>}
-                    multiline
-                    rows={2}
-                    value={field.value}
-                    onChange={field.onChange}
-                    placeholder={{
-                      vi: "Một đoạn ngắn giới thiệu nội dung chính của bài viết.",
-                      en: "A short summary of the article's main content.",
-                    }}
-                  />
-                </FormControl>
-                <FormDescription>
-                  Hiển thị ở thẻ tin ngoài trang danh sách.
                 </FormDescription>
                 <FormMessage />
               </FormItem>

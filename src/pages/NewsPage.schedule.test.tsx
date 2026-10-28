@@ -69,7 +69,6 @@ function makePost(overrides: Partial<NewsPost> & { id: string }): NewsPost {
   return {
     slug: `bai-${overrides.id}`,
     title: { vi: `Bài ${overrides.id}` },
-    summary: { vi: "Tóm tắt." },
     content: null,
     categoryId: null,
     category: null,

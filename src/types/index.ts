@@ -195,7 +195,6 @@ export interface NewsPost {
   id: string;
   slug: string;
   title: Bilingual;
-  summary: Bilingual;
   content: Bilingual[] | null;
   categoryId: string | null;
   category: NewsCategory | null;

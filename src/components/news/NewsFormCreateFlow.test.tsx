@@ -47,7 +47,6 @@ const CREATED: NewsPost = {
   id: "n1",
   slug: "slug-backend-chuan-hoa",
   title: { vi: "Bài mới" },
-  summary: { vi: "Tóm tắt bài mới." },
   content: null,
   categoryId: "c1",
   category: null,
@@ -155,10 +154,9 @@ async function fillValidForm(
     within(dialog).getByRole("textbox", { name: "Tiêu đề bài viết" }),
     "Bài mới",
   );
-  await user.type(
-    within(dialog).getByRole("textbox", { name: "Tóm tắt bài viết" }),
-    "Tóm tắt bài mới đủ dài.",
-  );
+  expect(
+    within(dialog).queryByRole("textbox", { name: "Tóm tắt bài viết" }),
+  ).not.toBeInTheDocument();
   await user.clear(within(dialog).getByLabelText("Đường dẫn bài viết"));
   await user.type(
     within(dialog).getByLabelText("Đường dẫn bài viết"),
@@ -265,6 +263,7 @@ describe("tạo + đặt lịch — đường hạnh phúc", () => {
     // Đích của lịch không được len vào payload nội dung.
     expect(createNews.mock.calls[0][0]).not.toHaveProperty("scheduledAt");
     expect(createNews.mock.calls[0][0]).not.toHaveProperty("status");
+    expect(createNews.mock.calls[0][0]).not.toHaveProperty("summary");
     // Thành công trọn vẹn: đóng cả hai hộp thoại.
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
     expect(toastSuccess).toHaveBeenCalledWith(

@@ -250,10 +250,9 @@ describe("Chữ song ngữ — VI bắt buộc, EN tùy chọn", () => {
     ).toContain("location.vi");
   });
 
-  it("summary có min riêng (10) — 9 ký tự bị chặn, 10 ký tự OK", () => {
-    expect(errorPaths(newsSchema.safeParse({ ...validNews, summary: bilingual(long(9)) })))
-      .toContain("summary.vi");
-    expect(ok(newsSchema.safeParse({ ...validNews, summary: bilingual(long(10)) }))).toBe(true);
+  it("bài viết không cần trường tóm tắt riêng", () => {
+    expect(ok(newsSchema.safeParse(validNews))).toBe(true);
+    expect(newsSchema.parse(validNews)).not.toHaveProperty("summary");
   });
 });
 
@@ -419,7 +418,7 @@ describe("Nội dung dài (page bắt buộc, news tùy chọn)", () => {
       .toContain("content.vi");
   });
 
-  it("news: nội dung rỗng HỢP LỆ (bài chỉ có tóm tắt)", () => {
+  it("news: bản nháp cho phép nội dung rỗng", () => {
     expect(ok(newsSchema.safeParse({ ...validNews, content: bilingual("") }))).toBe(true);
   });
 

@@ -80,10 +80,6 @@ test.beforeAll(async () => {
       vi: 'Bai kiem tra responsive voi tieu de tieng Viet kha dai de thu ngat dong',
       en: 'Responsive fixture article with a fairly long English headline for wrapping',
     },
-    summary: {
-      vi: 'Tom tat tieng Viet dung de kiem tra bo cuc tren mọi be rong man hinh.',
-      en: 'Vietnamese/English summary used to check layout across all viewports.',
-    },
     content: [
       {
         vi: 'Doan noi dung dai de kiem tra chieu rong khoi van ban tren man hinh nho nhat 320px cung nhu man hinh rong 1440px.',

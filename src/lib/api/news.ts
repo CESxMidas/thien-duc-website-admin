@@ -24,7 +24,6 @@ import type { Bilingual, ContentStatus, NewsCategory, NewsPost } from "@/types";
 export interface CreateNewsPostInput {
   slug: string;
   title: Bilingual;
-  summary: Bilingual;
   content?: Bilingual[];
   categoryId?: string;
   author?: string;

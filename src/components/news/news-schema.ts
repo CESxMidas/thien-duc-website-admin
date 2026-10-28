@@ -27,8 +27,7 @@ import { longFormContentSchema } from "@/lib/long-form-content";
 export const newsSchema = z.object({
   title: bilingualText(3, "Tiêu đề tối thiểu 3 ký tự."),
   slug: slugField(),
-  summary: bilingualText(10, "Tóm tắt tối thiểu 10 ký tự."),
-  // Nội dung bài không bắt buộc (bài có thể chỉ có tóm tắt), nhưng mỗi đoạn
+  // Nội dung bản nháp không bắt buộc, nhưng mỗi đoạn
   // phải nằm trong trần độ dài mà backend chấp nhận.
   content: longFormContentSchema(),
   /**

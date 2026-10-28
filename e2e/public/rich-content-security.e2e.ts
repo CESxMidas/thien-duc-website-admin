@@ -57,7 +57,6 @@ test.beforeAll(async () => {
   const created = await authedPost('/news', token, {
     slug,
     title: { vi: `Tiêu đề ${PAYLOADS[0]}`, en: `Title ${PAYLOADS[0]}` },
-    summary: { vi: `Tóm tắt ${PAYLOADS[3]}`, en: `Summary ${PAYLOADS[3]}` },
     content: PAYLOADS.map((payload) => ({ vi: payload, en: payload })),
   });
   expect(created.status, 'tạo bài chứa payload').toBe(201);

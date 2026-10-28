@@ -123,7 +123,6 @@ function makePost(
     id: title,
     slug: `bai-${title}`,
     title: { vi: title },
-    summary: { vi: "Tóm tắt." },
     content: null,
     categoryId: null,
     category: null,

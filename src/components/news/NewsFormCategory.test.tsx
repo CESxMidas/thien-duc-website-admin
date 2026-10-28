@@ -46,7 +46,6 @@ const legacyPost: NewsPost = {
   id: "n1",
   slug: "bai-cu-chua-phan-loai",
   title: { vi: "Bài cũ chưa phân loại" },
-  summary: { vi: "Tóm tắt bài cũ đủ dài để qua ràng buộc." },
   content: null,
   categoryId: null,
   category: null,

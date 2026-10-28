@@ -120,7 +120,6 @@ test.describe('§11 — Nội dung công khai (frontend)', () => {
     const created = await authedPost('/news', adminToken, {
       slug: newsSlug,
       title: { vi: NEWS_TITLE },
-      summary: { vi: 'Tóm tắt bài E2E kiểm thử hiển thị public.' },
       content: [{ vi: 'Nội dung đoạn một của bài E2E.' }],
     });
     expect(created.status).toBeLessThan(400);

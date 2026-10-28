@@ -41,7 +41,6 @@ const createdSlugs: string[] = [];
 interface NewsPayload {
   slug: string;
   title: { vi: string; en: string };
-  summary: { vi: string; en: string };
   content: { vi: string; en: string }[];
   image?: string;
 }
@@ -54,7 +53,6 @@ async function createPost(
   const payload: NewsPayload = {
     slug,
     title: { vi: titleOf(index), en: `E2E ${RUN_ID} article ${index}` },
-    summary: { vi: `Tóm tắt ${index}`, en: `Summary ${index}` },
     content: [{ vi: `Đoạn ${index}`, en: `Paragraph ${index}` }],
     image: '/images/news/legacy/tin-tuc-thien-duc-placeholder-01.jpg',
   };
