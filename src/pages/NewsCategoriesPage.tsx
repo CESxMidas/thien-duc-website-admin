@@ -289,7 +289,7 @@ export function NewsCategoriesPage() {
         }
       />
 
-      <DataTable
+      <DataTable deletionKind="news-categories"
         columns={columns}
         rows={categories}
         loading={isLoading}

@@ -442,7 +442,7 @@ export function CooperationPage() {
           </p>
         </div>
       ) : (
-        <DataTable layout="auto"
+        <DataTable deletionKind="cooperation" layout="auto"
           columns={columns}
           rows={projects}
           loading={isLoading}

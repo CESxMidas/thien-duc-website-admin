@@ -1,5 +1,11 @@
 import type { CSSProperties, ReactNode } from "react";
 import {
+  CmsSelectionList,
+  CmsSelectionCheckbox,
+} from "@/components/content/CmsSelectionList";
+import { cmsRecordTitle, useCmsSelection } from "@/lib/cms-selection";
+import type { CmsRecordKind } from "@/lib/api/cms-trash";
+import {
   Table,
   TableBody,
   TableCell,
@@ -30,6 +36,8 @@ export function DataTable<T extends { id: string }>({
   onRowClick,
   minWidth,
   layout = "fixed",
+  deletionKind,
+  deletionScope,
 }: {
   columns: Column<T>[];
   rows: T[];
@@ -41,7 +49,30 @@ export function DataTable<T extends { id: string }>({
   minWidth?: number;
   /** Tự cân đối cột theo nội dung, dùng cho bảng có nhóm nút không xuống hàng. */
   layout?: "fixed" | "auto";
+  deletionKind?: CmsRecordKind;
+  deletionScope?: string;
 }) {
+  const selection = useCmsSelection();
+  if (deletionKind)
+    return (
+      <CmsSelectionList
+        kind={deletionKind}
+        records={rows}
+        loading={loading}
+        scope={deletionScope}
+      >
+        <DataTable
+          columns={columns}
+          rows={rows}
+          loading={loading}
+          emptyText={emptyText}
+          onRowClick={onRowClick}
+          minWidth={minWidth}
+          layout={layout}
+        />
+      </CmsSelectionList>
+    );
+  const selectable = selection?.available === true;
   return (
     <div className="overflow-hidden rounded-xl border border-line bg-white">
       <Table
@@ -50,6 +81,11 @@ export function DataTable<T extends { id: string }>({
       >
         <TableHeader>
           <TableRow className="border-line bg-cream/60 hover:bg-cream/60">
+            {selectable && (
+              <TableHead className="w-14 px-1">
+                <CmsSelectionCheckbox />
+              </TableHead>
+            )}
             {columns.map((col) => (
               <TableHead
                 key={col.key}
@@ -66,6 +102,7 @@ export function DataTable<T extends { id: string }>({
           {loading ? (
             Array.from({ length: 4 }).map((_, i) => (
               <TableRow key={i} className="border-line">
+                {selectable && <TableCell className="w-14" />}
                 {columns.map((col) => (
                   <TableCell
                     key={col.key}
@@ -79,7 +116,7 @@ export function DataTable<T extends { id: string }>({
           ) : rows.length === 0 ? (
             <TableRow className="hover:bg-transparent">
               <TableCell
-                colSpan={columns.length}
+                colSpan={columns.length + (selectable ? 1 : 0)}
                 className="py-10 text-center text-slate"
               >
                 {emptyText}
@@ -92,11 +129,16 @@ export function DataTable<T extends { id: string }>({
                 // Vào so le theo thứ tự hàng; giới hạn ở hàng thứ 8 để bảng dài
                 // không bắt người dùng ngồi đợi hàng cuối xuất hiện.
                 style={{ "--row-index": Math.min(index, 7) } as CSSProperties}
-                className={`row-in border-line transition-colors duration-150 ${
+                className={`row-in border-line transition-colors duration-150 ${selection?.selectedIds.includes(row.id) ? "bg-cream/70" : ""} ${
                   onRowClick ? "cursor-pointer hover:bg-cream/50" : ""
                 }`}
                 onClick={onRowClick ? () => onRowClick(row) : undefined}
               >
+                {selectable && (
+                  <TableCell className="w-14 px-1">
+                    <CmsSelectionCheckbox id={row.id} label={`Chọn ${cmsRecordTitle(row)}`} />
+                  </TableCell>
+                )}
                 {columns.map((col) => (
                   <TableCell
                     key={col.key}

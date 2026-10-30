@@ -1,3 +1,4 @@
+import { CmsSelectionList, CmsSelectionCheckbox } from "@/components/content/CmsSelectionList";
 import { DeleteContentButton } from "@/components/content/DeleteContentButton";
 // Tab "Hình ảnh" của modal chi tiết dự án: thêm ảnh theo URL, đổi thứ tự hiển
 // thị và xóa ảnh. Ở tab dự án chính chỉ quản lý ảnh chung của dự án; ảnh hạng
@@ -14,6 +15,7 @@ import {
   Eye,
   EyeOff,
   ImageOff,
+  Image as ImageIcon,
   Loader2,
   Plus,
 } from "lucide-react";
@@ -409,7 +411,8 @@ export function ProjectGalleryTab({
           </form>
         )}
 
-        {visibleImages.length === 0 ? (
+        <CmsSelectionList kind="project-images" records={visibleImages} scope={`${project.id}:${item?.id ?? ""}`}>
+{visibleImages.length === 0 ? (
           <p className="py-8 text-center text-sm text-slate">
             Thư viện chưa có ảnh nào.
           </p>
@@ -422,8 +425,9 @@ export function ProjectGalleryTab({
                 <li
                   key={image.id}
                   style={{ "--row-index": Math.min(index, 7) } as CSSProperties}
-                  className="row-in flex items-center gap-3 rounded-xl border border-line p-2 transition-colors duration-150 hover:border-line-strong"
+                  className="row-in grid grid-cols-[auto_auto_minmax(0,1fr)] items-center gap-2 rounded-xl border border-line p-2 transition-colors duration-150 hover:border-line-strong sm:flex sm:gap-3"
                 >
+                  <CmsSelectionCheckbox id={image.id} />
                   <GalleryThumb url={image.url} alt={image.caption?.vi ?? ""} />
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm text-ink">
@@ -457,13 +461,14 @@ export function ProjectGalleryTab({
                       {isCover ? <Badge variant="blue">Ảnh chính</Badge> : null}
                     </div>
                   </div>
+                  <div className="col-span-full flex flex-wrap items-center justify-end gap-1 sm:contents">
                   <DeleteContentButton
                     kind="project-images"
                     id={image.id}
                     title={image.caption?.vi || "Ảnh dự án"}
                   />
                   {canEdit && (
-                    <div className="flex shrink-0 items-center gap-0.5">
+                    <div className="flex shrink-0 items-center gap-0.5 [&>button]:min-h-11 [&>button]:min-w-11">
                       <Button
                         variant={isCover ? "outline" : "ghost"}
                         size="sm"
@@ -489,7 +494,8 @@ export function ProjectGalleryTab({
                         }
                         onClick={() => void setCoverImage(image)}
                       >
-                        {isCover ? "Cover" : "Đại diện"}
+                        <ImageIcon className="size-4 sm:hidden" aria-hidden="true" />
+                        <span className="hidden sm:inline">{isCover ? "Cover" : "Đại diện"}</span>
                       </Button>
                       <Button
                         variant="ghost"
@@ -534,11 +540,13 @@ export function ProjectGalleryTab({
                       )}
                     </div>
                   )}
+                  </div>
                 </li>
               );
             })}
           </ul>
         )}
+</CmsSelectionList>
       </section>
 
       <ConfirmDialog

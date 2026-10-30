@@ -1,3 +1,4 @@
+import { CmsSelectionList, CmsSelectionCheckbox } from "@/components/content/CmsSelectionList";
 import { DeleteContentButton } from "@/components/content/DeleteContentButton";
 import { slugify } from "@/lib/slugify";
 import { ContentOrderDialog } from "@/components/content/ContentOrderDialog";
@@ -657,7 +658,8 @@ export function ProjectItemsTab({ project }: { project: ProjectDetail }) {
         }))}
       />
 
-      {project.items.length === 0 ? (
+      <CmsSelectionList kind="project-items" records={project.items} scope={project.id}>
+{project.items.length === 0 ? (
         <p className="py-8 text-center text-sm text-slate">
           Dự án chưa có hạng mục con nào.
         </p>
@@ -669,8 +671,9 @@ export function ProjectItemsTab({ project }: { project: ProjectDetail }) {
               <li
                 key={item.id}
                 style={{ "--row-index": Math.min(index, 7) } as CSSProperties}
-                className="row-in flex items-center gap-3 rounded-xl border border-line p-3 transition-colors duration-150 hover:border-line-strong"
+                className="row-in grid grid-cols-[auto_minmax(0,1fr)] items-center gap-2 rounded-xl border border-line p-3 transition-colors duration-150 hover:border-line-strong sm:flex sm:gap-3"
               >
+                <CmsSelectionCheckbox id={item.id} />
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
                     <p className="truncate text-sm font-medium text-ink">
@@ -688,7 +691,7 @@ export function ProjectItemsTab({ project }: { project: ProjectDetail }) {
                       : `Theo dự án (${projectStatusLabel[project.status]})`}
                   </p>
                 </div>
-                <div className="flex shrink-0 gap-1">
+                <div className="col-span-full flex shrink-0 justify-end gap-1">
                   <DeleteContentButton
                     kind="project-items"
                     id={item.id}
@@ -730,6 +733,7 @@ export function ProjectItemsTab({ project }: { project: ProjectDetail }) {
           })}
         </ul>
       )}
+</CmsSelectionList>
 
       <ConfirmDialog
         open={toDelete !== null}

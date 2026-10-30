@@ -1,3 +1,4 @@
+import { CmsSelectionList, CmsSelectionCheckbox } from "@/components/content/CmsSelectionList";
 import { useState } from "react";
 import { DeleteContentButton } from "@/components/content/DeleteContentButton";
 import { toast } from "sonner";
@@ -70,7 +71,8 @@ export function ProfileRequestsPage() {
         description="Xem và phê duyệt các thay đổi thông tin do nhân viên gửi lên."
       />
 
-      {isLoading ? (
+      <CmsSelectionList kind="profile-requests" records={[...pending, ...history.slice(0, 20)]} loading={isLoading}>
+{isLoading ? (
         <div className="space-y-3">
           {Array.from({ length: 3 }).map((_, i) => (
             <div key={i} className="h-28 animate-pulse rounded-xl bg-cream" />
@@ -101,6 +103,7 @@ export function ProfileRequestsPage() {
                     <Card>
                       <CardContent className="flex flex-col gap-4 py-4 sm:flex-row sm:items-start sm:justify-between">
                         <div className="flex gap-3">
+                          <CmsSelectionCheckbox id={row.id} />
                           <RequesterAvatar row={row} />
                           <div className="min-w-0">
                             <p className="text-sm font-medium text-ink">
@@ -172,6 +175,7 @@ export function ProfileRequestsPage() {
                     key={row.id}
                     className="flex items-center gap-3 rounded-xl border border-line px-4 py-2.5 text-sm"
                   >
+                    <CmsSelectionCheckbox id={row.id} />
                     <Badge variant={profileStatusTone[row.status]}>
                       {profileStatusLabel[row.status]}
                     </Badge>
@@ -202,6 +206,7 @@ export function ProfileRequestsPage() {
           )}
         </div>
       )}
+</CmsSelectionList>
 
       {/* Dialog từ chối kèm lý do */}
       <SplitModal

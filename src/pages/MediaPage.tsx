@@ -1,3 +1,4 @@
+import { CmsSelectionList, CmsSelectionCheckbox } from "@/components/content/CmsSelectionList";
 import { useRef, useState } from "react";
 import { DeleteContentButton } from "@/components/content/DeleteContentButton";
 import { Eye, EyeOff, ImageIcon, Loader2, Upload } from "lucide-react";
@@ -187,7 +188,8 @@ export function MediaPage() {
         </Button>
       </div>
 
-      {isLoading ? (
+      <CmsSelectionList kind="media" records={media} loading={isLoading} scope={`${folder}:${showHidden}`}>
+{isLoading ? (
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
           {Array.from({ length: 8 }).map((_, i) => (
             <div
@@ -220,6 +222,7 @@ export function MediaPage() {
                 className="group overflow-hidden rounded-xl border border-line bg-white"
               >
                 <div className="relative aspect-3/2 bg-cream">
+                  <span className="absolute left-2 top-2 z-10 rounded-md bg-white/95"><CmsSelectionCheckbox id={asset.id} /></span>
                   <img
                     src={asset.url}
                     alt={fileNameOf(asset)}
@@ -229,7 +232,7 @@ export function MediaPage() {
                     }`}
                   />
                   {!isActive && (
-                    <Badge variant="gray" className="absolute left-2 top-2">
+                    <Badge variant="gray" className="absolute bottom-2 left-2">
                       Đang ẩn
                     </Badge>
                   )}
@@ -280,6 +283,7 @@ export function MediaPage() {
           })}
         </div>
       )}
+</CmsSelectionList>
 
       <ConfirmDialog
         open={pending !== null}

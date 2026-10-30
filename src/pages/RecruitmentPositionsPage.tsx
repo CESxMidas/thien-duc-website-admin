@@ -246,7 +246,7 @@ export function RecruitmentPositionsPage() {
         </Select>
       </div>
 
-      <DataTable layout="auto"
+      <DataTable deletionKind="recruitment" layout="auto"
         columns={columns}
         rows={visiblePositions}
         loading={isLoading}

@@ -258,7 +258,7 @@ export function BannersPage() {
           </p>
         </div>
       ) : (
-        <DataTable columns={columns} rows={banners} loading={isLoading} />
+        <DataTable deletionKind="banners" columns={columns} rows={banners} loading={isLoading} />
       )}
     </div>
   );

@@ -434,7 +434,7 @@ export function NewsPage() {
         </div>
       )}
 
-      <DataTable layout="auto"
+      <DataTable deletionKind="news" layout="auto"
         columns={columns}
         rows={rows}
         loading={isLoading}

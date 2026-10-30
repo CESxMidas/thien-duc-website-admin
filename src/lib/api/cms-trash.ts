@@ -1,4 +1,4 @@
-import { apiFetch } from "./client";
+import { apiFetch, ApiRequestError } from "./client";
 import type { Bilingual } from "@/types";
 
 export const cmsKinds = {
@@ -17,6 +17,67 @@ export const cmsKinds = {
   "profile-requests": { label: "Yêu cầu cập nhật hồ sơ" },
 } as const;
 export type CmsRecordKind = keyof typeof cmsKinds;
+export type CmsDeleteTarget = { id: string; title: string };
+export type BulkDeleteResult = {
+  succeededIds: string[];
+  failed: { id: string; message: string; status: number }[];
+  remainingIds: string[];
+};
+
+/** Chia lô nhỏ, dừng khi mất quyền/lỗi mạng; không gửi lại các mục đã thành công. */
+export async function bulkDeleteRecords(
+  kind: CmsRecordKind,
+  ids: string[],
+  permanent: boolean,
+): Promise<BulkDeleteResult> {
+  const result: BulkDeleteResult = {
+    succeededIds: [],
+    failed: [],
+    remainingIds: [],
+  };
+  for (let offset = 0; offset < ids.length; offset += 100) {
+    const batch = ids.slice(offset, offset + 100);
+    try {
+      const response = await apiFetch<BulkDeleteResult>(
+        `/cms-trash/${kind}/bulk-delete`,
+        {
+          method: "POST",
+          body: JSON.stringify({
+            ids: batch,
+            mode: permanent ? "permanent" : "trash",
+            ...(permanent ? { confirm: true } : {}),
+          }),
+        },
+      );
+      result.succeededIds.push(...response.succeededIds);
+      result.failed.push(...response.failed);
+      if (
+        response.remainingIds.length ||
+        response.failed.some(
+          (item) => [401, 403, 429].includes(item.status) || item.status >= 500,
+        )
+      ) {
+        result.remainingIds.push(
+          ...response.remainingIds,
+          ...ids.slice(offset + batch.length),
+        );
+        break;
+      }
+    } catch (error) {
+      result.failed.push({
+        id: batch[0],
+        message:
+          error instanceof Error
+            ? error.message
+            : "Không xóa được các mục đã chọn.",
+        status: error instanceof ApiRequestError ? error.status : 500,
+      });
+      result.remainingIds.push(...ids.slice(offset + 1));
+      break;
+    }
+  }
+  return result;
+}
 export type TrashItem = {
   id: string;
   title: string | Bilingual | null;

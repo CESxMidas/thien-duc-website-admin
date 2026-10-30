@@ -1,3 +1,4 @@
+import { CmsSelectionList, CmsSelectionCheckbox } from "@/components/content/CmsSelectionList";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { RotateCcw } from "lucide-react";
@@ -92,6 +93,7 @@ function TrashList({ kind }: { kind: CmsRecordKind }) {
       </div>
     );
   return (
+    <CmsSelectionList kind={kind} records={query.data.items} scope={String(page)} permanentOnly>
     <div className="rounded-xl border border-line bg-white">
       {!query.data.items.length ? (
         <p className="p-6 text-sm text-slate">
@@ -104,6 +106,7 @@ function TrashList({ kind }: { kind: CmsRecordKind }) {
               key={row.id}
               className="flex flex-wrap items-center justify-between gap-3 p-4"
             >
+              <CmsSelectionCheckbox id={row.id} />
               <div className="min-w-0 flex-1">
                 <p className="break-words text-sm font-medium text-ink [overflow-wrap:anywhere]">
                   {(typeof row.title === "string"
@@ -156,5 +159,6 @@ function TrashList({ kind }: { kind: CmsRecordKind }) {
         </div>
       )}
     </div>
+    </CmsSelectionList>
   );
 }

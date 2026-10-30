@@ -8,6 +8,9 @@ import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import {
   purgeRecord,
   trashRecord,
+  bulkDeleteRecords,
+  type BulkDeleteResult,
+  type CmsDeleteTarget,
   type CmsRecordKind,
 } from "@/lib/api/cms-trash";
 import { canDeleteContent } from "@/lib/delete-permissions";
@@ -18,12 +21,17 @@ type Props = {
   kind: CmsRecordKind;
   id: string;
   title: string;
-  onDeleted?: () => void;
+  onDeleted?: (deletedIds: string[]) => void;
   permanentOnly?: boolean;
+  records?: CmsDeleteTarget[];
+  label?: string;
+  disabled?: boolean;
+  onPendingChange?: (pending: boolean) => void;
 };
 export function DeleteContentButton(props: Props) {
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
+  const [targets, setTargets] = useState<CmsDeleteTarget[] | undefined>();
   const presence = usePresence(open, 180);
   if (!canDeleteContent(user)) return null;
   return (
@@ -36,15 +44,20 @@ export function DeleteContentButton(props: Props) {
         variant="ghost"
         size="sm"
         className="min-h-11 text-destructive"
+        disabled={props.disabled}
         aria-label={`Xóa ${props.title}`}
-        onClick={() => setOpen(true)}
+        onClick={() => {
+          setTargets(props.records?.map((record) => ({ ...record })));
+          setOpen(true);
+        }}
       >
         <Trash2 className="size-4" />
-        Xóa
+        {props.label ?? "Xóa"}
       </Button>
       {presence.mounted && (
         <DeleteConfirmation
           {...props}
+          records={targets}
           open={open}
           onClose={() => setOpen(false)}
         />
@@ -61,33 +74,70 @@ function DeleteConfirmation({
   onClose,
   permanentOnly,
   open,
+  records,
+  onPendingChange,
 }: Props & { onClose: () => void; open: boolean }) {
   const client = useQueryClient();
   const [error, setError] = useState<string | null>(null);
   const [permanent, setPermanent] = useState(permanentOnly === true);
   const [acknowledged, setAcknowledged] = useState(false);
+  const [remaining, setRemaining] = useState(records ?? []);
+  const [failures, setFailures] = useState<BulkDeleteResult["failed"]>([]);
   useEffect(() => {
     if (open) {
       setPermanent(permanentOnly === true);
       setAcknowledged(false);
       setError(null);
+      setRemaining(records ?? []);
+      setFailures([]);
     }
-  }, [open, permanentOnly]);
+  }, [open, permanentOnly, records]);
   const mutation = useMutation({
-    mutationFn: () =>
-      permanent ? purgeRecord(kind, id) : trashRecord(kind, id),
+    retry: false,
+    mutationFn: async (): Promise<BulkDeleteResult> => {
+      if (records)
+        return bulkDeleteRecords(
+          kind,
+          remaining.map((record) => record.id),
+          permanent,
+        );
+      if (permanent) await purgeRecord(kind, id);
+      else await trashRecord(kind, id);
+      return { succeededIds: [id], failed: [], remainingIds: [] };
+    },
   });
   async function confirm() {
     setError(null);
+    onPendingChange?.(true);
     try {
-      await mutation.mutateAsync();
+      const result = await mutation.mutateAsync();
+      if (result.succeededIds.length) onDeleted?.(result.succeededIds);
+      if (result.failed.length || result.remainingIds.length) {
+        const unresolved = new Set([
+          ...result.failed.map((item) => item.id),
+          ...result.remainingIds,
+        ]);
+        setRemaining((items) =>
+          items.filter((item) => unresolved.has(item.id)),
+        );
+        setFailures(result.failed);
+        setAcknowledged(false);
+        const message = `Đã xử lý ${result.succeededIds.length} mục. Còn ${unresolved.size} mục chưa xóa được; chỉ các mục này được giữ lại để thử lại.`;
+        setError(message);
+        toast.error(message);
+        await client.invalidateQueries();
+        return;
+      }
       await client.invalidateQueries();
       toast.success(
-        permanent
+        records
+          ? permanent
+            ? `Đã xóa vĩnh viễn ${result.succeededIds.length} mục.`
+            : `Đã chuyển ${result.succeededIds.length} mục vào thùng rác.`
+          : permanent
           ? "Đã xóa vĩnh viễn nội dung."
           : "Đã chuyển nội dung vào thùng rác.",
       );
-      onDeleted?.();
       onClose();
     } catch (err) {
       const message = resolveApiError(
@@ -96,6 +146,8 @@ function DeleteConfirmation({
       );
       setError(message);
       toast.error(message);
+    } finally {
+      onPendingChange?.(false);
     }
   }
   return (
@@ -105,9 +157,24 @@ function DeleteConfirmation({
       onOpenChange={(value) => {
         if (!value && !mutation.isPending) onClose();
       }}
-      title={`Xóa ${title}?`}
+      title={records ? `Xóa ${remaining.length} mục đã chọn?` : `Xóa ${title}?`}
       description={
         <div className="space-y-3">
+          {records && (
+            <div>
+              <p className="font-medium text-ink">Các mục sẽ được xử lý:</p>
+              <ul className="mt-2 max-h-40 overflow-y-auto rounded-lg border border-line p-3 text-sm">
+                {remaining.map((record) => (
+                  <li
+                    key={record.id}
+                    className="break-words py-1 [overflow-wrap:anywhere]"
+                  >
+                    {record.title}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
           {!permanentOnly && (
             <fieldset disabled={mutation.isPending} className="space-y-2">
               <legend className="mb-2 font-medium text-ink">
@@ -180,11 +247,25 @@ function DeleteConfirmation({
               {error}
             </p>
           )}
+          {failures.length > 0 && (
+            <ul className="space-y-1 text-destructive">
+              {failures.map((failure) => (
+                <li key={failure.id}>
+                  {remaining.find((record) => record.id === failure.id)
+                    ?.title ?? "Nội dung"}
+                  : {failure.message}
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       }
       confirmLabel={permanent ? "Xóa vĩnh viễn" : "Chuyển vào thùng rác"}
       submitting={mutation.isPending}
-      confirmDisabled={permanent && !acknowledged}
+      confirmDisabled={
+        (permanent && !acknowledged) ||
+        (records !== undefined && remaining.length === 0)
+      }
       onConfirm={() => {
         if (!permanent || acknowledged) void confirm();
       }}

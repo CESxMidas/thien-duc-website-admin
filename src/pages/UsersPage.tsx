@@ -223,7 +223,7 @@ export function UsersPage() {
           ) : null
         }
       />
-      <DataTable layout="auto"
+      <DataTable deletionKind="users" layout="auto"
         columns={columns}
         rows={users}
         loading={isLoading}

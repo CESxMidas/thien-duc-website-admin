@@ -297,7 +297,7 @@ export function PagesPage() {
           />
         }
       />
-      <DataTable layout="auto"
+      <DataTable deletionKind="pages" layout="auto"
         columns={columns}
         rows={pages}
         loading={isLoading}

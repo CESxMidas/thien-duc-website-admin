@@ -128,7 +128,7 @@ export function ContactPage() {
         })}
       </div>
 
-      <DataTable
+      <DataTable deletionKind="contact"
         columns={columns}
         rows={rows}
         loading={isLoading}

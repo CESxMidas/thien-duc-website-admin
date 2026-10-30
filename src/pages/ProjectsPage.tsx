@@ -428,7 +428,7 @@ export function ProjectsPage() {
         })}
       </div>
 
-      <DataTable layout="auto"
+      <DataTable deletionKind="projects" layout="auto"
         columns={columns}
         rows={rows}
         loading={isLoading}
